@@ -1,0 +1,26 @@
+{
+	"id":"tools.moimz.imodules.core",
+	"title":"iModules",
+	"version":"4.0.0",
+	"language":"ko",
+	"dependencies":{
+		"php":"8.0.0",
+		"mysql_client":"5.0.0",
+		"mysql_server":"5.6.4",
+		"curl":"*",
+		"zip":"*",
+		"mbstring":"*",
+		"gd":"*",
+		"encrypt":"*",
+		"rewrite":"/process/check"
+	},
+	"requirements":{
+		
+	},
+	"directories":{
+		"configs":"0707"
+	},
+	"configs":"configs.php",
+	"databases":{
+	}
+}
