@@ -52,7 +52,7 @@ class Database {
 		}
 		
 		if ($interface === null) {
-			$this->_parent->printError('NOT_FOUND_DATABASE_INTERFACE',null,$connector);
+			ErrorHandler::view('DATABASE_CONNECT_ERROR',$connector->type.' is not supported.');
 		}
 		
 		/**
@@ -67,16 +67,6 @@ class Database {
 		$this->_interfaces[$name] = $interface;
 		
 		return $this->_interfaces[$name];
-	}
-	
-	/**
-	 * 에러메시지를 출력한다.
-	 *
-	 * @param string $message 에러메시지
-	 * @param ?object $details 에러상세데이터
-	 */
-	public function printError(string $message,?object $details=null):void {
-		ErrorHandler::view('DATABASE_ERROR',$message,$details);
 	}
 }
 ?>
