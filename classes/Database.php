@@ -48,7 +48,7 @@ class Database {
 		$interface = null;
 		
 		if ($connector->type == 'mysql') {
-			$interface = new \Databases\mysql($this);
+			$interface = new \Databases\mysql();
 		}
 		
 		if ($interface === null) {
