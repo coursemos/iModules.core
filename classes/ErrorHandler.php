@@ -1,0 +1,297 @@
+<?php
+/**
+ * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
+ *
+ * 에러 클래스를 정의한다.
+ *
+ * @file /classes/ErrorHandler.php
+ * @author Arzz <arzz@arzz.com>
+ * @license MIT License
+ * @modified 2022. 2. 8.
+ */
+class ErrorHandler {
+	/**
+	 * 에러 클래스를 정의한다.
+	 */
+	private static ErrorHandler $_instance;
+	public static function &init():ErrorHandler {
+		if (empty(self::$_instance) == true) {
+			self::$_instance = new self();
+		
+			/**
+		 	* PHP 에러를 처리하기 위한 핸들러를 선언한다.
+		 	*/
+			error_reporting(E_ALL);
+			ini_set('display_errors',true);
+			register_shutdown_function([self::$_instance,'shutdownHandler']);
+			set_error_handler([self::$_instance,'errorHandler'],E_ALL);
+		}
+		
+		return self::$_instance;
+	}
+	
+	/**
+	 * 언어팩 에러코드 문자열을 가져온다.
+	 *
+	 * @param string $code 에러코드
+	 * @param ?array $placeHolder 치환자
+	 * @return string $message 치환된 메시지
+	 */
+	public static function getText(string $text,?array $placeHolder=null):string {
+		return Language::getInstance()->getText('error/'.$text,$placeHolder);
+	}
+	
+	/**
+	 * HTTP 에러코드를 지정한다.
+	 *
+	 * @param int $code HTTP 에러코드
+	 */
+	public static function code(int $code):void {
+		$codes = [
+			200=>'OK',
+			307=>'Temporary Redirect',
+			308=>'Permanent Redirect',
+			400=>'Bad Request',
+			401=>'Unauthorized',
+			403=>'Forbidden',
+			404=>'Not Found',
+			405=>'Method Not Allowed',
+			406=>'Not Acceptable',
+			413=>'Content Too Large',
+			414=>'URI Too Long'
+		];
+		
+		if (headers_sent() === false && isset($codes[$code]) == true) {
+			header('HTTP/1.1 '.$code.' '.$codes[$code]);
+		}
+	}
+	
+	/**
+	 * 에러메시지를 가져온다.
+	 *
+	 * @param string|object $code 에러코드 또는 에러 객체
+	 * @param ?string $message 에러메시지
+	 * @param ?object $details 에러와 관련된 추가정보
+	 * @return string $html
+	 */
+	public static function get(string|object $code,?string $message=null,?object $details=null):string {
+		$error = is_object($code) == true ? $code : self::error($code,$message,$details);
+		$error->debugMode = Config::getDebugMode();
+		
+		Html::style(Config::getDir().'/styles/error.css');
+		
+		/**
+		 * $error->stacktrace 가 NULL 인 경우
+		 */
+		if ($error->stacktrace === null) {
+			$error->stacktrace = self::trace();
+		}
+		
+		if (count($error->stacktrace) > 0 && $error->file === null) {
+			$error->file = $error->stacktrace[0]->file;
+			$error->line = $error->stacktrace[0]->line;
+		}
+		
+		/**
+		 * 디버그모드가 아닌경우 사용자 친화적인 에러메시지로 변경한다.
+		 */
+		if ($error->debugModeOnly == true && $error->debugMode == false) {
+			$error->prefix = null;
+			$error->message = self::getText('DESCRIPTION');
+			$error->suffix = self::getText('DESCRIPTION_FOOTER');
+		}
+		
+		ob_start();
+		include Config::getPath().'/includes/error.php';
+		$html = ob_get_clean();
+		
+		return $html;
+	}
+	
+	/**
+	 * 모든 작업을 중단하고, 에러메시지를 출력한다.
+	 *
+	 * @param string|object $code 에러코드 또는 에러 객체
+	 * @param ?string $message 에러메시지
+	 * @param ?object $details 에러와 관련된 추가정보
+	 */
+	public static function view(string|object $code,?string $message=null,?object $details=null):void {
+		if (ob_get_length() !== false) ob_end_clean();
+		
+		$error = self::get($code,$message,$details);
+		
+		Html::title(self::getText('TITLE'));
+		Html::body('data-type','error');
+		
+		exit(Html::tag(
+			Html::header(),
+			$error,
+			Html::footer()
+		));
+	}
+	
+	/**
+	 * debug_backtrace() 의 각 항목의 데이터를 정리한다.
+	 *
+	 * @param ?string $endpoint 디버깅을 종료할 클래스명 (없을 경우 ErrorHandler)
+	 * @return array $trace
+	 */
+	public static function trace(?string $endpoint=null):array {
+		$endpoint ??= 'ErrorHandler';
+		$traces = [];
+		$stacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		
+		$is_stacked = false;
+		for ($i=0, $loop=count($stacktrace);$i<$loop;$i++) {
+			$trace = new stdClass;
+			$trace->caller = isset($stacktrace[$i]) == true && isset($stacktrace[$i]['class']) == true ? $stacktrace[$i]['class'].$stacktrace[$i]['type'] : '';
+			$trace->caller.= isset($stacktrace[$i]) == true && isset($stacktrace[$i]['function']) == true ? $stacktrace[$i]['function'].'()' : '';
+			$trace->method = isset($stacktrace[$i+1]) == true && isset($stacktrace[$i+1]['class']) == true ? $stacktrace[$i+1]['class'].$stacktrace[$i+1]['type'] : '';
+			$trace->method.= isset($stacktrace[$i+1]) == true && isset($stacktrace[$i+1]['function']) == true ? $stacktrace[$i+1]['function'].'()' : '';
+			$trace->file = isset($stacktrace[$i]['file']) == true ? $stacktrace[$i]['file'] : null;
+			$trace->line = isset($stacktrace[$i]['line']) == true ? $stacktrace[$i]['line'] : null;
+			$trace->method = strlen($trace->method) > 0 ? $trace->method : ($trace->file !== null ? basename($trace->file) : 'Unknown');
+			
+			if (str_starts_with($trace->method,$endpoint) == true) {
+				$is_stacked = true;
+				continue;
+			}
+			
+			if ($endpoint == 'ErrorHandler' && $trace->caller == 'ErrorHandler::trace()') {
+				$is_stacked = true;
+				continue;
+			}
+			
+			if ($is_stacked == true) {
+				$trace->lines = $trace->file === null ? [] : self::readFileLine($trace->file,$trace->line - 20,41);
+				$traces[] = $trace;
+			}
+		}
+		
+		return $traces;
+	}
+	
+	/**
+	 * 빈 에러데이터 객체를 가져온다.
+	 *
+	 * @return object $error
+	 */
+	public static function data():object {
+		$error = new stdClass;
+		$error->title = self::getText('TITLE');
+		$error->prefix = null;
+		$error->message = null;
+		$error->suffix = null;
+		$error->file = null;
+		$error->line = null;
+		$error->stacktrace = null;
+		$error->debugModeOnly = false;
+		
+		return $error;
+	}
+	
+	/**
+	 * 에러데이터를 이용해 에러페이지를 출력하기 위한 데이터를 가공한다.
+	 *
+	 * @param string $code 에러코드
+	 * @param ?string $message 에러메시지
+	 * @param ?object $details 에러와 관련된 추가정보
+	 * @return object $error
+	 */
+	public static function error(string $code,?string $message=null,?object $details=null):object {
+		$error = self::data();
+		
+		switch ($code) {
+			case 'PHP_ERROR' :
+				$constances = [
+					E_ERROR=>'ERROR',
+					E_WARNING=>'WARNING',
+					E_PARSE=>'PARSE ERROR',
+					E_NOTICE=>'NOTICE ERROR',
+				];
+				
+				$error->prefix = self::getText('PHP_ERROR');
+				$error->message = ($constances[$details->no] ?? 'UNKNOWN ERROR').' : '.$message;
+				$error->suffix = '<u>'.$details?->file.'</u> on line <b>'.$details->line.'</b>';
+				$error->file = $details->file;
+				$error->line = $details?->line;
+				$error->stacktrace = self::trace();
+				$error->debugModeOnly = true;
+				
+				break;
+				
+			case 'DATABASE_ERROR' :
+				$error->prefix = self::getText('DATABASE_ERROR');
+				$error->message = $message;
+				$error->suffix = $details->query;
+				$error->stacktrace = self::trace('Database');
+				$error->debugModeOnly = true;
+				
+				break;
+				
+			case 'DATABASE_CONNECT_ERROR' :
+				$error->prefix = self::getText('DATABASE_CONNECT_ERROR');
+				$error->message = $message;
+				$error->stacktrace = self::trace('Database');
+				$error->debugModeOnly = true;
+				
+				break;
+				
+			default :
+				$error->prefix = self::getText($code);
+				$error->message = $message;
+		}
+		
+		return $error;
+	}
+	
+	/**
+	 * 파일의 내용을 선택한 라인부터 읽어온다.
+	 *
+	 * @param string $filename 파일명
+	 * @param int $start 읽어올 라인 (0일 경우 파일 시작)
+	 * @param int $limit 읽을 라인수 (0일 경우 파일 끝)
+	 * @return array $lines
+	 */
+	public static function readFileLine(string $filename,int $start=0,int $limit=0):array {
+		if (is_file($filename) === false) return [];
+		
+		$start = max($start,0);
+		$lines = [];
+		$file = file($filename);
+		while (isset($file[$start]) == true && count($lines) < $limit) {
+			$lines[$start] = $file[$start++];
+		}
+		
+		return $lines;
+	}
+	
+	/**
+	 * PHP shutdown_handler 를 정의한다.
+	 * @see register_shutdown_function
+	 */
+	public function shutdownHandler():void {
+		$error = error_get_last();
+		if ($error !== null) {
+			$this->errorHandler($error['type'],$error['message'],$error['file'],$error['line']);
+			exit;
+		}
+	}
+	
+	/**
+	 * PHP error_handler 를 정의한다.
+	 * @see set_error_handler
+	 */
+	public function errorHandler(int $errno,string $errstr,?string $errfile=null,?int $errline=null):bool {
+		if (ob_get_length() !== false) ob_end_clean();
+		
+		$details = new stdClass;
+		$details->no = $errno;
+		$details->file = $errfile;
+		$details->line = $errline;
+		
+		$this->view('PHP_ERROR',$errstr,$details);
+		return true;
+	}
+}
+?>
