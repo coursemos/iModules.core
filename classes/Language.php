@@ -7,13 +7,13 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 9.
  */
 class Language {
 	/**
 	 * 언어팩이 저장될 객체
 	 */
-	private array $_texts = [];
+	private static array $_texts = [];
 	
 	/**
 	 * 싱글톤 방식으로 언어팩 클래스를 선언한다.
@@ -34,12 +34,12 @@ class Language {
 	 */
 	private function _initTexts(string $path,array $codes):void {
 		if (is_dir($this->_getPath($path)) == false) return;
-		if (isset($this->_texts[$path]) == true) return;
+		if (isset(self::$_texts[$path]) == true) return;
 		
-		$this->_texts[$path] = [];
+		self::$_texts[$path] = [];
 		foreach ($codes as $code) {
 			if (is_file($this->_getPath($path).'/'.$code.'.json') == true) {
-				$this->_texts[$path][$code] = json_decode(file_get_contents($this->_getPath($path).'/'.$code.'.json'),JSON_OBJECT_AS_ARRAY);
+				self::$_texts[$path][$code] = json_decode(file_get_contents($this->_getPath($path).'/'.$code.'.json'),JSON_OBJECT_AS_ARRAY);
 			}
 		}
 	}
@@ -88,14 +88,14 @@ class Language {
 		$texts = explode('/',$text);
 		$string = null;
 		foreach ($paths as $path) {
-			if (isset($this->_texts[$path]) == false) {
+			if (isset(self::$_texts[$path]) == false) {
 				$this->_initTexts($path,$codes);
 			}
 			
 			foreach ($codes as $code) {
-				if (isset($this->_texts[$path][$code]) == false) continue;
+				if (isset(self::$_texts[$path][$code]) == false) continue;
 				
-				$string = $this->_texts[$path][$code];
+				$string = self::$_texts[$path][$code];
 				foreach ($texts as $text) {
 					if (isset($string[$text]) == false) {
 						$string = null;
