@@ -47,7 +47,7 @@ class AutoLoader {
 			if ($loader->type == 'psr-4') {
 				$namespaces = explode('\\',$class);
 				$className = array_pop($namespaces);
-				$path = Config::getPath().$loader->basePath.'/'.implode('/',$namespaces).'/'.$loader->sourcePath.'/'.$className.'.php';
+				$path = Config::path().$loader->basePath.'/'.implode('/',$namespaces).'/'.$loader->sourcePath.'/'.$className.'.php';
 				if (is_file($path) == true) {
 					require_once $path;
 					return true;

@@ -51,8 +51,8 @@ class Config {
 	 */
 	public static function package():object {
 		if (empty(self::$_package) == true) {
-			if (is_file(self::getPath().'/package.json') == true) {
-				self::$_package = json_decode(file_get_contents(self::getPath().'/package.json'));
+			if (is_file(self::path().'/package.json') == true) {
+				self::$_package = json_decode(file_get_contents(self::path().'/package.json'));
 				if (self::$_package === null) ErrorHandler::view('PACKAGE_FILE_ERROR');
 			} else {
 				ErrorHandler::view('NOT_FOUND_PACKAGE_FILE');
@@ -67,7 +67,7 @@ class Config {
 	 *
 	 * @return string $path
 	 */
-	public static function getPath():string {
+	public static function path():string {
 		$path = self::get('path') ?? str_replace('/classes','',str_replace('\\','/',__DIR__));
 		return preg_replace('/\/$/','',$path);
 	}
@@ -77,8 +77,8 @@ class Config {
 	 *
 	 * @return string $dir
 	 */
-	public static function getDir():string {
-		$dir = self::get('dir') ?? str_replace($_SERVER['DOCUMENT_ROOT'],'',self::getPath());
+	public static function dir():string {
+		$dir = self::get('dir') ?? str_replace($_SERVER['DOCUMENT_ROOT'],'',self::path());
 		return preg_replace('/\/$/','',$dir);
 	}
 
