@@ -7,7 +7,7 @@
  * @file /classes/Config.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 9.
  */
 class Config {
 	/**
@@ -23,21 +23,15 @@ class Config {
 	/**
 	 * 아이모듈 언어코드
 	 */
-	private array $_languages = [];
+	private static array $_languages = [];
 	
 	/**
-	 * 환경설정 클래스를 정의한다.
+	 * 환경설정을 초기화한다.
 	 *
 	 * @param object $configs 환경설정값
 	 */
-	private static Config $_instance;
-	public static function &init(?object $configs=null):Config {
-		if (empty(self::$_instance) == true) {
-			self::$_instance = new self($configs);
-			if ($configs !== null) self::$_configs = $configs;
-		}
-		
-		return self::$_instance;
+	public static function init(?object $configs=null):void {
+		self::$_configs = $configs;
 	}
 	
 	/**
@@ -95,22 +89,21 @@ class Config {
 	 * @return array|string $languages
 	 */
 	public static function getLanguages(bool $is_primary_only=false):array|string {
-		$config = self::init();
-		if (count($config->_languages) == 0) {
+		if (count(self::$_languages) == 0) {
 			$languages = explode(',',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
 			foreach ($languages as &$language) {
 				$language = substr($language,0,2);
 			}
 
-			$config->_languages = array_unique($languages);
+			self::$_languages = array_unique($languages);
 			
 			// 아이모듈의 기본언어는 한국어이므로, 언어코드목록에 한국어가 없는 경우 포함시킨다.
-			if (in_array('ko',$config->_languages) == false) {
-				$config->_languages[] = 'ko';
+			if (in_array('ko',self::$_languages) == false) {
+				self::$_languages[] = 'ko';
 			}
 		}
 
-		return $is_primary_only == true ? $config->_languages[0] : $config->_languages;
+		return $is_primary_only == true ? self::$_languages[0] : self::$_languages;
 	}
 	
 	/**
