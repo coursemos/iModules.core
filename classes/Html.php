@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 9.
  */
 class Html {
 	/**
@@ -38,7 +38,7 @@ class Html {
 	/**
 	 * <BODY> 태그의  attribute 를 정의한다.
 	 */
-	private static array $_body_attributes = [];
+	private static array $_attributes = [];
 	
 	/**
 	 * HTML 엘리먼트를 생성한다.
@@ -143,7 +143,7 @@ class Html {
 	 * @param ?string $value attribute 값 (NULL 인 경우 빈 attribute 를 추가한다.)
 	 */
 	public static function body(string $attribute,?string $value=null):void {
-		self::$_body_attributes[$attribute] = $value;
+		self::$_attributes[$attribute] = $value;
 	}
 	
 	/**
@@ -199,16 +199,16 @@ class Html {
 		});
 		$header.= self::tag(...array_keys(self::$_heads));
 		
-		$body_attributes = '';
-		foreach (self::$_body_attributes as $key=>$value) {
-			$body_attributes.= ' '.$key;
-			if ($value !== null) $body_attributes.= '="'.$value.'"';
+		$attributes = '';
+		foreach (self::$_attributes as $key=>$value) {
+			$attributes.= ' '.$key;
+			if ($value !== null) $attributes.= '="'.$value.'"';
 		}
 		
 		$header.= self::tag(
 			'',
 			'</head>',
-			'<body'.$body_attributes.'>'
+			'<body'.$attributes.'>'
 		);
 		
 		return $header;
