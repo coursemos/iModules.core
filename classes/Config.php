@@ -40,7 +40,7 @@ class Config {
 	 * @param string $key 가져올 설정값
 	 * @return string|object|null $value
 	 */
-	public static function getConfig(string $key):string|object|null {
+	public static function get(string $key):string|object|null {
 		return self::$_configs?->{$key} ?? null;
 	}
 	
@@ -49,7 +49,7 @@ class Config {
 	 *
 	 * @return object $package
 	 */
-	public static function getPackage():object {
+	public static function package():object {
 		if (empty(self::$_package) == true) {
 			if (is_file(self::getPath().'/package.json') == true) {
 				self::$_package = json_decode(file_get_contents(self::getPath().'/package.json'));
@@ -68,7 +68,7 @@ class Config {
 	 * @return string $path
 	 */
 	public static function getPath():string {
-		$path = self::getConfig('path') ?? str_replace('/classes','',str_replace('\\','/',__DIR__));
+		$path = self::get('path') ?? str_replace('/classes','',str_replace('\\','/',__DIR__));
 		return preg_replace('/\/$/','',$path);
 	}
 	
@@ -78,7 +78,7 @@ class Config {
 	 * @return string $dir
 	 */
 	public static function getDir():string {
-		$dir = self::getConfig('dir') ?? str_replace($_SERVER['DOCUMENT_ROOT'],'',self::getPath());
+		$dir = self::get('dir') ?? str_replace($_SERVER['DOCUMENT_ROOT'],'',self::getPath());
 		return preg_replace('/\/$/','',$dir);
 	}
 
@@ -88,7 +88,7 @@ class Config {
 	 * @param bool $is_primary_only 최우선 언어코드 1개만 반환할지 여부
 	 * @return array|string $languages
 	 */
-	public static function getLanguages(bool $is_primary_only=false):array|string {
+	public static function languages(bool $is_primary_only=false):array|string {
 		if (count(self::$_languages) == 0) {
 			$languages = explode(',',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
 			foreach ($languages as &$language) {
@@ -111,7 +111,7 @@ class Config {
 	 *
 	 * @return bool $is_debug_mode
 	 */
-	public static function getDebugMode():bool {
+	public static function debug():bool {
 		return Request::get('debug') === 'true';
 	}
 }
