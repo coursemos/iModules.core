@@ -38,14 +38,25 @@ class Module {
 	}
 	
 	/**
-	 * 언어팩 에러코드 문자열을 가져온다.
+	 * 언어팩 코드 문자열을 가져온다.
 	 *
-	 * @param string $code 에러코드
+	 * @param string $text 코드
 	 * @param ?array $placeHolder 치환자
 	 * @return string|array $message 치환된 메시지
 	 */
 	public function getText(string $text,?array $placeHolder=null):string|array {
 		return Language::getInstance()->getText($text,$placeHolder,['/modules/'.$this->getName(),'/']);
+	}
+	
+	/**
+	 * 언어팩 에러코드 문자열을 가져온다.
+	 *
+	 * @param string $code 에러코드
+	 * @param ?array $placeHolder 치환자
+	 * @return string $message 치환된 메시지
+	 */
+	public function getErrorText(string $code,?array $placeHolder=null):string {
+		return $this->getText('error/'.$code,$placeHolder);
 	}
 	
 	/**
@@ -119,6 +130,25 @@ class Module {
 	public function getTemplet(string $name,?object $templet_configs=null):Templet {
 		$templet = new Templet($this);
 		return $templet->setTemplet($name,$templet_configs);
+	}
+	
+	/**
+	 * 특수한 에러코드의 경우 에러데이터를 현재 클래스에서 처리하여 에러클래스로 전달한다.
+	 *
+	 * @param string $code 에러코드
+	 * @param ?string $message 에러메시지
+	 * @param ?object $details 에러와 관련된 추가정보
+	 * @return object $error
+	 */
+	public function error(string $code,?string $message=null,?object $details=null):object {
+		$error = ErrorHandler::data();
+		
+		switch ($code) {
+			default :
+				$error->message = ErrorHandler::getText($code);
+		}
+		
+		return $error;
 	}
 }
 ?>
