@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 15.
  */
 class ErrorHandler {
 	/**
@@ -134,14 +134,16 @@ class ErrorHandler {
 	 * debug_backtrace() 의 각 항목의 데이터를 정리한다.
 	 *
 	 * @param ?string $endpoint 디버깅을 종료할 클래스명 (없을 경우 ErrorHandler)
+	 * @param ?array $stacktrace stacktrace 데이터
 	 * @return array $trace
 	 */
-	public static function trace(?string $endpoint=null):array {
+	public static function trace(?string $endpoint=null,?array $stacktrace=null):array {
 		$endpoint ??= 'ErrorHandler';
 		$traces = [];
-		$stacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 		
-		$is_stacked = false;
+		$is_stacked = $stacktrace !== null;
+		$stacktrace ??= debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		
 		for ($i=0, $loop=count($stacktrace);$i<$loop;$i++) {
 			$trace = new stdClass;
 			$trace->caller = isset($stacktrace[$i]) == true && isset($stacktrace[$i]['class']) == true ? $stacktrace[$i]['class'].$stacktrace[$i]['type'] : '';
@@ -204,18 +206,58 @@ class ErrorHandler {
 		switch ($code) {
 			case 'PHP_ERROR' :
 				$constances = [
-					E_ERROR=>'ERROR',
+					E_ERROR=>'FATAL ERROR',
+					E_CORE_ERROR=>'FATAL ERROR',
+					E_COMPILE_ERROR=>'FATAL ERROR',
+					E_PARSE=>'FATAL ERROR',
 					E_WARNING=>'WARNING',
-					E_PARSE=>'PARSE ERROR',
 					E_NOTICE=>'NOTICE ERROR',
 				];
 				
 				$error->prefix = self::getText('PHP_ERROR');
-				$error->message = ($constances[$details->no] ?? 'UNKNOWN ERROR').' : '.$message;
+				$error->message = ($constances[$details->no] ?? 'UNKNOWN ERROR').' : '.nl2br($message);
 				$error->suffix = '<u>'.$details?->file.'</u> on line <b>'.$details->line.'</b>';
 				$error->file = $details->file;
 				$error->line = $details?->line;
-				$error->stacktrace = self::trace();
+				
+				/**
+				 * FATAL 에러인 경우, message 에 stack trace 가 존재하는 경우 외에 stacktrace 를 비운다.
+				 */
+				if (in_array($details->no,[E_ERROR,E_CORE_ERROR,E_COMPILE_ERROR,E_PARSE]) == true) {
+					$stacktrace = [];
+					$temp = explode('Stack trace:',$message);
+					if (count($temp) == 2) {
+						if (preg_match_all('/#([0-9]+) (.*?)\(([0-9]+)\): (.*?)(::|->)+(.*?)\((.*?)\)/',$temp[1],$matches,PREG_SET_ORDER) == true) {
+							foreach ($matches as $match) {
+								$item = [];
+								$item['file'] = $match[2];
+								$item['line'] = $match[3];
+								if (count($match) > 4) {
+									$item['class'] = $match[4];
+									$item['type'] = $match[5];
+									$item['function'] = $match[6];
+								} else {
+									$item['function'] = $match[4];
+								}
+								
+								$stacktrace[] = $item;
+							}
+						}
+					}
+					
+					if (count($stacktrace) > 0) {
+						$error->message = ($constances[$details->no] ?? 'UNKNOWN ERROR').' : '.nl2br(trim($temp[0]));
+					}
+					
+					$item = [];
+					$item['file'] = $details->file;
+					$item['line'] = $details->line;
+					array_unshift($stacktrace,$item);
+					
+					$error->stacktrace = self::trace(null,$stacktrace);
+				} else {
+					$error->stacktrace = self::trace();
+				}
 				$error->debugModeOnly = true;
 				
 				break;
