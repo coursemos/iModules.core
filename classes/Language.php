@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 9.
+ * @modified 2022. 2. 15.
  */
 class Language {
 	/**
@@ -51,7 +51,7 @@ class Language {
 	 * @return string $path 루트폴더를 포함한 언어팩 탐색 경로
 	 */
 	private function _getPath(string $path):string {
-		return Config::getPath().($path == '/' ? '' : $path).'/languages';
+		return Config::path().($path == '/' ? '' : $path).'/languages';
 	}
 	
 	/**
@@ -84,7 +84,7 @@ class Language {
 	 */
 	public function getText(string $text,?array $placeHolder=null,?array $paths=null,?array $codes=null):string|array {
 		$paths ??= ['/'];
-		$codes ??= Config::getLanguages();
+		$codes ??= Config::languages();
 		$texts = explode('/',$text);
 		$string = null;
 		foreach ($paths as $path) {
