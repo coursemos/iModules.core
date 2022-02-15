@@ -4,10 +4,10 @@
  *
  * 사이트 최초 접속시 실행되는 파일로 기본설정을 불러오고 아이모듈 코어 클래스를 선언하여 요청된 페이지를 반환한다.
  * 
- * @file index.php
- * @author Arzz
+ * @file /index.php
+ * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 1. 30.
+ * @modified 2022. 2. 15.
  */
 require_once './configs/init.php';
 
@@ -16,6 +16,6 @@ require_once './configs/init.php';
  * 
  * @see /classes/iModules.class.php
  */
-$IM = new iModules();
+$IM = iModules::getInstance();
 $IM->route();
 ?>
