@@ -39,7 +39,7 @@ class Modules {
 	 * 모듈 클래스를 불러온다.
 	 *
 	 * @param string $name 모듈명
-	 * @param array $routes 모듈 콘텍스트가 시작된 경로
+	 * @param array $routes 모듈 컨텍스트가 시작된 경로
 	 * @return mixed $class 모듈클래스 (모듈이 설치되어 있지 않은 경우 NULL 을 반환한다.)
 	 */
 	public static function get(string $name,array $routes=[]):mixed {
