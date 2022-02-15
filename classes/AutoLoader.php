@@ -25,7 +25,7 @@ class AutoLoader {
 			self::$_instance = new self();
 		}
 		
-		$loader = new stdClass;
+		$loader = new stdClass();
 		$loader->type = 'psr-4';
 		$loader->basePath = $basePath;
 		$loader->sourcePath = $sourcePath;
