@@ -9,7 +9,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 4.0.0
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 15.
  */
 class iModules {
 	/**
@@ -73,8 +73,6 @@ class iModules {
 		if (in_array($this->getRouteTarget(),['web','admin','process']) == true) {
 			$this->session_start();
 		}
-		
-		echo $a;
 	}
 	
 	/**
