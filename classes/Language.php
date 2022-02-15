@@ -85,7 +85,7 @@ class Language {
 	public function getText(string $text,?array $placeHolder=null,?array $paths=null,?array $codes=null):string|array {
 		$paths ??= ['/'];
 		$codes ??= Config::languages();
-		$texts = explode('/',$text);
+		$keys = explode('/',$text);
 		$string = null;
 		foreach ($paths as $path) {
 			if (isset(self::$_texts[$path]) == false) {
@@ -96,12 +96,12 @@ class Language {
 				if (isset(self::$_texts[$path][$code]) == false) continue;
 				
 				$string = self::$_texts[$path][$code];
-				foreach ($texts as $text) {
-					if (isset($string[$text]) == false) {
+				foreach ($keys as $key) {
+					if (isset($string[$key]) == false) {
 						$string = null;
 						break;
 					}
-					$string = $string[$text];
+					$string = $string[$key];
 				}
 				
 				if ($string !== null) return $this->_replacePlaceHolder($string,$placeHolder);
