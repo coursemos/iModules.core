@@ -145,7 +145,7 @@ class ErrorHandler {
 		$stacktrace ??= debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 		
 		for ($i=0, $loop=count($stacktrace);$i<$loop;$i++) {
-			$trace = new stdClass;
+			$trace = new stdClass();
 			$trace->caller = isset($stacktrace[$i]) == true && isset($stacktrace[$i]['class']) == true ? $stacktrace[$i]['class'].$stacktrace[$i]['type'] : '';
 			$trace->caller.= isset($stacktrace[$i]) == true && isset($stacktrace[$i]['function']) == true ? $stacktrace[$i]['function'].'()' : '';
 			$trace->method = isset($stacktrace[$i+1]) == true && isset($stacktrace[$i+1]['class']) == true ? $stacktrace[$i+1]['class'].$stacktrace[$i+1]['type'] : '';
@@ -179,7 +179,7 @@ class ErrorHandler {
 	 * @return object $error
 	 */
 	public static function data():object {
-		$error = new stdClass;
+		$error = new stdClass();
 		$error->title = self::getText('TITLE');
 		$error->prefix = null;
 		$error->message = null;
@@ -327,7 +327,7 @@ class ErrorHandler {
 	public function errorHandler(int $errno,string $errstr,?string $errfile=null,?int $errline=null):bool {
 		if (ob_get_length() !== false) ob_end_clean();
 		
-		$details = new stdClass;
+		$details = new stdClass();
 		$details->no = $errno;
 		$details->file = $errfile;
 		$details->line = $errline;
