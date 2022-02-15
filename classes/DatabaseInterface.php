@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 2. 16.
  */
 abstract class DatabaseInterface {
 	/**
@@ -363,7 +363,14 @@ abstract class DatabaseInterface {
 	 * @param ?string $field 필드명 (필드명을 지정할 경우, 컬럼명->컬럼값이 아닌 해당 필드명의 값만 반환한다.)
 	 * @return mixed $item
 	 */
-	public abstract function getOne(?string $field=null);
+	public abstract function getOne(?string $field=null):mixed;
+	
+	/**
+	 * 현재까지 쿼리빌더에 의해 생성된 쿼리를 복제한다.
+	 *
+	 * @return DatabaseInterface $copy 복제된 쿼리빌더 클래스
+	 */
+	public abstract function copy():DatabaseInterface;
 	
 	/**
 	 * 마지막에 실행된 쿼리문을 가져온다.
