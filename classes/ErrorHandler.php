@@ -76,9 +76,9 @@ class ErrorHandler {
 	 */
 	public static function get(string|object $code,?string $message=null,?object $details=null):string {
 		$error = is_object($code) == true ? $code : self::error($code,$message,$details);
-		$error->debugMode = Config::getDebugMode();
+		$error->debugMode = Config::debug();
 		
-		Html::style(Config::getDir().'/styles/error.css');
+		Html::style(Config::dir().'/styles/error.css');
 		
 		/**
 		 * $error->stacktrace 가 NULL 인 경우
@@ -102,7 +102,7 @@ class ErrorHandler {
 		}
 		
 		ob_start();
-		include Config::getPath().'/includes/error.php';
+		include Config::path().'/includes/error.php';
 		$html = ob_get_clean();
 		
 		return $html;
