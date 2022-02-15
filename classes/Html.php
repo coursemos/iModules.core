@@ -7,13 +7,18 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 9.
+ * @modified 2022. 2. 15.
  */
 class Html {
 	/**
 	 * <HEAD> 태그내에 포함될 태그를 정의한다.
 	 */
 	private static array $_heads = [];
+	
+	/**
+	 * <META NAME="ROBOTS"> 태그에 들어갈 설정을 정의한다.
+	 */
+	private static string $_robots = 'all';
 	
 	/**
 	 * 호출되는 스크립트의 우선순위를 정의한다.
@@ -107,6 +112,18 @@ class Html {
 	}
 	
 	/**
+	 * 현재 페이지의 검색로봇 규칙을 설정한다.
+	 * SEO를 위해 사용된다.
+	 * 
+	 * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ko
+	 * @param string $robots
+	 * @return null
+	 */
+	public static function robots(string $robots):void {
+		self::$_robots = $robots;
+	}
+	
+	/**
 	 * 스타일시트를 추가한다.
 	 *
 	 * @param string $path 스타일시트 경로
@@ -176,6 +193,7 @@ class Html {
 		self::_head(self::element('title',null,self::$_title ?? 'NONAME'),1);
 		self::_head(self::element('meta',['name'=>'description','content'=>self::$_description]),2);
 		self::_head(self::element('meta',['name'=>'viewport','content'=>'user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width']),3);
+		self::_head(self::element('meta',['name'=>'robots','content'=>self::$_robots]),4);
 		
 		/**
 		 * 스크립트 경로를 <HEAD>에 추가한다.
