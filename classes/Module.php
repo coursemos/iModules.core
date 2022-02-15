@@ -93,6 +93,23 @@ class Module {
 	}
 	
 	/**
+	 * 모듈이 시작된 경로를 포함하여, 모듈 내부 경로에 따른 URL 주소를 가져온다.
+	 *
+	 * @param string|int ...$routes 모듈 내부 경로 (NULL 인 경우 해당하는 현재 경로로 대체된다.)
+	 * @return string $url
+	 */
+	public function getRouteUrl(string|int ...$routes):string {
+		$move = $this->_routes;
+		foreach ($routes as $index=>$route) {
+			$route ??= $this->getRouteAt($index);
+			if ($route == null) break;
+			$move[] = $route;
+		}
+		
+		return iModules::getInstance()->getRouteUrl($move);
+	}
+	
+	/**
 	 * 템플릿 클래스를 가져온다.
 	 *
 	 * @param string $name 템플릿명
