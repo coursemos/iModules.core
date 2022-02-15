@@ -32,7 +32,7 @@ class iModules {
 	private array $_routes = [];
 	
 	/**
-	 * 경로에 연결된 콘텍스트 정보
+	 * 경로에 연결된 컨텍스트 정보
 	 * 한번 초기화한 데이터를 재사용할 수 있도록 static 으로 지정한다.
 	 */
 	private static array $_routings = [];
@@ -226,7 +226,7 @@ class iModules {
 	}
 	
 	/**
-	 * 전체 콘텍스트를 정보를 초기화한다.
+	 * 전체 컨텍스트를 정보를 초기화한다.
 	 */
 	private function _initContexts():void {
 		/**
@@ -235,7 +235,7 @@ class iModules {
 		if (self::$_sites === null) $this->_initSites();
 		
 		/**
-		 * 전체 콘텍스트 정보를 가져온다.
+		 * 전체 컨텍스트 정보를 가져온다.
 		 * todo:  캐시처리
 		 */
 		if (false) {
@@ -244,12 +244,12 @@ class iModules {
 			self::$_contexts = [];
 			
 			/**
-			 * 전체 사이트 목록을 가져와서 각 사이트별로 콘텍스트를 초기화한다.
+			 * 전체 사이트 목록을 가져와서 각 사이트별로 컨텍스트를 초기화한다.
 			 */
 			foreach (self::$_sites as $site) {
 				/**
-				 * 각 사이트의 인덱스 최상위 콘텍스트 객체를 정의한다.
-				 * 하위 콘텍스트가 저장되는 children 배열을 선언한다. (1차 메뉴)
+				 * 각 사이트의 인덱스 최상위 컨텍스트 객체를 정의한다.
+				 * 하위 컨텍스트가 저장되는 children 배열을 선언한다. (1차 메뉴)
 				 */
 				self::$_contexts[$site->domain.'@'.$site->language] = new stdClass();
 				self::$_contexts[$site->domain.'@'.$site->language]->index = null;
@@ -267,13 +267,13 @@ class iModules {
 					
 					/**
 					 * 경로 경로가 / 인 경우 해당 사이트의 index 에 페이지를 할당하고,
-					 * 그렇지 않은 경우 경로에 따라 부모 콘텍스트의 children 배열에 추가한다.
+					 * 그렇지 않은 경우 경로에 따라 부모 컨텍스트의 children 배열에 추가한다.
 					 */
 					if ($context->route == '/') {
 						self::$_contexts[$context->domain.'@'.$context->language]->index = $context;
 					} else {
 						/**
-						 * 부모 콘텍스트 객체
+						 * 부모 컨텍스트 객체
 						 */
 						$parent = self::$_contexts[$site->domain.'@'.$site->language];
 						
@@ -283,7 +283,7 @@ class iModules {
 						$routes = explode('/',substr($context->route,1));
 						foreach ($routes as $index=>$route) {
 							/**
-							 * n차 콘텍스트 객체가 존재하지 않을 경우, 콘텍스트 객체를 초기화한다. (1차메뉴 객체 구조와 동일)
+							 * n차 컨텍스트 객체가 존재하지 않을 경우, 컨텍스트 객체를 초기화한다. (1차메뉴 객체 구조와 동일)
 							 */
 							if (isset($parent->children[$route]) === false) {
 								$parent->children[$route] = new stdClass();
@@ -297,7 +297,7 @@ class iModules {
 						}
 						
 						/**
-						 * 마지막 부모 콘텍스트의 index 에 현재 페이지 정보를 할당한다.
+						 * 마지막 부모 컨텍스트의 index 에 현재 페이지 정보를 할당한다.
 						 */
 						$lastParent->children[$route]->index = $context;
 					}
@@ -533,15 +533,15 @@ class iModules {
 	}
 	
 	/**
-	 * 경로에 따른 콘텍스트를 가져온다.
+	 * 경로에 따른 컨텍스트를 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 콘텍스트 페이지
+	 * @return ?object $context 컨텍스트 페이지
 	 */
 	public function getContext(?array $routes=null,?object $site=null):?object {
 		/**
-		 * 전체 콘텍스트 정보가 없다면, 전체 콘텍스트를 초기화한다.
+		 * 전체 컨텍스트 정보가 없다면, 전체 컨텍스트를 초기화한다.
 		 */
 		if (self::$_contexts === null) $this->_initContexts();
 		
@@ -557,7 +557,7 @@ class iModules {
 		foreach ($routes as $route) {
 			if (isset($context->children[$route]) == true) {
 				/**
-				 * 현재 단계의 콘텍스트가 자체적인 세부 경로를 가질 경우 현재 단계를 반환한다.
+				 * 현재 단계의 컨텍스트가 자체적인 세부 경로를 가질 경우 현재 단계를 반환한다.
 				 */
 				$context = $context->children[$route];
 				if ($context->index?->is_routing === true) break;
@@ -573,11 +573,11 @@ class iModules {
 	}
 	
 	/**
-	 * 경로에 따른 콘텍스트 인덱스를 가져온다.
+	 * 경로에 따른 컨텍스트 인덱스를 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 콘텍스트 페이지
+	 * @return ?object $context 컨텍스트 페이지
 	 */
 	public function getContextIndex(?array $routes=null,?object $site=null):?object {
 		$context = $this->getContext($routes,$site);
@@ -585,7 +585,7 @@ class iModules {
 	}
 	
 	/**
-	 * 현재 콘텍스트가 시작된 경로를 가져온다.
+	 * 현재 컨텍스트가 시작된 경로를 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로를 검색할 사이트객체
@@ -597,11 +597,11 @@ class iModules {
 	}
 	
 	/**
-	 * 경로에 따른 콘텍스트의 자식 콘텍스트를 가져온다.
+	 * 경로에 따른 컨텍스트의 자식 컨텍스트를 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 콘텍스트 페이지
+	 * @return ?object $context 컨텍스트 페이지
 	 */
 	public function getContextChildren(?array $routes=null,?object $site=null):array {
 		$context = $this->getContext($routes,$site);
@@ -609,7 +609,7 @@ class iModules {
 	}
 	
 	/**
-	 * 특정 경로에 해당하는 콘텍스트 문서(HTML)를 가져온다.
+	 * 특정 경로에 해당하는 컨텍스트 문서(HTML)를 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로를 검색할 사이트객체
@@ -623,7 +623,7 @@ class iModules {
 		$routes = $this->getContextRoutes($routes,$site);
 		
 		/**
-		 * 콘텍스트 타입에 따라 콘텍스트 문서를 가져온다.
+		 * 컨텍스트 타입에 따라 컨텍스트 문서를 가져온다.
 		 */
 		$document = '';
 		switch ($context->type) {
@@ -739,7 +739,7 @@ class iModules {
 	}
 	
 	/**
-	 * 외부파일에서 콘텍스트 문서(HTML)을 가져온다.
+	 * 외부파일에서 컨텍스트 문서(HTML)을 가져온다.
 	 *
 	 * @param string $name 템플릿명
 	 * @param string $filename 외부파일명
@@ -763,7 +763,7 @@ class iModules {
 				if ($this->getTheme()->getName() === $name) {
 					return $this->getTheme()->getFile($filename);
 				} else {
-					$details = new stdClass;
+					$details = new stdClass();
 					$details->theme = $name;
 					$details->filename = $filename;
 					return ErrorHandler::get($this->error('NOT_MATCHED_FILE_THEME',null,$details));
@@ -775,15 +775,15 @@ class iModules {
 	}
 	
 	/**
-	 * 외부파일에서 콘텍스트 문서(HTML)을 가져온다.
+	 * 외부파일에서 컨텍스트 문서(HTML)을 가져온다.
 	 *
 	 * @param string $module 모듈명
-	 * @param string $context 콘텍스트명
+	 * @param string $context 컨텍스트명
 	 * @return int $document 문서내용(HTML)
 	 */
 	public function getDocumentFromModule(string $module,string $context,?object $configs=null,?array $routes=null):string {
 		/**
-		 * 모듈 콘텍스트가 시작된 경로를 지정한다.
+		 * 모듈 컨텍스트가 시작된 경로를 지정한다.
 		 */
 		$routes ??= $this->getContextRoutes();
 		
@@ -840,8 +840,8 @@ class iModules {
 		// todo: 이벤트발생
 		
 		/**
-		 * 현재 경로에 해당하는 콘텍스트 HTML 을 가져온다.
-		 * 콘텍스트가 NULL 인 경우, 404 에러를 출력한다.
+		 * 현재 경로에 해당하는 컨텍스트 HTML 을 가져온다.
+		 * 컨텍스트가 NULL 인 경우, 404 에러를 출력한다.
 		 */
 		$context = $this->getDocument();
 		
@@ -877,7 +877,7 @@ class iModules {
 	 * @param ?object $details 에러와 관련된 추가정보
 	 * @return object $error
 	 */
-	public static function error(string $code,?string $message=null,?object $details=null):object {
+	public function error(string $code,?string $message=null,?object $details=null):object {
 		$error = ErrorHandler::data();
 		
 		switch ($code) {
