@@ -1,0 +1,17 @@
+{
+	"error":{
+		"TITLE":"문제가 발생하였습니다.",
+		"DESCRIPTION":"현재 요청을 처리하던 도중 예상치못한 문제가 발생하였습니다.<br>페이지를 새로고침하시거나, 다시 시도해보시기 바랍니다.",
+		"DESCRIPTION_FOOTER":"현재 오류에 대해 자동으로 관리자에게 보고되었습니다.",
+		"PHP_ERROR":"PHP 처리중 에러가 발생하였습니다.",
+		"DATABASE_ERROR":"데이터베이스 에러가 발생하였습니다.",
+		"DATABASE_CONNECT_ERROR":"데이터베이스에 접속할 수 없습니다.",
+		"SITE_ERROR":"사이트에 접속할 수 없습니다.",
+		"NOT_FOUND_SITE":"현재 도메인을 가진 웹사이트가 존재하지 않습니다.",
+		"CONTEXT_ERROR":"본문 콘텐츠를 가져올 수 없습니다.",
+		"NOT_MATCHED_FILE_THEME":"현재 사이트의 테마(${theme})에서만 외부파일을 불러올 수 있습니다.",
+		"TEMPLET_ERROR":"템플릿 에러가 발생하였습니다.",
+		"NOT_FOUND_TEMPLET":"템플릿을 찾을 수 없습니다.",
+		"NOT_FOUND_TEMPLET_FILE":"템플릿 파일을 찾을 수 없습니다."
+	}
+}
