@@ -68,7 +68,7 @@ class Format {
 			break;
 	
 			/**
-		 	* URL 주소를 인코딩한다.
+		 	* URL을 인코딩한다.
 		 	*/
 			case 'encode' :
 				$str = urlencode($str);
