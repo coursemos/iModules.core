@@ -208,7 +208,7 @@ class iModules {
 	 */
 	private function _initRoutes():void {
 		/**
-		 * URL에 따라 경로 경로를 초기화한다.
+		 * URL에 따라 경로를 초기화한다.
 		 */
 		$route = Request::get('route') !== null && is_string(Request::get('route')) == true ? preg_replace('/^([^\/])/','/\0',Request::get('route')) : '/';
 		$this->_routes = explode('/',$route);
@@ -407,17 +407,24 @@ class iModules {
 	}
 	
 	/**
-	 * 현재 사이트정보를 가져온다.
-	 * 
-	 * @return object $site
+	 * 사이트정보를 가져온다.
+	 *
+	 * @param ?string $domain 도메인명 (NULL인 경우 현재 사이트 도메인)
+	 * @param ?string $language 언어코드 (NULL인 경우 현재 사이트 언어코드)
+	 * @return ?object $site
 	 */
-	public function getSite():object {
+	public function getSite(?string $domain=null,?string $language=null):?object {
 		/**
 		 * 현재 사이트정보가 없다면, 전체 사이트를 초기화한다.
 		 */
 		if ($this->_site === null) $this->_initSite();
 		
-		return $this->_site;
+		if ($domain === null && $language === null) return $this->_site;
+		
+		$domain ??= $this->_site->domain;
+		$language ??= $this->_site->language;
+		
+		return isset(self::$_sites[$domain.'@'.$language]) == true ? self::$_sites[$domain.'@'.$language] : null;
 	}
 	
 	/**
@@ -489,7 +496,7 @@ class iModules {
 	}
 	
 	/**
-	 * 경로의 URL 경로를 가져온다.
+	 * 경로의 URL을 가져온다.
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로 경로 기준 사이트 (없을 경우 현재 사이트)
@@ -498,10 +505,15 @@ class iModules {
 	 */
 	public function getRouteUrl(?array $routes=null,?object $site=null,bool $is_site_url=false):string {
 		/**
-		 * 경로 URL 경로를 가져오기 위한 기본 경로를 계산한다.
-		 * 기본 경로에는 설정에 따라 사이트 전체주소 또는 모임즈툴즈 상대경로가 포함된다.
+		 * 경로 URL을 가져오기 위한 기본 경로를 계산한다.
+		 * 기본 경로에는 설정에 따라 사이트 전체주소 또는 아이모듈 상대경로가 포함된다.
 		 */
-		$url = $is_site_url === true || $site !== null ? $this->getSiteUrl($site,false) : Config::dir();
+		if ($site !== null) {
+			if ($this->getSite()->domain != $site->domain || $this->getSite()->language != $site->language) {
+				$is_site_url = true;
+			}
+		}
+		$url = $is_site_url === true ? $this->getSiteUrl($site,false) : Config::dir();
 		
 		$site ??= $this->getSite();
 		$domain = $this->getDomain($site !== null ? $site->domain : null);
@@ -530,6 +542,158 @@ class iModules {
 		}
 		
 		return $url.($domain->is_rewrite === true ? $routeUrl : (strlen($routeUrl) > 0 ? '/?route='.$routeUrl : ''));
+	}
+	
+	/**
+	 * 전체 컨텍스트에서 원하는 컨텍스트를 가져온다.
+	 *
+	 * @param string $type 컨텍스트타입
+	 * @param string $target 컨텍스트대상
+	 * @param string $context 컨텍스트명
+	 * @return array $contexts
+	 */
+	public function getContexts(string $type,string $target,string $context,?array $contexts=null):array {
+		/**
+		 * 전체 컨텍스트 정보가 없다면, 전체 컨텍스트를 초기화한다.
+		 */
+		if (self::$_contexts === null) $this->_initContexts();
+		
+		$matches = [];
+		$contexts ??= self::$_contexts;
+		foreach ($contexts as $item) {
+			// todo: 컨텍스트를 볼 수 있는 권한을 체크하여 볼 수 있는 권한이 존재하는 컨텍스트만 포함하도록...
+			if ($item->index?->type == $type && $item->index?->target == $target && $item->index?->context == $context) {
+				$matches[] = $item->index;
+			}
+			
+			/**
+			 * 자식 컨텍스트에서 재귀함수 방식으로 검색한다.
+			 */
+			$matches = array_merge($matches,$this->getContexts($type,$target,$context,$item->children,$matches));
+		}
+		
+		return $matches;
+	}
+	
+	/**
+	 * 특정 컨텍스트를 가지는 경로의 URL을 가져온다.
+	 *
+	 * @param string $type 컨텍스트타입
+	 * @param string $target 컨텍스트대상
+	 * @param string $context 컨텍스트명
+	 * @param ?array $extacts 반드시 일치해야하는 컨텍스트 옵션
+	 * @param ?array $options 가급적 일치해야하는 컨텍스트 옵션
+	 * @param bool $is_same_domain 현재 도메인 우선모드 (기본값 : false, true 일 경우 같은 도메인일 경우 우선, false 일 경우 $options 설정값에 우선)
+	 * @param bool $is_site_url 사이트주소 포함여부 (기본값 : false)
+	 * @return ?string $url
+	 */
+	public function getContextUrl(string $type,string $target,string $context,?array $exacts=null,?array $options=null,bool $is_same_domain=false,bool $is_site_url=false):?string {
+		/**
+		 * 전체 컨텍스트 목록에서 컨텍스트타입과 컨텍스트대상, 컨텍스트명이 일치하는 컨텍스트를 찾는다.
+		 */
+		$matches = $this->getContexts($type,$target,$context);
+		
+		/**
+		 * 일치하는 컨텍스트가 없는 경우 NULL 을 반환한다.
+		 */
+		if (count($matches) == 0) return null;
+		
+		/**
+		 * 반드시 일치해야하는 설정값을 가진 컨텍스트를 탐색한다.
+		 */
+		$exacts ??= [];
+		$filters = [];
+		foreach ($matches as $match) {
+			$is_matched = true;
+			foreach ($exacts as $key=>$value) {
+				if (isset($match->context_configs->$key) == false || $match->context_configs->$key != $value) {
+					$is_matched = false;
+					break;
+				}
+			}
+			
+			if ($is_matched == true) $filters[] = $match;
+		}
+		$matches = $filters;
+		
+		/**
+		 * 일치하는 컨텍스트가 없는 경우 NULL 을 반환한다.
+		 */
+		if (count($matches) == 0) return null;
+		
+		/**
+		 * 일치하는 컨텍스트가 유일할 경우 해당 컨텍스트 URL을 반환한다.
+		 */
+		if (count($matches) == 1) {
+			$routes = strlen(preg_replace('/^\//','',$matches[0]->route)) > 0 ? explode('/',preg_replace('/^\//','',$matches[0]->route)) : [];
+			$site = $this->getSite($matches[0]->domain,$matches[0]->language);
+			return $this->getRouteUrl($routes,$site,$is_site_url);
+		}
+		
+		/**
+		 * 설정과 일치하는 컨텍스트가 2개 이상일 경우, 다음 조건을 적용하여 계속 탐색한다.
+		 */
+		$filters = [];
+		
+		/**
+		 * 현재 도메인 우선모드일 경우, 현재 도메인과 일치하는 컨텍스트만 재탐색한다.
+		 */
+		if ($is_same_domain == true) {
+			foreach ($matches as $match) {
+				if ($match->domain == $this->getSite()->domain && $match->language == $this->getSite()->language) $filters[] = $match;
+			}
+			
+			if (count($filters) == 0) {
+				foreach ($matches as $match) {
+					if ($match->domain == $this->getSite()->domain) $filters[] = $match;
+				}
+			}
+			
+			/**
+			 * 현재 도메인과 일치하는 컨텍스트가 있는 경우
+			 */
+			if (count($filters) > 0) $matches = $filters;
+			
+			/**
+			 * 일치하는 컨텍스트가 유일할 경우 해당 컨텍스트 URL을 반환한다.
+			 */
+			if (count($matches) == 1) {
+				$routes = strlen(preg_replace('/^\//','',$matches[0]->route)) > 0 ? explode('/',preg_replace('/^\//','',$matches[0]->route)) : [];
+				$site = $this->getSite($matches[0]->domain,$matches[0]->language);
+				return $this->getRouteUrl($routes,$site,$is_site_url);
+			}
+		}
+		
+		/**
+		 * 설정과 일치하는 컨텍스트가 2개 이상일 경우, 다음 조건을 적용하여 계속 탐색한다.
+		 */
+		$filters = [];
+		
+		/**
+		 * $options 설정과 일치하는 설정값 갯수를 구한다.
+		 */
+		$options ??= [];
+		foreach ($matches as &$match) {
+			$match->matched_options = 0;
+			foreach ($options as $key=>$value) {
+				if (isset($match->context_configs->$key) == true && $match->context_configs->$key == $value) $match->matched_options++;
+			}
+		}
+		
+		/**
+		 * 일치하는 설정값 갯수로 정렬한다.
+		 */
+		usort($matches,function($left,$right) {
+			return $left->matched_options <=> $right->matched_options;
+		});
+		
+		/**
+		 * 가장 많이 일치한 컨텍스트 URL을 반환한다.
+		 */
+		$match = array_pop($matches);
+		$routes = strlen(preg_replace('/^\//','',$match->route)) > 0 ? explode('/',preg_replace('/^\//','',$match->route)) : [];
+		$site = $this->getSite($match->domain,$match->language);
+		return $this->getRouteUrl($routes,$site,$is_site_url);
 	}
 	
 	/**
