@@ -7,17 +7,18 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 15.
+ * @modified 2022. 2. 17.
  */
 class Format {
 	/**
 	 * 문자열을 종류에 따라 변환한다.
 	 *
-	 * @param string $str 변환할 문자열
+	 * @param ?string $str 변환할 문자열
 	 * @param string $code 변환종류
 	 * @return string $str 변환된 문자열
 	 */
-	public static function string(string $str,string $code):string {
+	public static function string(?string $str,string $code):string {
+		$str ??= '';
 		switch ($code) {
 			/**
 		 	* input 태그에 들어갈 수 있도록 <, >, " 문자열을 HTML 엔티티 문자열로 변환하고 ' 에 \ 를 추가한다.
@@ -27,7 +28,8 @@ class Format {
 				$str = str_replace('>','&gt;',$str);
 				$str = str_replace('"','&quot;',$str);
 				$str = str_replace("'",'\'',$str);
-			break;
+				
+				break;
 			
 			/**
 		 	* HTML 태그를 HTML 엔티티 문자열로 변환한다.
@@ -36,7 +38,8 @@ class Format {
 				$str = str_replace('<','&lt;',$str);
 				$str = str_replace('>','&gt;',$str);
 				$str = str_replace('"','&quot;',$str);
-			break;
+				
+				break;
 			
 			/**
 		 	* XML 태그에 들어갈 수 있도록 &, <, >, ", ' 문자열을 HTML 엔티티 문자열로 변환한다.
@@ -47,7 +50,8 @@ class Format {
 				$str = str_replace('>','&gt;',$str);
 				$str = str_replace('"','&quot;',$str);
 				$str = str_replace("'",'&apos;',$str);
-			break;
+				
+				break;
 			
 			/**
 		 	* 가장 일반적인 HTML 태그를 제외한 나머지 태그를 제거한다.
@@ -55,7 +59,8 @@ class Format {
 			case 'default' :
 				$allow = '<p>,<br>,<b>,<span>,<a>,<img>,<embed>,<i>,<u>,<strike>,<font>,<center>,<ol>,<li>,<ul>,<strong>,<em>,<div>,<table>,<tr>,<td>';
 				$str = strip_tags($str, $allow);
-			break;
+				
+				break;
 	
 			/**
 		 	* \ 및 태그, HTML 엔티티를 제거한다.
@@ -65,14 +70,16 @@ class Format {
 				$str = strip_tags($str);
 				$str = str_replace('&nbsp;','',$str);
 				$str = str_replace('"','&quot;',$str);
-			break;
+				
+				break;
 	
 			/**
 		 	* URL을 인코딩한다.
 		 	*/
 			case 'encode' :
 				$str = urlencode($str);
-			break;
+				
+				break;
 			
 			/**
 		 	* 정규식에 들어갈 수 있도록 정규식에 사용되는 문자열을 치환한다.
@@ -91,7 +98,8 @@ class Format {
 				$str = str_replace('^','\^',$str);
 				$str = str_replace('$','\$',$str);
 				$str = str_replace('/','\/',$str);
-			break;
+				
+				break;
 			
 			/**
 		 	* 데이터베이스 인덱스에 사용할 수 있게 HTML태그 및 HTML엔티티, 그리고 불필요한 공백문자를 제거한다.
@@ -106,6 +114,8 @@ class Format {
 				$str = preg_replace('/&[a-z]+;/',' ',$str);
 				$str = str_replace("\t",' ',$str);
 				$str = preg_replace('/[ ]+/',' ',$str);
+				
+				break;
 		}
 		
 		return trim($str);
