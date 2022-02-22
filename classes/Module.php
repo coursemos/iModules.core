@@ -13,7 +13,7 @@ class Module {
 	/**
 	 * 현재 모듈이 시작된 경로를 초기화한다.
 	 */
-	protected array $_routes = [];
+	private array $_routes = [];
 	
 	/**
 	 * 각 모듈에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
@@ -66,6 +66,15 @@ class Module {
 	 */
 	public function getName():string {
 		return lcfirst(preg_replace('/^Module/','',get_class($this)));
+	}
+	
+	/**
+	 * 현재 모듈의 상태경로를 가져온다.
+	 *
+	 * @return string $dir
+	 */
+	public function getDir():string {
+		return Config::dir().'/modules/'.$this->getName();
 	}
 	
 	/**
