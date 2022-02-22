@@ -500,7 +500,7 @@ class iModules {
 	 *
 	 * @param ?array $routes 경로 경로
 	 * @param ?object $site 경로 경로 기준 사이트 (없을 경우 현재 사이트)
-	 * @param bool $is_site_url 사이트주소 포함여부
+	 * @param bool $is_site_url 사이트주소를 반드시 포함할지 여부 (기본값 : false)
 	 * @return string $url
 	 */
 	public function getRouteUrl(?array $routes=null,?object $site=null,bool $is_site_url=false):string {
@@ -583,11 +583,11 @@ class iModules {
 	 * @param string $context 컨텍스트명
 	 * @param ?array $extacts 반드시 일치해야하는 컨텍스트 옵션
 	 * @param ?array $options 가급적 일치해야하는 컨텍스트 옵션
-	 * @param bool $is_same_domain 현재 도메인 우선모드 (기본값 : false, true 일 경우 같은 도메인일 경우 우선, false 일 경우 $options 설정값에 우선)
-	 * @param bool $is_site_url 사이트주소 포함여부 (기본값 : false)
+	 * @param bool $is_same_domain 현재 도메인 우선모드 (기본값 : true, true 일 경우 같은 도메인일 경우 우선, false 일 경우 $options 설정값에 우선)
+	 * @param bool $is_site_url 사이트주소를 반드시 포함할지 여부 (기본값 : false)
 	 * @return ?string $url
 	 */
-	public function getContextUrl(string $type,string $target,string $context,?array $exacts=null,?array $options=null,bool $is_same_domain=false,bool $is_site_url=false):?string {
+	public function getContextUrl(string $type,string $target,string $context,?array $exacts=null,?array $options=null,bool $is_same_domain=true,bool $is_site_url=false):?string {
 		/**
 		 * 전체 컨텍스트 목록에서 컨텍스트타입과 컨텍스트대상, 컨텍스트명이 일치하는 컨텍스트를 찾는다.
 		 */
