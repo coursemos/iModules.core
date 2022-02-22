@@ -16,6 +16,11 @@ class Module {
 	private array $_routes = [];
 	
 	/**
+	 * 현재 모듈 설정을 초기화한다.
+	 */
+	private ?object $_configs = null;
+	
+	/**
 	 * 각 모듈에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
 	 *
 	 * @param string $name 데이터베이스 인터페이스 고유명
@@ -139,6 +144,22 @@ class Module {
 	public function getTemplet(string $name,?object $templet_configs=null):Templet {
 		$templet = new Templet($this);
 		return $templet->setTemplet($name,$templet_configs);
+	}
+	
+	/**
+	 * 모듈의 환경설정을 가져온다.
+	 *
+	 * @param ?string $key 환경설정코드값 (NULL인 경우 전체 환경설정값)
+	 * @return object|string|null $value 환경설정값
+	 */
+	public function getConfig(?string $key=null):object|string|null {
+		if ($this->_configs === null) {
+			$this->_configs = Modules::getInstalled($this->getName());
+		}
+		
+		if ($key == null) return $this->_configs;
+		elseif ($this->_configs == null || isset($this->_configs->$key) == false) return null;
+		else return $this->_configs->$key;
 	}
 	
 	/**
