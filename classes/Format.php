@@ -21,8 +21,8 @@ class Format {
 		$str ??= '';
 		switch ($code) {
 			/**
-		 	* input 태그에 들어갈 수 있도록 <, >, " 문자열을 HTML 엔티티 문자열로 변환하고 ' 에 \ 를 추가한다.
-		 	*/
+			 * input 태그에 들어갈 수 있도록 <, >, " 문자열을 HTML 엔티티 문자열로 변환하고 ' 에 \ 를 추가한다.
+			 */
 			case 'input' :
 				$str = str_replace('<','&lt;',$str);
 				$str = str_replace('>','&gt;',$str);
@@ -32,8 +32,8 @@ class Format {
 				break;
 			
 			/**
-		 	* HTML 태그를 HTML 엔티티 문자열로 변환한다.
-		 	*/
+			 * HTML 태그를 HTML 엔티티 문자열로 변환한다.
+			 */
 			case 'replace' :
 				$str = str_replace('<','&lt;',$str);
 				$str = str_replace('>','&gt;',$str);
@@ -42,8 +42,8 @@ class Format {
 				break;
 			
 			/**
-		 	* XML 태그에 들어갈 수 있도록 &, <, >, ", ' 문자열을 HTML 엔티티 문자열로 변환한다.
-		 	*/
+			 * XML 태그에 들어갈 수 있도록 &, <, >, ", ' 문자열을 HTML 엔티티 문자열로 변환한다.
+			 */
 			case 'xml' :
 				$str = str_replace('&','&amp;',$str);
 				$str = str_replace('<','&lt;',$str);
@@ -54,8 +54,8 @@ class Format {
 				break;
 			
 			/**
-		 	* 가장 일반적인 HTML 태그를 제외한 나머지 태그를 제거한다.
-		 	*/
+			 * 가장 일반적인 HTML 태그를 제외한 나머지 태그를 제거한다.
+			 */
 			case 'default' :
 				$allow = '<p>,<br>,<b>,<span>,<a>,<img>,<embed>,<i>,<u>,<strike>,<font>,<center>,<ol>,<li>,<ul>,<strong>,<em>,<div>,<table>,<tr>,<td>';
 				$str = strip_tags($str, $allow);
@@ -63,8 +63,8 @@ class Format {
 				break;
 	
 			/**
-		 	* \ 및 태그, HTML 엔티티를 제거한다.
-		 	*/
+			 * \ 및 태그, HTML 엔티티를 제거한다.
+			 */
 			case 'delete' :
 				$str = stripslashes($str);
 				$str = strip_tags($str);
@@ -74,16 +74,16 @@ class Format {
 				break;
 	
 			/**
-		 	* URL을 인코딩한다.
-		 	*/
+			 * URL을 인코딩한다.
+			 */
 			case 'encode' :
 				$str = urlencode($str);
 				
 				break;
 			
 			/**
-		 	* 정규식에 들어갈 수 있도록 정규식에 사용되는 문자열을 치환한다.
-		 	*/
+			 * 정규식에 들어갈 수 있도록 정규식에 사용되는 문자열을 치환한다.
+			 */
 			case 'reg' :
 				$str = str_replace('\\','\\\\',$str);
 				$str = str_replace('[','\[',$str);
@@ -102,8 +102,8 @@ class Format {
 				break;
 			
 			/**
-		 	* 데이터베이스 인덱스에 사용할 수 있게 HTML태그 및 HTML엔티티, 그리고 불필요한 공백문자를 제거한다.
-		 	*/
+			 * 데이터베이스 인덱스에 사용할 수 있게 HTML태그 및 HTML엔티티, 그리고 불필요한 공백문자를 제거한다.
+			 */
 			case 'index' :
 				$str = preg_replace('/<(P|p)>/','',$str);
 				$str = preg_replace('/<\/(P|p)>/',"\n",$str);
@@ -123,7 +123,7 @@ class Format {
 	
 	/**
 	 * UNIXTIMESTAMP 를 주어진 포맷에 따라 변환한다.
- 	*
+	 *
 	 * @param string $format 변환할 포맷 (@see http://php.net/manual/en/function.date.php)
 	 * @param int $time UNIXTIMESTAMP (없을 경우 현재시각)
 	 * @param bool $is_moment momentjs 용 태그를 생성할 지 여부 (@see http://momentjs.com)
@@ -133,8 +133,8 @@ class Format {
 		$time = $time === null ? time() : $time;
 		
 		/**
-	 	* PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
-	 	*/
+		 * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
+		 */
 		$replacements = array(
 			'd' => 'DD',
 			'D' => 'ddd',
@@ -178,6 +178,52 @@ class Format {
 		
 		if ($is_moment == true) return '<time datetime="'.date('c',$time).'" data-time="'.$time.'" data-format="'.$format.'" data-moment="'.$momentFormat.'">'.date($format,$time).'</time>';
 		else return date($format,$time);
+	}
+	
+	/**
+	 * 복호화가 가능한 방식(AES-256-CBC)으로 문자열을 암호화한다.
+	 *
+	 * @param string $value 암호화할 문자열
+	 * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
+	 * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
+	 * @return string $ciphertext
+	 */
+	public static function encoder(string $value,?string $key=null,string $mode='base64') {
+		$key = $key !== null ? md5($key) : md5(Config::get('key'));
+		$padSize = 16 - (strlen($value) % 16);
+		$value = $value.str_repeat(chr($padSize),$padSize);
+		
+		$output = openssl_encrypt($value,'AES-256-CBC',$key,OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,str_repeat(chr(0),16));
+		
+		return $mode == 'base64' ? base64_encode($output) : bin2hex($output);
+	}
+	
+	/**
+	 * 복호화가 가능한 방식(AES-256-CBC)으로 암호화된 문자열을 복호화한다.
+	 *
+	 * @param string $value 암호화된 문자열
+	 * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
+	 * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
+	 * @return string $plaintext
+	 */
+	public static function decoder($value,$key=null,$mode='base64') {
+		$key = $key !== null ? md5($key) : md5(Config::get('key'));
+		$value = $mode == 'base64' ? base64_decode(str_replace(' ','+',$value)) : hex2bin($value);
+		
+		$output = openssl_decrypt($value,'AES-256-CBC',$key,OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,str_repeat(chr(0),16));
+		if ($output === false) return false;
+		
+		$valueLen = strlen($output);
+		if ($valueLen % 16 > 0) return false;
+	
+		$padSize = ord($output[$valueLen - 1]);
+		if (($padSize < 1) || ($padSize > 16)) return false;
+	
+		for ($i=0;$i<$padSize;$i++) {
+			if (ord($output[$valueLen - $i - 1]) != $padSize) return false;
+		}
+		
+		return substr($output,0,$valueLen-$padSize);
 	}
 }
 ?>
