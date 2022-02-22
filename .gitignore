@@ -1,3 +1,15 @@
-.nova
 .DS_Store
+.idea
+.nova
+.project
 configs/configs.php
+/attachments/*
+!/attachments/index.php
+/modules/*
+!/modules/index.php
+/plugins/*
+!/plugins/index.php
+/themes/*
+!/themes/index.php
+/widgets/*
+!/widgets/index.php
