@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 3.
+ * @modified 2022. 2. 25.
  */
 class Module {
 	/**
@@ -137,13 +137,12 @@ class Module {
 	/**
 	 * 템플릿 클래스를 가져온다.
 	 *
-	 * @param string $name 템플릿명
-	 * @param ?object $templet_configs 템플릿 설정
+	 * @param object $templet 템플릿설정
 	 * @return Templet $templet
 	 */
-	public function getTemplet(string $name,?object $templet_configs=null):Templet {
-		$templet = new Templet($this);
-		return $templet->setTemplet($name,$templet_configs);
+	public function getTemplet(object $templet):Templet {
+		$Templet = new Templet($this);
+		return $Templet->setTemplet($templet);
 	}
 	
 	/**
