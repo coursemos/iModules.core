@@ -9,7 +9,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 4.0.0
- * @modified 2022. 2. 15.
+ * @modified 2022. 2. 25.
  */
 class iModules {
 	/**
@@ -197,7 +197,7 @@ class iModules {
 			self::$_sites = [];
 			$sites = $this->db()->select()->from($this->table('sites'))->get();
 			foreach ($sites as $site) {
-				$site->theme_configs = json_decode($site->theme_configs);
+				$site->theme = json_decode($site->theme);
 				self::$_sites[$site->domain.'@'.$site->language] = $site;
 			}
 		}
@@ -387,13 +387,12 @@ class iModules {
 	/**
 	 * 템플릿 클래스를 가져온다.
 	 *
-	 * @param string $name 템플릿명
-	 * @param ?object $templet_configs 템플릿 설정
+	 * @param object $templet 템플릿설정
 	 * @return Templet $templet
 	 */
-	public function getTemplet(string $name,?object $templet_configs=null):Templet {
-		$templet = new Templet();
-		return $templet->setTemplet($name,$templet_configs);
+	public function getTemplet(object $templet):Templet {
+		$Templet = new Templet();
+		return $Templet->setTemplet($templet);
 	}
 	
 	/**
@@ -403,7 +402,7 @@ class iModules {
 	 */
 	public function getTheme():Templet {
 		$site = $this->getSite();
-		return $this->getTemplet($site->theme,$site->theme_configs);
+		return $this->getTemplet($site->theme);
 	}
 	
 	/**
