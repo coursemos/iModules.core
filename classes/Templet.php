@@ -7,7 +7,7 @@
  * @file /classes/Templet.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 16.
+ * @modified 2022. 2. 25.
  */
 class Templet {
 	/**
@@ -21,14 +21,14 @@ class Templet {
 	 */
 	private ?string $_name = null;
 	private ?object $_package = null;
-	private ?object $_templet_configs = null;
+	private ?object $_configs = null;
 	
 	/**
 	 * 템플릿 클래스를 선언한다.
 	 *
 	 * @param mixed $parent 템플릿 클래스를 호출한 클래스
 	 */
-	public function __construct($parent=null) {
+	public function __construct(mixed $parent=null) {
 		$this->_parent = $parent;
 	}
 	
@@ -44,16 +44,15 @@ class Templet {
 	/**
 	 * 템플릿을 설정한다.
 	 *
-	 * @param string $name 템플릿명(템플릿폴더 경로)
-	 * @param ?object $templet_configs 템플릿 설정
+	 * @param object $templet 템플릿설정
 	 * @return Templet $this
 	 */
-	public function setTemplet(string $name,?object $templet_configs=null):Templet {
-		$this->_name = $name;
-		$this->_templet_configs = $templet_configs;
+	public function setTemplet(object $templet):Templet {
+		$this->_name = $templet->name;
+		$this->_configs = $templet->configs;
 		
 		if (is_dir($this->getPath()) == false || is_file($this->getPath().'/package.json') == false) {
-			ErrorHandler::view($this->error('NOT_FOUND_TEMPLET',$name));
+			ErrorHandler::view($this->error('NOT_FOUND_TEMPLET',$templet->name));
 		}
 		
 		return $this;
