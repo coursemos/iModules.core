@@ -49,7 +49,8 @@ define('__DEBUG_MODE__',$_CONFIGS->debug);
  * 클래스파일을 자동으로 불러오기위한 오토로더클래스를 불러온다.
  */
 require_once Config::path().'/classes/AutoLoader.php';
-AutoLoader::register('/classes','');
+AutoLoader::register('/classes');
+AutoLoader::register('/vendor','/src');
 
 /**
  * 에러클래스를 초기화한다.
