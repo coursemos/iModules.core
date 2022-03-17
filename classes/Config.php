@@ -7,7 +7,7 @@
  * @file /classes/Config.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 9.
+ * @modified 2022. 3. 17.
  */
 class Config {
 	/**
@@ -104,6 +104,26 @@ class Config {
 		}
 
 		return $is_primary_only == true ? self::$_languages[0] : self::$_languages;
+	}
+	
+	/**
+	 * 유저데이터 경로를 가져온다.
+	 *
+	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
+	 * @return string $path
+	 */
+	public static function attachment():string {
+		return self::path().'/attachments';
+	}
+	
+	/**
+	 * 캐시폴더 경로를 가져온다.
+	 *
+	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
+	 * @return string $path
+	 */
+	public static function cache():string {
+		return self::path().'/attachments/cache';
 	}
 	
 	/**
