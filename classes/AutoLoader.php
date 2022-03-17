@@ -7,7 +7,7 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 8.
+ * @modified 2022. 3. 14.
  */
 class AutoLoader {
 	/**
@@ -20,7 +20,7 @@ class AutoLoader {
 	 */
 	private static AutoLoader $_instance;
 	private array $_loader = [];
-	public static function register(string $basePath='',string $sourcePath=''):void {
+	public static function register(string $basePath='',string $sourcePath='/'):void {
 		if (empty(self::$_instance) == true) {
 			self::$_instance = new self();
 		}
@@ -45,9 +45,9 @@ class AutoLoader {
 		
 		foreach ($this->_loader as $loader) {
 			if ($loader->type == 'psr-4') {
-				$namespaces = explode('\\',$class);
+				$namespaces = explode('\\',preg_replace('/^\\\/','',$class));
 				$className = array_pop($namespaces);
-				$path = Config::path().$loader->basePath.'/'.implode('/',$namespaces).'/'.$loader->sourcePath.'/'.$className.'.php';
+				$path = Config::path().$loader->basePath.'/'.implode('/',$namespaces).$loader->sourcePath.'/'.$className.'.php';
 				if (is_file($path) == true) {
 					require_once $path;
 					return true;
