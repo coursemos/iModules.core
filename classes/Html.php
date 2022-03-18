@@ -124,32 +124,46 @@ class Html {
 	}
 	
 	/**
-	 * 스타일시트를 추가한다.
+	 * 자바스크립트 추가한다.
 	 *
-	 * @param string $path 스타일시트 경로
+	 * @param string|array $path 자바스크립트 경로
 	 * @param int $priority 우선순위 (-1 ~ 10, 우선순위가 낮을수록 먼저 호출된다. -1 일 경우 해당 스크립트는 제거된다.)
 	 */
-	public static function style(string $path,int $priority=10):void {
-		$priority = min(max(-1,$priority),10);
-		if ($priority == -1 && isset(self::$_styles[$path]) == true) {
-			unset(self::$_styles[$path]);
+	public static function script(string|array $path,int $priority=10):void {
+		if (is_array($path) == true) {
+			$paths = $path;
+			foreach ($paths as $path) {
+				self::script($path,$priority);
+			}
 		} else {
-			self::$_styles[$path] = $priority;
+			$priority = min(max(-1,$priority),10);
+			if ($priority == -1 && isset(self::$_scripts[$path]) == true) {
+				unset(self::$_scripts[$path]);
+			} else {
+				self::$_scripts[$path] = $priority;
+			}
 		}
 	}
 	
 	/**
-	 * 자바스크립트 추가한다.
+	 * 스타일시트를 추가한다.
 	 *
-	 * @param string $path 자바스크립트 경로
+	 * @param string|array $path 스타일시트 경로
 	 * @param int $priority 우선순위 (-1 ~ 10, 우선순위가 낮을수록 먼저 호출된다. -1 일 경우 해당 스크립트는 제거된다.)
 	 */
-	public static function script(string $path,int $priority=10):void {
-		$priority = min(max(-1,$priority),10);
-		if ($priority == -1 && isset(self::$_scripts[$path]) == true) {
-			unset(self::$_scripts[$path]);
+	public static function style(string|array $path,int $priority=10):void {
+		if (is_array($path) == true) {
+			$paths = $path;
+			foreach ($paths as $path) {
+				self::style($path,$priority);
+			}
 		} else {
-			self::$_scripts[$path] = $priority;
+			$priority = min(max(-1,$priority),10);
+			if ($priority == -1 && isset(self::$_styles[$path]) == true) {
+				unset(self::$_styles[$path]);
+			} else {
+				self::$_styles[$path] = $priority;
+			}
 		}
 	}
 	
