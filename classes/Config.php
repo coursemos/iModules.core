@@ -7,7 +7,7 @@
  * @file /classes/Config.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 17.
+ * @modified 2022. 3. 18.
  */
 class Config {
 	/**
@@ -110,20 +110,22 @@ class Config {
 	 * 유저데이터 경로를 가져온다.
 	 *
 	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
-	 * @return string $path
+	 * @param bool $is_path 절대경로로 여부
+	 * @return string $dir
 	 */
-	public static function attachment():string {
-		return self::path().'/attachments';
+	public static function attachment(bool $is_path=true):string {
+		return ($is_path == true ? Config::path() : Config::dir()).'/attachments';
 	}
 	
 	/**
 	 * 캐시폴더 경로를 가져온다.
 	 *
 	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
-	 * @return string $path
+	 * @param bool $is_path 절대경로로 여부
+	 * @return string $dir
 	 */
-	public static function cache():string {
-		return self::path().'/attachments/cache';
+	public static function cache(bool $is_path=true):string {
+		return ($is_path == true ? Config::path() : Config::dir()).'/attachments/cache';
 	}
 	
 	/**
