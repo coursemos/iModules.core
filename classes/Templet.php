@@ -7,7 +7,7 @@
  * @file /classes/Templet.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 25.
+ * @modified 2022. 3. 18.
  */
 class Templet {
 	/**
@@ -48,11 +48,19 @@ class Templet {
 	 * @return Templet $this
 	 */
 	public function setTemplet(object $templet):Templet {
-		$this->_name = $templet->name;
+		if (strpos($templet->name,'/') === 0) {
+			$this->_name = $templet->name;
+		} else {
+			if ($this->_parent == null) {
+				$this->_name = Config::dir().'/themes/'.$templet->name;
+			} else {
+				$this->_name = $this->_parent->getDir().'/templets/'.$templet->name;
+			}
+		}
 		$this->_configs = $templet->configs;
 		
 		if (is_dir($this->getPath()) == false || is_file($this->getPath().'/package.json') == false) {
-			ErrorHandler::view($this->error('NOT_FOUND_TEMPLET',$templet->name));
+			ErrorHandler::view($this->error('NOT_FOUND_TEMPLET',$this->_name));
 		}
 		
 		return $this;
