@@ -841,6 +841,14 @@ class iModules {
 		Html::title($this->getDocumentTitle());
 		Html::description($this->getDocumentDescription());
 		
+		/**
+		 * 기본 스크립트파일을 불러온다.
+		 * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
+		 */
+		Cache::script('core','/scripts/Modules.js');
+		Cache::script('core','/scripts/Module.js');
+		Html::script(Cache::script('core'),1);
+		
 		/*
 		$this->head('link',array('rel'=>'canonical','href'=>$this->getCanonical()));
 		$this->head('meta',array('name'=>'robots','content'=>$this->getRobots()));
