@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 15.
+ * @modified 2022. 3. 31.
  */
 class Html {
 	/**
@@ -29,6 +29,11 @@ class Html {
 	 * 호출되는 스타일시트의 우선순위를 정의한다.
 	 */
 	private static array $_styles = [];
+	
+	/**
+	 * HTML 문서 이벤트리스너를 정의한다.
+	 */
+	private static array $_listeners = [];
 	
 	/**
 	 * <TITLE> 태그에 들어갈 문서제목을 정의한다.
@@ -168,6 +173,17 @@ class Html {
 	}
 	
 	/**
+	 * HTML onReady 이벤트리스너를 등록한다.
+	 */
+	public static function ready(string $listener):void {
+		if (isset(self::$_listeners['ready']) == false) {
+			self::$_listeners['ready'] = [];
+		}
+		
+		self::$_listeners['ready'][] = $listener;
+	}
+	
+	/**
 	 * <BODY> attribute 를 추가한다.
 	 *
 	 * @param string $attribute attribute 명 (class, style 등)
@@ -252,10 +268,24 @@ class Html {
 	 * @return string $footer
 	 */
 	public static function footer():string {
-		return self::tag(
+		$footer = '';
+		if (isset(self::$_listeners['ready']) == true && count(self::$_listeners['ready']) > 0) {
+			$footer.= self::tag(
+				'<script>',
+				'$(document).ready(function() {',
+				implode("\n",self::$_listeners['ready']),
+				'});',
+				'</script>'
+			);
+		}
+		
+		$footer.= self::tag(
 			'</body>',
 			'</html>'
 		);
+		
+		return $footer;
+	}
 	}
 }
 ?>
