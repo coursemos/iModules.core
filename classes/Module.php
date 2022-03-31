@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 25.
+ * @modified 2022. 3. 31.
  */
 class Module {
 	/**
@@ -74,12 +74,21 @@ class Module {
 	}
 	
 	/**
+	 * 모듈의 기본경로를 가져온다.
+	 *
+	 * @return string $base
+	 */
+	public function getBase():string {
+		return '/modules/'.$this->getName();
+	}
+	
+	/**
 	 * 현재 모듈의 상태경로를 가져온다.
 	 *
 	 * @return string $dir
 	 */
 	public function getDir():string {
-		return Config::dir().'/modules/'.$this->getName();
+		return Config::dir().$this->getBase();
 	}
 	
 	/**
@@ -88,7 +97,7 @@ class Module {
 	 * @return string $path
 	 */
 	public function getPath():string {
-		return Config::path().'/modules/'.$this->getName();
+		return Config::path().$this->getBase();
 	}
 	
 	/**
