@@ -7,7 +7,7 @@
  * @file /classes/Config.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 18.
+ * @modified 2022. 3. 31.
  */
 class Config {
 	/**
@@ -80,6 +80,18 @@ class Config {
 	public static function dir():string {
 		$dir = self::get('dir') ?? str_replace($_SERVER['DOCUMENT_ROOT'],'',self::path());
 		return preg_replace('/\/$/','',$dir);
+	}
+	
+	/**
+	 * 상대경로를 절대경로로 변경한다.
+	 *
+	 * @param string $dir 상대경로
+	 * @return string $path 절대경로
+	 */
+	public static function dirToPath(string $dir):string {
+		$dir = explode('?',$dir);
+		$dir = $dir[0];
+		return preg_replace('/^'.str_replace('/','\\/',self::dir()).'/',self::path(),$dir);
 	}
 
 	/**
