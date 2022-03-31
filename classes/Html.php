@@ -229,14 +229,14 @@ class Html {
 		 * 스크립트 경로를 <HEAD>에 추가한다.
 		 */
 		foreach (self::$_scripts as $path=>$priority) {
-			self::_head(self::element('script',['src'=>$path],''),1000 + $priority);
+			self::_head(self::element('script',['src'=>$path.self::_time($path)],''),1000 + $priority);
 		}
 		
 		/**
 		 * 스타일시트 경로를 <HEAD>에 추가한다.
 		 */
 		foreach (self::$_styles as $path=>$priority) {
-			self::_head(self::element('link',['rel'=>'stylesheet','href'=>$path,'type'=>'text/css']),2000 + $priority);
+			self::_head(self::element('link',['rel'=>'stylesheet','href'=>$path.self::_time($path),'type'=>'text/css']),2000 + $priority);
 		}
 		
 		/**
@@ -286,6 +286,24 @@ class Html {
 		
 		return $footer;
 	}
+	
+	/**
+	 * 파일경로에 파일 수정시간을 추가한다.
+	 *
+	 * @param string $path 파일경로
+	 * @return string $time 추가되는 수정시간
+	 */
+	private static function _time(string $path):string {
+		$time = '';
+		
+		if (strpos($path,'/') === 0) {
+			if (is_file(Config::dirToPath($path)) === false) return $time;
+			if (strpos($path,'t=') !== false) return $time;
+			$time.= strpos($path,'?') === false ? '?t=' : '&t=';
+			$time.= filemtime(Config::dirToPath($path));
+		}
+		
+		return $time;
 	}
 }
 ?>
