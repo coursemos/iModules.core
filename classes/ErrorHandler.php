@@ -7,27 +7,20 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 15.
+ * @modified 2022. 7. 6.
  */
 class ErrorHandler {
 	/**
 	 * 에러 클래스를 정의한다.
 	 */
-	private static ErrorHandler $_instance;
-	public static function &init():ErrorHandler {
-		if (empty(self::$_instance) == true) {
-			self::$_instance = new self();
-		
-			/**
-		 	* PHP 에러를 처리하기 위한 핸들러를 선언한다.
-		 	*/
-			error_reporting(E_ALL);
-			ini_set('display_errors',true);
-			register_shutdown_function([self::$_instance,'shutdownHandler']);
-			set_error_handler([self::$_instance,'errorHandler'],E_ALL);
-		}
-		
-		return self::$_instance;
+	public static function init() {
+		/**
+	 	* PHP 에러를 처리하기 위한 핸들러를 선언한다.
+	 	*/
+		error_reporting(E_ALL);
+		ini_set('display_errors',true);
+		register_shutdown_function('ErrorHandler::shutdownHandler');
+		set_error_handler('ErrorHandler::errorHandler',E_ALL);
 	}
 	
 	/**
@@ -38,7 +31,7 @@ class ErrorHandler {
 	 * @return string $message 치환된 메시지
 	 */
 	public static function getText(string $text,?array $placeHolder=null):string {
-		return Language::getInstance()->getText('error/'.$text,$placeHolder);
+		return Language::getText('error/'.$text,$placeHolder);
 	}
 	
 	/**
@@ -69,16 +62,16 @@ class ErrorHandler {
 	/**
 	 * 에러메시지를 가져온다.
 	 *
-	 * @param string|object $code 에러코드 또는 에러 객체
+	 * @param string|ErrorData $code 에러코드 또는 에러 객체
 	 * @param ?string $message 에러메시지
 	 * @param ?object $details 에러와 관련된 추가정보
 	 * @return string $html
 	 */
-	public static function get(string|object $code,?string $message=null,?object $details=null):string {
-		$error = is_object($code) == true ? $code : self::error($code,$message,$details);
+	public static function get(string|ErrorData $code,?string $message=null,?object $details=null):string {
+		$error = is_string($code) == true ? self::error($code,$message,$details) : $code;
 		$error->debugMode = Config::debug();
 		
-		Html::style(Config::dir().'/styles/error.css');
+		Html::style(Config::dir().'/styles/error.scss');
 		
 		/**
 		 * $error->stacktrace 가 NULL 인 경우
@@ -115,7 +108,7 @@ class ErrorHandler {
 	 * @param ?string $message 에러메시지
 	 * @param ?object $details 에러와 관련된 추가정보
 	 */
-	public static function view(string|object $code,?string $message=null,?object $details=null):void {
+	public static function print(string|ErrorData $code,?string $message=null,?object $details=null):void {
 		if (ob_get_length() !== false) ob_end_clean();
 		
 		$error = self::get($code,$message,$details);
@@ -176,19 +169,10 @@ class ErrorHandler {
 	/**
 	 * 빈 에러데이터 객체를 가져온다.
 	 *
-	 * @return object $error
+	 * @return ErrorData $error
 	 */
-	public static function data():object {
-		$error = new stdClass();
-		$error->title = self::getText('TITLE');
-		$error->prefix = null;
-		$error->message = null;
-		$error->suffix = null;
-		$error->file = null;
-		$error->line = null;
-		$error->stacktrace = null;
-		$error->debugModeOnly = false;
-		
+	public static function data():ErrorData {
+		$error = new ErrorData(self::getText('TITLE'),self::getText('DESCRIPTION'));
 		return $error;
 	}
 	
@@ -198,9 +182,9 @@ class ErrorHandler {
 	 * @param string $code 에러코드
 	 * @param ?string $message 에러메시지
 	 * @param ?object $details 에러와 관련된 추가정보
-	 * @return object $error
+	 * @return ErrorData $error
 	 */
-	public static function error(string $code,?string $message=null,?object $details=null):object {
+	public static function error(string $code,?string $message=null,?object $details=null):ErrorData {
 		$error = self::data();
 		
 		switch ($code) {
@@ -312,10 +296,10 @@ class ErrorHandler {
 	 * PHP shutdown_handler 를 정의한다.
 	 * @see register_shutdown_function
 	 */
-	public function shutdownHandler():void {
+	public static function shutdownHandler():void {
 		$error = error_get_last();
 		if ($error !== null) {
-			$this->errorHandler($error['type'],$error['message'],$error['file'],$error['line']);
+			self::errorHandler($error['type'],$error['message'],$error['file'],$error['line']);
 			exit;
 		}
 	}
@@ -324,7 +308,7 @@ class ErrorHandler {
 	 * PHP error_handler 를 정의한다.
 	 * @see set_error_handler
 	 */
-	public function errorHandler(int $errno,string $errstr,?string $errfile=null,?int $errline=null):bool {
+	public static function errorHandler(int $errno,string $errstr,?string $errfile=null,?int $errline=null):bool {
 		if (ob_get_length() !== false) ob_end_clean();
 		
 		$details = new stdClass();
@@ -332,7 +316,7 @@ class ErrorHandler {
 		$details->file = $errfile;
 		$details->line = $errline;
 		
-		$this->view('PHP_ERROR',$errstr,$details);
+		self::print('PHP_ERROR',$errstr,$details);
 		return true;
 	}
 }

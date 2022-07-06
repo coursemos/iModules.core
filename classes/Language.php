@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 15.
+ * @modified 2022. 7. 6.
  */
 class Language {
 	/**
@@ -16,30 +16,19 @@ class Language {
 	private static array $_texts = [];
 	
 	/**
-	 * 싱글톤 방식으로 언어팩 클래스를 선언한다.
-	 */
-	private static Language $_instance;
-	public static function &getInstance():Language {
-		if (empty(self::$_instance) == true) {
-			self::$_instance = new self();
-		}
-		return self::$_instance;
-	}
-	
-	/**
 	 * 언어팩을 초기화한다.
 	 *
 	 * @param string $path 언어팩을 탐색할 경로
 	 * @param array $codes 언어팩을 탐색할 언어코드
 	 */
-	private function _initTexts(string $path,array $codes):void {
-		if (is_dir($this->_getPath($path)) == false) return;
+	public static function init(string $path,array $codes):void {
+		if (is_dir(self::getPath($path)) == false) return;
 		if (isset(self::$_texts[$path]) == true) return;
 		
 		self::$_texts[$path] = [];
 		foreach ($codes as $code) {
-			if (is_file($this->_getPath($path).'/'.$code.'.json') == true) {
-				self::$_texts[$path][$code] = json_decode(file_get_contents($this->_getPath($path).'/'.$code.'.json'),JSON_OBJECT_AS_ARRAY);
+			if (is_file(self::getPath($path).'/'.$code.'.json') == true) {
+				self::$_texts[$path][$code] = json_decode(file_get_contents(self::getPath($path).'/'.$code.'.json'),JSON_OBJECT_AS_ARRAY);
 			}
 		}
 	}
@@ -50,7 +39,7 @@ class Language {
 	 * @param string $path 언어팩을 탐색할 경로
 	 * @return string $path 루트폴더를 포함한 언어팩 탐색 경로
 	 */
-	private function _getPath(string $path):string {
+	public static function getPath(string $path):string {
 		return Config::path().($path == '/' ? '' : $path).'/languages';
 	}
 	
@@ -61,7 +50,7 @@ class Language {
 	 * @param ?array $placeHolder 치환될 데이터
 	 * @return string $message 치환된 메시지
 	 */
-	private function _replacePlaceHolder(string|array $text,?array $placeHolder=null):string|array {
+	public static function replacePlaceHolder(string|array $text,?array $placeHolder=null):string|array {
 		if ($placeHolder === null) return $text;
 		
 		if (preg_match_all('/\$\{(.*?)\}/',$text,$matches,PREG_SET_ORDER) == true) {
@@ -82,14 +71,14 @@ class Language {
 	 * @param ?array $codes 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
 	 * @return array|string|null $message 치환된 메시지
 	 */
-	public function getText(string $text,?array $placeHolder=null,?array $paths=null,?array $codes=null):string|array {
+	public static function getText(string $text,?array $placeHolder=null,?array $paths=null,?array $codes=null):string|array {
 		$paths ??= ['/'];
 		$codes ??= Config::languages();
 		$keys = explode('/',$text);
 		$string = null;
 		foreach ($paths as $path) {
 			if (isset(self::$_texts[$path]) == false) {
-				$this->_initTexts($path,$codes);
+				self::init($path,$codes);
 			}
 			
 			foreach ($codes as $code) {
@@ -104,11 +93,11 @@ class Language {
 					$string = $string[$key];
 				}
 				
-				if ($string !== null) return $this->_replacePlaceHolder($string,$placeHolder);
+				if ($string !== null) return self::replacePlaceHolder($string,$placeHolder);
 			}
 		}
 		
-		return $string === null ? $text : $this->_replacePlaceHolder($string,$placeHolder);
+		return $string === null ? $text : self::replacePlaceHolder($string,$placeHolder);
 	}
 }
 ?>
