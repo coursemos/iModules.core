@@ -7,9 +7,21 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 14.
+ * @modified 2022. 7. 6.
  */
 class AutoLoader {
+	/**
+	 * AutoLoad 규칙을 저장한다.
+	 */
+	private static array $_loader = [];
+	
+	/**
+	 * AutoLoader 클래스를 초기화한다.
+	 */
+	public static function init():void {
+		spl_autoload_register('AutoLoader::loader');
+	}
+	
 	/**
 	 * AutoLoader 를 정의한다.
 	 * \<NamespaceName>(\<SubNamespaceNames>)\<ClassName>
@@ -18,20 +30,13 @@ class AutoLoader {
 	 * @param string $basePath 클래스 정의파일을 찾기위한 기본 경로
 	 * @param string $sourcePath PSR-4 방식에 따른 클래스 파일 경로 이후 세부위치 (예 : /src)
 	 */
-	private static AutoLoader $_instance;
-	private array $_loader = [];
 	public static function register(string $basePath='',string $sourcePath='/'):void {
-		if (empty(self::$_instance) == true) {
-			self::$_instance = new self();
-		}
-		
 		$loader = new stdClass();
 		$loader->type = 'psr-4';
 		$loader->basePath = $basePath;
-		$loader->sourcePath = $sourcePath;
+		$loader->sourcePath = $sourcePath == '/' ? '' : $sourcePath;
 		
-		self::$_instance->_loader[] = $loader;
-		spl_autoload_register([self::$_instance,'loader']);
+		self::$_loader[] = $loader;
 	}
 	
 	/**
@@ -40,14 +45,24 @@ class AutoLoader {
 	 * @param string $class 클래스명
 	 * @return bool $success
 	 */
-	public function loader(string $class):bool {
-		if (count($this->_loader) == 0) return false;
+	public static function loader(string $class):bool {
+		if (count(self::$_loader) == 0) return false;
 		
-		foreach ($this->_loader as $loader) {
+		foreach (self::$_loader as $loader) {
 			if ($loader->type == 'psr-4') {
 				$namespaces = explode('\\',preg_replace('/^\\\/','',$class));
 				$className = array_pop($namespaces);
-				$path = Config::path().$loader->basePath.'/'.implode('/',$namespaces).$loader->sourcePath.'/'.$className.'.php';
+				if (count($namespaces) >= 2) {
+					$root = array_splice($namespaces,0,2);
+				} else {
+					$root = [];
+				}
+				$path = Config::path().$loader->basePath;
+				if (count($root) > 0) $path.= '/'.implode('/',$root);
+				$path.= $loader->sourcePath;
+				if (count($namespaces) > 0) $path.= '/'.implode('/',$namespaces);
+				$path.= '/'.$className.'.php';
+				
 				if (is_file($path) == true) {
 					require_once $path;
 					return true;
