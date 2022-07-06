@@ -7,7 +7,7 @@
  * @file /classes/Config.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 31.
+ * @modified 2022. 7. 6.
  */
 class Config {
 	/**
@@ -30,7 +30,7 @@ class Config {
 	 *
 	 * @param object $configs 환경설정값
 	 */
-	public static function init(?object $configs=null):void {
+	public static function init(object $configs):void {
 		self::$_configs = $configs;
 	}
 	
@@ -53,9 +53,9 @@ class Config {
 		if (empty(self::$_package) == true) {
 			if (is_file(self::path().'/package.json') == true) {
 				self::$_package = json_decode(file_get_contents(self::path().'/package.json'));
-				if (self::$_package === null) ErrorHandler::view('PACKAGE_FILE_ERROR');
+				if (self::$_package === null) ErrorHandler::print('PACKAGE_FILE_ERROR');
 			} else {
-				ErrorHandler::view('NOT_FOUND_PACKAGE_FILE');
+				ErrorHandler::print('NOT_FOUND_PACKAGE_FILE');
 			}
 		}
 
@@ -143,6 +143,7 @@ class Config {
 	/**
 	 * 디버깅모드여부를 가져온다.
 	 *
+	 * @todo 환경설정 적용
 	 * @return bool $is_debug_mode
 	 */
 	public static function debug():bool {
