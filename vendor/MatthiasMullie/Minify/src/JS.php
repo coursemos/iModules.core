@@ -200,7 +200,7 @@ class JS extends Minify
         $callback = function ($match) use ($minifier) {
             if (
                 substr($match[2], 0, 1) === '!' ||
-                strpos($match[2], '@license') !== false ||
+//                strpos($match[2], '@license') !== false ||
                 strpos($match[2], '@preserve') !== false
             ) {
                 // preserve multi-line comments that start with /*!
