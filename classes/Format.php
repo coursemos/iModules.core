@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 17.
+ * @modified 2022. 10. 5.
  */
 class Format {
 	/**
@@ -189,7 +189,7 @@ class Format {
 	 * @return string $ciphertext
 	 */
 	public static function encoder(string $value,?string $key=null,string $mode='base64') {
-		$key = $key !== null ? md5($key) : md5(Config::get('key'));
+		$key = $key !== null ? md5($key) : md5(Configs::get('key'));
 		$padSize = 16 - (strlen($value) % 16);
 		$value = $value.str_repeat(chr($padSize),$padSize);
 		
@@ -207,7 +207,7 @@ class Format {
 	 * @return string $plaintext
 	 */
 	public static function decoder($value,$key=null,$mode='base64') {
-		$key = $key !== null ? md5($key) : md5(Config::get('key'));
+		$key = $key !== null ? md5($key) : md5(Configs::get('key'));
 		$value = $mode == 'base64' ? base64_decode(str_replace(' ','+',$value)) : hex2bin($value);
 		
 		$output = openssl_decrypt($value,'AES-256-CBC',$key,OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,str_repeat(chr(0),16));
