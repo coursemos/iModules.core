@@ -7,48 +7,53 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 31.
+ * @modified 2022. 10. 4.
  */
 class Html {
 	/**
-	 * <HEAD> 태그내에 포함될 태그를 정의한다.
+	 * @var string[] $_heads <HEAD> 태그내에 포함될 태그를 정의한다.
 	 */
 	private static array $_heads = [];
 	
 	/**
-	 * <META NAME="ROBOTS"> 태그에 들어갈 설정을 정의한다.
+	 * @var string $_robots <META NAME="ROBOTS"> 태그에 들어갈 설정을 정의한다.
 	 */
 	private static string $_robots = 'all';
 	
 	/**
-	 * 호출되는 스크립트의 우선순위를 정의한다.
+	 * @var string[] $_scripts 호출되는 스크립트의 우선순위를 정의한다.
 	 */
 	private static array $_scripts = [];
 	
 	/**
-	 * 호출되는 스타일시트의 우선순위를 정의한다.
+	 * @var string[] $_styles 호출되는 스타일시트의 우선순위를 정의한다.
 	 */
 	private static array $_styles = [];
 	
 	/**
-	 * HTML 문서 이벤트리스너를 정의한다.
+	 * @var string[][] $_listeners HTML 문서 이벤트리스너를 정의한다.
 	 */
 	private static array $_listeners = [];
 	
 	/**
-	 * <TITLE> 태그에 들어갈 문서제목을 정의한다.
+	 * @var ?string $_title <TITLE> 태그에 들어갈 문서제목을 정의한다.
 	 */
 	private static ?string $_title = null;
 	
 	/**
-	 * <META NAME="DESCRIPTION"> 태그에 들어갈 문서설명을 정의한다.
+	 * @var ?string $_description <META NAME="DESCRIPTION"> 태그에 들어갈 문서설명을 정의한다.
 	 */
 	private static ?string $_description = null;
 	
 	/**
-	 * <BODY> 태그의  attribute 를 정의한다.
+	 * @var string[] $_attributes <BODY> 태그의 attribute 를 정의한다.
 	 */
 	private static array $_attributes = [];
+	
+	/**
+	 * @var string[] $_fonts 불러올 웹폰트를 정의한다.
+	 */
+	private static array $_fonts = [];
 	
 	/**
 	 * HTML 엘리먼트를 생성한다.
@@ -164,6 +169,14 @@ class Html {
 			}
 		} else {
 			$priority = min(max(-1,$priority),10);
+			
+			/**
+			 * scss 파일인 경우 Cache 를 통해 css 파일로 컨버팅한다.
+			 */
+			if (preg_match('/\.scss$/i',$path) == true) {
+				$path = Cache::scss($path);
+			}
+			
 			if ($priority == -1 && isset(self::$_styles[$path]) == true) {
 				unset(self::$_styles[$path]);
 			} else {
@@ -194,6 +207,17 @@ class Html {
 	}
 	
 	/**
+	 * 웹폰트를 불러온다.
+	 *
+	 * @param string $font 폰트명
+	 */
+	public static function font(string $font):void {
+		if (in_array($font,self::$_fonts) == false) {
+			self::$_fonts[] = $font;
+		}
+	}
+	
+	/**
 	 * 함수 매개변수로 들어온 모든 문자열을 줄바꿈하여 문자열로 반환한다.
 	 *
 	 * @param string ...$tags
@@ -201,6 +225,16 @@ class Html {
 	 */
 	public static function tag(string ...$tags):string {
 		return implode("\n",$tags);
+	}
+	
+	/**
+	 * 함수 매개변수로 들어온 모든 문자열을 줄바꿈하여 출력한다.
+	 *
+	 * @param string ...$tags
+	 * @return string $html
+	 */
+	public static function print(string ...$tags):void {
+		echo self::tag(...$tags);
 	}
 	
 	/**
@@ -220,10 +254,22 @@ class Html {
 		 * 기본 <HEAD> 태그요소를 추가한다.
 		 */
 		self::_head(self::element('meta',['charset'=>'utf-8']),0);
-		self::_head(self::element('title',null,self::$_title ?? 'NONAME'),1);
+		
+		$title = self::$_title ?? 'iModules';
+		self::_head(self::element('title',null,$title),1);
 		self::_head(self::element('meta',['name'=>'description','content'=>self::$_description]),2);
 		self::_head(self::element('meta',['name'=>'viewport','content'=>'user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width']),3);
 		self::_head(self::element('meta',['name'=>'robots','content'=>self::$_robots]),4);
+		
+		/**
+		 * 웹폰트를 추가한다.
+		 */
+		if (count(self::$_fonts) > 0) {
+			foreach (self::$_fonts as $font) {
+				Cache::style('font','/fonts/'.$font.'.css');
+			}
+			self::style(Cache::style('font'));
+		}
 		
 		/**
 		 * 스크립트 경로를 <HEAD>에 추가한다.
@@ -297,10 +343,10 @@ class Html {
 		$time = '';
 		
 		if (strpos($path,'/') === 0) {
-			if (is_file(Config::dirToPath($path)) === false) return $time;
+			if (is_file(Configs::dirToPath($path)) === false) return $time;
 			if (strpos($path,'t=') !== false) return $time;
 			$time.= strpos($path,'?') === false ? '?t=' : '&t=';
-			$time.= filemtime(Config::dirToPath($path));
+			$time.= filemtime(Configs::dirToPath($path));
 		}
 		
 		return $time;
