@@ -4,12 +4,12 @@
  *
  * 아이모듈 환경설정 클래스를 정의한다.
  *
- * @file /classes/Config.php
+ * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 7. 6.
+ * @modified 2022. 10. 5.
  */
-class Config {
+class Configs {
 	/**
 	 * 아이모듈 설치 환경설정 정보
 	 */
@@ -121,23 +121,23 @@ class Config {
 	/**
 	 * 유저데이터 경로를 가져온다.
 	 *
-	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
+	 * @todo 환경설정을 읽어서 처리할 수 있도록 수정
 	 * @param bool $is_path 절대경로로 여부
 	 * @return string $dir
 	 */
 	public static function attachment(bool $is_path=true):string {
-		return ($is_path == true ? Config::path() : Config::dir()).'/attachments';
+		return ($is_path == true ? self::path() : self::dir()).'/attachments';
 	}
 	
 	/**
 	 * 캐시폴더 경로를 가져온다.
 	 *
-	 * TODO: 환경설정을 읽어서 처리할 수 있도록 수정
+	 * @todo 환경설정을 읽어서 처리할 수 있도록 수정
 	 * @param bool $is_path 절대경로로 여부
 	 * @return string $dir
 	 */
 	public static function cache(bool $is_path=true):string {
-		return ($is_path == true ? Config::path() : Config::dir()).'/attachments/cache';
+		return ($is_path == true ? self::path() : self::dir()).'/attachments/cache';
 	}
 	
 	/**
@@ -148,6 +148,15 @@ class Config {
 	 */
 	public static function debug():bool {
 		return Request::get('debug') === 'true';
+	}
+	
+	/**
+	 * 아이모듈 설치여부를 가져온다.
+	 *
+	 * @return bool $is_installed
+	 */
+	public static function isInstalled():bool {
+		return is_file(self::path().'/configs/configs.php');
 	}
 }
 ?>
