@@ -127,7 +127,7 @@ class Context {
 		$this->_footer = json_decode($context->footer);
 		$this->_permission = $context->permission;
 		$this->_is_routing = $context->is_routing == 'TRUE';
-		$this->_is_sitemap = $context->_is_sitemap == 'TRUE';
+		$this->_is_sitemap = $context->is_sitemap == 'TRUE';
 		$this->_is_footer_menu = $context->is_footer_menu == 'TRUE';
 	}
 	
