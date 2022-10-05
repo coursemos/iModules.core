@@ -10,15 +10,6 @@
  * @version 2.0.0
  * @modified 2021. 7. 22.
  */
-namespace Databases;
-
-use \stdClass as stdClass;
-use \DatabaseInterface as DatabaseInterface;
-use \ErrorHandler as ErrorHandler;
-use \mysqli as mysqli;
-use \mysqli_stmt as mysqli_stmt;
-use \mysqli_result as mysqli_result;
-
 class mysql extends DatabaseInterface {
 	/**
 	 * mysqli 객체
@@ -77,7 +68,7 @@ class mysql extends DatabaseInterface {
 		mysqli_report(MYSQLI_REPORT_OFF);
 		$this->_mysqli = new mysqli($connector->host,$connector->username,$connector->password,$connector->database,$connector->port);
 		if ($this->_mysqli->connect_error) {
-			ErrorHandler::view('DATABASE_CONNECT_ERROR','(HY000/'.$this->_mysqli->connect_errno.') '.$this->_mysqli->connect_error,$connector);
+			ErrorHandler::print('DATABASE_CONNECT_ERROR','(HY000/'.$this->_mysqli->connect_errno.') '.$this->_mysqli->connect_error,$connector);
 		}
 		restore_error_handler();
 		
@@ -1025,7 +1016,7 @@ class mysql extends DatabaseInterface {
 		$details->query = $this->_query;
 		
 		$this->reset();
-		ErrorHandler::view('DATABASE_ERROR',$message,$details);
+		ErrorHandler::print('DATABASE_ERROR',$message,$details);
 	}
 	
 	/**
