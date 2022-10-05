@@ -96,9 +96,9 @@ class Context {
 	private bool $_is_sitemap;
 	
 	/**
-	 * @var bool $_is_footer 컨텍스트가 하단메뉴에 포함되는지 여부
+	 * @var bool $_is_footer_menu 컨텍스트가 하단메뉴에 포함되는지 여부
 	 */
-	private bool $_is_footer;
+	private bool $_is_footer_menu;
 	
 	/**
 	 * @var Context[] $_children 자식 컨텍스트
@@ -128,7 +128,7 @@ class Context {
 		$this->_permission = $context->permission;
 		$this->_is_routing = $context->is_routing == 'TRUE';
 		$this->_is_sitemap = $context->_is_sitemap == 'TRUE';
-		$this->_is_footer = $context->is_footer == 'TRUE';
+		$this->_is_footer_menu = $context->is_footer_menu == 'TRUE';
 	}
 	
 	/**
@@ -313,10 +313,10 @@ class Context {
 	/**
 	 * 사이트 하단메뉴에 포함되는지 여부를 가져온다.
 	 *
-	 * @return bool $is_footer
+	 * @return bool $is_footer_menu
 	 */
-	public function isFooter():bool {
-		return $this->_is_footer;
+	public function isFooterMenu():bool {
+		return $this->_is_footer_menu;
 	}
 	
 	/**
@@ -365,8 +365,8 @@ class Context {
 		$contexts = Contexts::all($this->getSite());
 		foreach ($contexts as $context) {
 			if (preg_match('/^'.$path.'\/[^\/]+$/',$context->getPath()) == true) {
-				if ($context->hasPermission() == true) {
-					if ($is_sitemap === false || $context->isSitemap() == true) {
+				if ($is_sitemap === false || $context->isSitemap() == true) {
+					if ($context->hasPermission() == true) {
 						$this->_children[] = $context;
 					}
 				}
@@ -379,10 +379,11 @@ class Context {
 	/**
 	 * 자식 컨텍스트가 존재하는지 확인한다.
 	 *
+	 * @param bool $is_sitemap 사이트맵에 포함된 자식 컨텍스트만 가져올지 여부
 	 * @return bool $hasChild
 	 */
-	public function hasChild():bool {
-		return count($this->getChildren()) > 0;
+	public function hasChild(bool $is_sitemap=true):bool {
+		return count($this->getChildren($is_sitemap)) > 0;
 	}
 	
 	/**

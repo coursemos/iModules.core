@@ -296,11 +296,30 @@ class Site {
 		$contexts = Contexts::all($this);
 		foreach ($contexts as $context) {
 			if (preg_match('/^\/[^\/]+$/',$context->getPath()) == true) {
-				$this->_sitemap[] = $context;
+				if ($context->isSitemap() == true && $context->hasPermission() == true) {
+					$this->_sitemap[] = $context;
+				}
 			}
 		}
 		
 		return $this->_sitemap;
+	}
+	
+	/**
+	 * 사이트 하단메뉴를 가져온다.
+	 *
+	 * @return Context[] $menu
+	 */
+	public function getFooterMenus():array {
+		$menu = [];
+		$contexts = Contexts::all($this);
+		foreach ($contexts as $context) {
+			if ($context->isFooterMenu() == true && $context->hasPermission() == true) {
+				$menu[] = $context;
+			}
+		}
+		
+		return $menu;
 	}
 }
 ?>
