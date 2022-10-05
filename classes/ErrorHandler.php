@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 7. 6.
+ * @modified 2022. 10. 5.
  */
 class ErrorHandler {
 	/**
@@ -69,9 +69,9 @@ class ErrorHandler {
 	 */
 	public static function get(string|ErrorData $code,?string $message=null,?object $details=null):string {
 		$error = is_string($code) == true ? self::error($code,$message,$details) : $code;
-		$error->debugMode = Config::debug();
+		$error->debugMode = Configs::debug();
 		
-		Html::style(Config::dir().'/styles/error.scss');
+		Html::style(Configs::dir().'/styles/error.scss');
 		
 		/**
 		 * $error->stacktrace 가 NULL 인 경우
@@ -95,7 +95,7 @@ class ErrorHandler {
 		}
 		
 		ob_start();
-		include Config::path().'/includes/error.php';
+		include Configs::path().'/includes/error.php';
 		$html = ob_get_clean();
 		
 		return $html;

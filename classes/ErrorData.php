@@ -7,7 +7,7 @@
  * @file /classes/ErrorData.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 7. 6.
+ * @modified 2022. 10. 5.
  */
 class ErrorData {
 	/**
@@ -64,7 +64,7 @@ class ErrorData {
 	public function __construct(string $title,string $message) {
 		$this->title = $title;
 		$this->message = $message;
-		$this->debugMode = Config::debug();
+		$this->debugMode = Configs::debug();
 	}
 }
 ?>
