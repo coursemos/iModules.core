@@ -7,7 +7,7 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 7. 6.
+ * @modified 2022. 10. 5.
  */
 class AutoLoader {
 	/**
@@ -57,7 +57,7 @@ class AutoLoader {
 				} else {
 					$root = [];
 				}
-				$path = Config::path().$loader->basePath;
+				$path = Configs::path().($loader->basePath == '/' ? '' : $loader->basePath);
 				if (count($root) > 0) $path.= '/'.implode('/',$root);
 				$path.= $loader->sourcePath;
 				if (count($namespaces) > 0) $path.= '/'.implode('/',$namespaces);
