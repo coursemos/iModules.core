@@ -7,7 +7,7 @@
  * @file /classes/Database.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 2. 9.
+ * @modified 2022. 10. 5.
  */
 class Database {
 	/**
@@ -37,11 +37,12 @@ class Database {
 		$interface = null;
 		
 		if ($connector->type == 'mysql') {
-			$interface = new \Databases\mysql();
+			require_once Configs::path().'/classes/DatabaseInterface/mysql.php';
+			$interface = new mysql();
 		}
 		
 		if ($interface === null) {
-			ErrorHandler::view('DATABASE_CONNECT_ERROR',$connector->type.' is not supported.');
+			ErrorHandler::print('DATABASE_CONNECT_ERROR',$connector->type.' is not supported.');
 		}
 		
 		/**
