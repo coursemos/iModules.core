@@ -1,7 +1,7 @@
 @font-face {
-	font-family: "SUIT";
-	font-weight: 100 900;
-	font-style: normal;
-	src: url("./SUIT.woff2") format("woff2-variations");
-	font-display: block;
+    font-family: 'SUIT';
+    font-weight: 100 900;
+    font-style: normal;
+    src: url('./SUIT.woff2') format('woff2-variations');
+    font-display: block;
 }
