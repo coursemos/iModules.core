@@ -8,1081 +8,351 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 4.0.0
- * @modified 2022. 2. 25.
+ * @modified 2022. 12. 1.
  */
-class iModules {
-	/**
-	 * 전체 도메인 및 전체 사이트 정보
-	 * 한번 초기화한 데이터를 재사용할 수 있도록 static 으로 지정한다.
-	 */
-	private static ?array $_domains = null;
-	private static ?array $_sites = null;
-	private static ?array $_contexts = null;
-	
-	/**
-	 * 현재 도메인 및 사이트 정보
-	 */
-	private ?object $_domain = null;
-	private ?object $_site = null;
-	
-	/**
-	 * 전체 경로 경로
-	 */
-	private array $_routes = [];
-	
-	/**
-	 * 경로에 연결된 컨텍스트 정보
-	 * 한번 초기화한 데이터를 재사용할 수 있도록 static 으로 지정한다.
-	 */
-	private static array $_routings = [];
-	
-	/**
-	 * 현재 경로 대상 (web, api, admin)
-	 */
-	private ?string $_routeTarget = null;
-	
-	/**
-	 * 경로 시작 지점
-	 */
-	private int $_routeStart = 0;
-	
-	/**
-	 * 현재 언어코드
-	 */
-	private ?string $_language = null;
-	
-	/**
-	 * 싱글톤 방식으로 아이모듈 코어클래스를 선언한다.
-	 */
-	private static iModules $_instance;
-	public static function &getInstance():iModules {
-		if (empty(self::$_instance) == true) {
-			self::$_instance = new self();
-		}
-		return self::$_instance;
-	}
-	
-	/**
-	 * 아이모듈 코어클래스를 선언한다.
-	 */
-	public function __construct() {
-		/**
-		 * PHP 세션이 필요한 경우, PHP 세션을 시작한다.
-		 */
-		if (in_array($this->getRouteTarget(),['web','admin','process']) == true) {
-			$this->session_start();
-		}
-	}
-	
-	/**
-	 * 현재 도메인정보를 초기화한다.
-	 */
-	private function _initDomain():void {
-		/**
-		 * 전체 도메인정보가 없다면, 전체 도메인정보를 초기화한다.
-		 */
-		if (self::$_domains === null) $this->_initDomains();
-		
-		/**
-		 * 현재 도메인에 해당하는 존재하는지 확인하고, 존재하지 않는 경우 별칭도메인을 이용하여 도메인을 구한다.
-		 */
-		if (isset(self::$_domains[Request::host()]) == true) {
-			$this->_domain = self::$_domains[Request::host()];
-		} else {
-			foreach (self::$_domains as $domain) {
-				if ($domain->alias && preg_match('/^('.str_replace([',','.','*'],['|','\.','[^\.]+'],strtolower($domain->alias)).')$/',Request::host()) == true) {
-					$this->_domain = $domain;
-					break;
-				}
-			}
-		}
-		
-		if ($this->_domain === null) {
-			ErrorHandler::view($this->error('NOT_FOUND_SITE',Request::host()));
-		}
-	}
-	
-	/**
-	 * 전체 도메인정보를 초기화한다.
-	 */
-	private function _initDomains():void {
-		/**
-		 * 전체 도메인정보를 가져온다.
-		 * todo:  캐시처리
-		 */
-		if (false) {
-			
-		} else {
-			self::$_domains = [];
-			$domains = $this->db()->select()->from($this->table('domains'))->get();
-			foreach ($domains as $domain) {
-				$domain->is_https = $domain->is_https == 'TRUE';
-				$domain->is_rewrite = $domain->is_rewrite == 'TRUE';
-				$domain->is_internationalization = $domain->is_internationalization == 'TRUE';
-				
-				self::$_domains[$domain->domain] = $domain;
-			}
-		}
-	}
-	
-	/**
-	 * 현재 사이트정보를 초기화한다.
-	 */
-	private function _initSite():void {
-		/**
-		 * 전체 사이트정보가 없다면, 전체 사이트를 초기화한다.
-		 */
-		if (self::$_sites === null) $this->_initSites();
-		
-		$domain = $this->getDomain();
-		
-		/**
-		 * 언어코드가 필요하지 않는 경로 대상인 경우 현재 도메인의 기본 언어코드를 사용한다.
-		 */
-		$language = $this->getLanguage() == '*' ? $domain->language : $this->getLanguage();
-		
-		/**
-		 * 현재 언어코드에 해당하는 사이트가 존재하면 해당 사이트로 초기화하고,
-		 * 그렇지 않은 경우 현재 도메인의 기본 언어코드 사이트로 초기화한다.
-		 */
-		if (isset(self::$_sites[$domain->domain.'@'.$language]) == true) {
-			$this->_site = self::$_sites[$domain->domain.'@'.$language];
-		} elseif ($this->_site === null && isset(self::$_sites[$domain->domain.'@'.$domain->language]) == true) {
-			$this->_site = self::$_sites[$domain->domain.'@'.$domain->language];
-		} else {
-			ErrorHandler::view($this->error('NOT_FOUND_SITE',Request::host()));
-		}
-	}
-	
-	/**
-	 * 현재 도메인과, 현재 경로에 따라 현재 언어코드를 초기화한다.
-	 * 
-	 */
-	private function _initLanguage():void {
-		/**
-		 * 언어코드가 필요하지 않은 경로 대상에서는 언어코드를 초기화하지 않는다.
-		 */
-		if (in_array($this->getRouteTarget(),['api','admin']) == true) {
-			$this->_language = '*';
-		} else {
-			$domain = $this->getDomain();
-			$routes = $this->getRoutes();
-			
-			/**
-			 * 다국어 사이트인 경우 경로에서 언어코드를 가져오고,
-			 * 다국어 사이트가 아닌 경우, 도메인의 기본 언어코드를 사용한다.
-			 */
-			if ($domain->is_internationalization === true) {
-				$this->_language = isset($routes[1]) == true ? $routes[1] : $domain->language;
-				$this->_routeStart = 2;
-			} else {
-				$this->_language = $domain->language;
-				$this->_routeStart = 1;
-			}
-		}
-	}
-	
-	/**
-	 * 전체 사이트정보를 초기화한다.
-	 */
-	private function _initSites():void {
-		/**
-		 * 전체 사이트 정보를 가져온다.
-		 * todo:  캐시처리
-		 */
-		if (false) {
-			
-		} else {
-			self::$_sites = [];
-			$sites = $this->db()->select()->from($this->table('sites'))->get();
-			foreach ($sites as $site) {
-				$site->theme = json_decode($site->theme);
-				self::$_sites[$site->domain.'@'.$site->language] = $site;
-			}
-		}
-	}
-	
-	/**
-	 * 전체 경로 경로를 초기화한다.
-	 */
-	private function _initRoutes():void {
-		/**
-		 * URL에 따라 경로를 초기화한다.
-		 */
-		$route = Request::get('route') !== null && is_string(Request::get('route')) == true ? preg_replace('/^([^\/])/','/\0',Request::get('route')) : '/';
-		$this->_routes = explode('/',$route);
-		
-		if (strlen(trim(end($this->_routes))) == 0) array_pop($this->_routes);
-		
-		/**
-		 * 경로 대상을 초기화한다.
-		 */
-		if (isset($this->_routes[1]) == true && preg_match('/(admin|api|process)/',$this->_routes[1]) == true) {
-			$this->_routeTarget == $this->_routes[1];
-		} else {
-			$this->_routeTarget = 'web';
-		}
-	}
-	
-	/**
-	 * 전체 컨텍스트를 정보를 초기화한다.
-	 */
-	private function _initContexts():void {
-		/**
-		 * 전체 사이트정보가 없다면, 전체 사이트를 초기화한다.
-		 */
-		if (self::$_sites === null) $this->_initSites();
-		
-		/**
-		 * 전체 컨텍스트 정보를 가져온다.
-		 * todo:  캐시처리
-		 */
-		if (false) {
-			
-		} else {
-			self::$_contexts = [];
-			
-			/**
-			 * 전체 사이트 목록을 가져와서 각 사이트별로 컨텍스트를 초기화한다.
-			 */
-			foreach (self::$_sites as $site) {
-				/**
-				 * 각 사이트의 인덱스 최상위 컨텍스트 객체를 정의한다.
-				 * 하위 컨텍스트가 저장되는 children 배열을 선언한다. (1차 메뉴)
-				 */
-				self::$_contexts[$site->domain.'@'.$site->language] = new stdClass();
-				self::$_contexts[$site->domain.'@'.$site->language]->index = null;
-				self::$_contexts[$site->domain.'@'.$site->language]->route = [];
-				self::$_contexts[$site->domain.'@'.$site->language]->children = [];
-				
-				$contexts = $this->db()->select()->from($this->table('contexts'))->where('domain',$site->domain)->where('language','ko')->orderBy('sort','asc')->get();
-				foreach ($contexts as $context) {
-					$context->context_configs = json_decode($context->context_configs);
-					$context->header = json_decode($context->header);
-					$context->footer = json_decode($context->footer);
-					$context->is_routing = $context->is_routing == 'TRUE';
-					$context->is_footer = $context->is_footer == 'TRUE';
-					$context->is_hide = $context->is_hide == 'TRUE';
-					
-					/**
-					 * 경로 경로가 / 인 경우 해당 사이트의 index 에 페이지를 할당하고,
-					 * 그렇지 않은 경우 경로에 따라 부모 컨텍스트의 children 배열에 추가한다.
-					 */
-					if ($context->route == '/') {
-						self::$_contexts[$context->domain.'@'.$context->language]->index = $context;
-					} else {
-						/**
-						 * 부모 컨텍스트 객체
-						 */
-						$parent = self::$_contexts[$site->domain.'@'.$site->language];
-						
-						/**
-						 * 페이지의 경로 경로를 분리한다.
-						 */
-						$routes = explode('/',substr($context->route,1));
-						foreach ($routes as $index=>$route) {
-							/**
-							 * n차 컨텍스트 객체가 존재하지 않을 경우, 컨텍스트 객체를 초기화한다. (1차메뉴 객체 구조와 동일)
-							 */
-							if (isset($parent->children[$route]) === false) {
-								$parent->children[$route] = new stdClass();
-								$parent->children[$route]->index = null;
-								$parent->children[$route]->route = array_slice($routes,0,$index + 1);
-								$parent->children[$route]->children = [];
-							}
-							
-							$lastParent = $parent;
-							$parent = $parent->children[$route];
-						}
-						
-						/**
-						 * 마지막 부모 컨텍스트의 index 에 현재 페이지 정보를 할당한다.
-						 */
-						$lastParent->children[$route]->index = $context;
-					}
-				}
-			}
-		}
-	}
-	
-	/**
-	 * 세션을 시작한다.
-	 */
-	public function session_start():void {
-		/**
-		 * 별도의 세션폴더가 생성되어있다면, 해당 폴더에 세션을 저장한다.
-		 */
-		if (Config::get('session_path') !== null && is_dir(Config::get('session_path')) == true && is_writable(Config::get('session_path')) == true) {
-			session_save_path(Config::get('session_path'));
-		}
-		
-		session_set_cookie_params(0,'/',(Config::get('session_domain') ?? ''),Request::isHttps() == true,Request::isHttps() == false);
-		session_start();
-	}
-	
-	/**
-	 * 데이터베이스 인터페이스 클래스를 가져온다.
-	 *
-	 * @param string $name 데이터베이스 인터페이스 고유명
-	 * @param ?object $connector 데이터베이스정보
-	 * @return DatabaseInterface $interface
-	 */
-	public function db(string $name='default',?object $connector=null):DatabaseInterface {
-		return Database::getInterface($name,$connector ?? Config::get('db'));
-	}
-	
-	/**
-	 * 간략화된 테이블명으로 실제 데이터베이스 테이블명을 가져온다.
-	 *
-	 * @param string $table;
-	 * @return string $table;
-	 */
-	public function table(string $table):string {
-		// todo: prefix 설정 제대로
-		return 'im_'.$table;
-	}
-	
-	/**
-	 * 현재 도메인을 가져온다.
-	 *
-	 * @param ?string $host 호스트정보 (없는경우 현재 호스트)
-	 * @return object $domain
-	 */
-	public function getDomain(?string $host=null):object {
-		if ($host === null) {
-			/**
-			 * 현재 도메인 정보가 없다면, 도메인을 초기화한다.
-			 */
-			if ($this->_domain === null) $this->_initDomain();
-			return $this->_domain;
-		} else {
-			/**
-			 * 전체 도메인정보가 없다면, 전체 도메인정보를 초기화한다.
-			 */
-			if (self::$_domains === null) $this->_initDomains();
-			
-			if (isset(self::$_domains[$host]) == true) {
-				return self::$_domains[$host];
-			} else {
-				ErrorHandler::view($this->error('NOT_FOUND_DOMAIN',$host));
-			}
-		}
-	}
-	
-	/**
-	 * 현재 언어코드를 가져온다.
-	 *
-	 * @return string $langauge
-	 */
-	public function getLanguage():string {
-		/**
-		 * 현재 언어코드가 없다면, 언어코드를 초기화한다.
-		 */
-		if ($this->_language === null) $this->_initLanguage();
-		
-		return $this->_language;
-	}
-	
-	/**
-	 * 템플릿 클래스를 가져온다.
-	 *
-	 * @param object $templet 템플릿설정
-	 * @return Templet $templet
-	 */
-	public function getTemplet(object $templet):Templet {
-		$Templet = new Templet();
-		return $Templet->setTemplet($templet);
-	}
-	
-	/**
-	 * 사이트의 테마를 가져온다.
-	 *
-	 * @return Templet $theme
-	 */
-	public function getTheme():Templet {
-		$site = $this->getSite();
-		return $this->getTemplet($site->theme);
-	}
-	
-	/**
-	 * 사이트정보를 가져온다.
-	 *
-	 * @param ?string $domain 도메인명 (NULL인 경우 현재 사이트 도메인)
-	 * @param ?string $language 언어코드 (NULL인 경우 현재 사이트 언어코드)
-	 * @return ?object $site
-	 */
-	public function getSite(?string $domain=null,?string $language=null):?object {
-		/**
-		 * 현재 사이트정보가 없다면, 전체 사이트를 초기화한다.
-		 */
-		if ($this->_site === null) $this->_initSite();
-		
-		if ($domain === null && $language === null) return $this->_site;
-		
-		$domain ??= $this->_site->domain;
-		$language ??= $this->_site->language;
-		
-		return isset(self::$_sites[$domain.'@'.$language]) == true ? self::$_sites[$domain.'@'.$language] : null;
-	}
-	
-	/**
-	 * 사이트주소를 가져온다.
-	 *
-	 * @param ?object $site 주소를 가져올 사이트정보 (없을 경우 현재 사이트)
-	 * @param bool $is_language_code 언어코드 포함여부 (기본값 : true)
-	 * @return string $url
-	 */
-	public function getSiteUrl(?object $site,bool $is_language_code=true):string {
-		$site ??= $this->getSite();
-		$domain = $this->getDomain($site->domain);
-		
-		$url = $domain->is_https == true ? 'https://' : 'http://';
-		$url.= $domain->domain;
-		
-		/**
-		 * 모임즈툴즈 상대경로를 추가한다. (웹사이트 루트경로가 아닌 서브경로에 설치된 경우)
-		 */
-		$url.= Config::dir();
-		
-		/**
-		 * 사이트 언어코드가 도메인의 기본언어코드와 다를 경우 언어코드를 추가한다.
-		 * 다국어 사이트를 지원하지 않는 경우 무조건 언어코드가 일치하기 때문에 추가되지 않는다.
-		 */
-		if ($is_language_code === true && $site->language != $domain->language) $url.= '/'.$site->language;
-		
-		return $url;
-	}
-	
-	/**
-	 * 경로 경로를 가져온다.
-	 *
-	 * @param int $start 가져올 경로 경로 시작지점 (언어코드는 제외된다.)
-	 * @param int $limit 가져올 경로 갯수 (0 인 경우 전체 경로)
-	 * @return array $route
-	 */
-	public function getRoute(int $start=0,int $limit=0):array {
-		$routes = $this->getRoutes();
-		return array_slice($routes,$this->_routeStart + $start,$limit === 0 ? null : $limit);
-	}
-	
-	/**
-	 * 전체 경로 경로를 가져온다.
-	 *
-	 * @return array $routes
-	 */
-	public function getRoutes():array {
-		/**
-		 * 전체 경로 경로가 없다면, 경로 경로를 초기화한다.
-		 */
-		if (count($this->_routes) === 0) $this->_initRoutes();
-		
-		return $this->_routes;
-	}
-	
-	/**
-	 * 현재 경로 대상을 가져온다.
-	 *
-	 * @return string $routeTarget
-	 */
-	public function getRouteTarget():string {
-		/**
-		 * 현재 경로 대상이 없다면, 경로 경로를 초기화한다.
-		 */
-		if ($this->_routeTarget === null) $this->_initRoutes();
-		
-		return $this->_routeTarget;
-	}
-	
-	/**
-	 * 경로의 URL을 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로 경로 기준 사이트 (없을 경우 현재 사이트)
-	 * @param bool $is_site_url 사이트주소를 반드시 포함할지 여부 (기본값 : false)
-	 * @return string $url
-	 */
-	public function getRouteUrl(?array $routes=null,?object $site=null,bool $is_site_url=false):string {
-		/**
-		 * 경로 URL을 가져오기 위한 기본 경로를 계산한다.
-		 * 기본 경로에는 설정에 따라 사이트 전체주소 또는 아이모듈 상대경로가 포함된다.
-		 */
-		if ($site !== null) {
-			if ($this->getSite()->domain != $site->domain || $this->getSite()->language != $site->language) {
-				$is_site_url = true;
-			}
-		}
-		$url = $is_site_url === true ? $this->getSiteUrl($site,false) : Config::dir();
-		
-		$site ??= $this->getSite();
-		$domain = $this->getDomain($site !== null ? $site->domain : null);
-		
-		$routes ??=  $this->getRoute();
-		$routeUrl = '';
-		
-		/**
-		 * 사이트 언어코드가 도메인의 기본언어코드와 다를 경우 언어코드를 추가한다.
-		 * 다국어 사이트를 지원하지 않는 경우 무조건 언어코드가 일치하기 때문에 추가되지 않는다.
-		 */
-		if ($site->language != $domain->language) {
-			$routeUrl.= '/'.$site->language;
-		}
-		
-		if (count($routes) > 0) {
-			/**
-			 * 경로경로가 있고, 다국어 사이트인 경우 무조건 언어코드를 추가한다.
-			 * 단, 이미 사이트 언어코드와 도메인의 기본언어코드가 달라 언어코드가 추가된 경우에는 추가하지 않는다.
-			 */
-			if (strlen($routeUrl) == 0 && $domain->is_internationalization === true) {
-				$routeUrl.= '/'.$site->language;
-			}
-			
-			$routeUrl.= '/'.implode('/',$routes);
-		}
-		
-		return $url.($domain->is_rewrite === true ? $routeUrl : (strlen($routeUrl) > 0 ? '/?route='.$routeUrl : ''));
-	}
-	
-	/**
-	 * 전체 컨텍스트에서 원하는 컨텍스트를 가져온다.
-	 *
-	 * @param string $type 컨텍스트타입
-	 * @param string $target 컨텍스트대상
-	 * @param string $context 컨텍스트명
-	 * @return array $contexts
-	 */
-	public function getContexts(string $type,string $target,string $context,?array $contexts=null):array {
-		/**
-		 * 전체 컨텍스트 정보가 없다면, 전체 컨텍스트를 초기화한다.
-		 */
-		if (self::$_contexts === null) $this->_initContexts();
-		
-		$matches = [];
-		$contexts ??= self::$_contexts;
-		foreach ($contexts as $item) {
-			// todo: 컨텍스트를 볼 수 있는 권한을 체크하여 볼 수 있는 권한이 존재하는 컨텍스트만 포함하도록...
-			if ($item->index?->type == $type && $item->index?->target == $target && $item->index?->context == $context) {
-				$matches[] = $item->index;
-			}
-			
-			/**
-			 * 자식 컨텍스트에서 재귀함수 방식으로 검색한다.
-			 */
-			$matches = array_merge($matches,$this->getContexts($type,$target,$context,$item->children,$matches));
-		}
-		
-		return $matches;
-	}
-	
-	/**
-	 * 특정 컨텍스트를 가지는 경로의 URL을 가져온다.
-	 *
-	 * @param string $type 컨텍스트타입
-	 * @param string $target 컨텍스트대상
-	 * @param string $context 컨텍스트명
-	 * @param ?array $extacts 반드시 일치해야하는 컨텍스트 옵션
-	 * @param ?array $options 가급적 일치해야하는 컨텍스트 옵션
-	 * @param bool $is_same_domain 현재 도메인 우선모드 (기본값 : true, true 일 경우 같은 도메인일 경우 우선, false 일 경우 $options 설정값에 우선)
-	 * @param bool $is_site_url 사이트주소를 반드시 포함할지 여부 (기본값 : false)
-	 * @return ?string $url
-	 */
-	public function getContextUrl(string $type,string $target,string $context,?array $exacts=null,?array $options=null,bool $is_same_domain=true,bool $is_site_url=false):?string {
-		/**
-		 * 전체 컨텍스트 목록에서 컨텍스트타입과 컨텍스트대상, 컨텍스트명이 일치하는 컨텍스트를 찾는다.
-		 */
-		$matches = $this->getContexts($type,$target,$context);
-		
-		/**
-		 * 일치하는 컨텍스트가 없는 경우 NULL 을 반환한다.
-		 */
-		if (count($matches) == 0) return null;
-		
-		/**
-		 * 반드시 일치해야하는 설정값을 가진 컨텍스트를 탐색한다.
-		 */
-		$exacts ??= [];
-		$filters = [];
-		foreach ($matches as $match) {
-			$is_matched = true;
-			foreach ($exacts as $key=>$value) {
-				if (isset($match->context_configs->$key) == false || $match->context_configs->$key != $value) {
-					$is_matched = false;
-					break;
-				}
-			}
-			
-			if ($is_matched == true) $filters[] = $match;
-		}
-		$matches = $filters;
-		
-		/**
-		 * 일치하는 컨텍스트가 없는 경우 NULL 을 반환한다.
-		 */
-		if (count($matches) == 0) return null;
-		
-		/**
-		 * 일치하는 컨텍스트가 유일할 경우 해당 컨텍스트 URL을 반환한다.
-		 */
-		if (count($matches) == 1) {
-			$routes = strlen(preg_replace('/^\//','',$matches[0]->route)) > 0 ? explode('/',preg_replace('/^\//','',$matches[0]->route)) : [];
-			$site = $this->getSite($matches[0]->domain,$matches[0]->language);
-			return $this->getRouteUrl($routes,$site,$is_site_url);
-		}
-		
-		/**
-		 * 설정과 일치하는 컨텍스트가 2개 이상일 경우, 다음 조건을 적용하여 계속 탐색한다.
-		 */
-		$filters = [];
-		
-		/**
-		 * 현재 도메인 우선모드일 경우, 현재 도메인과 일치하는 컨텍스트만 재탐색한다.
-		 */
-		if ($is_same_domain == true) {
-			foreach ($matches as $match) {
-				if ($match->domain == $this->getSite()->domain && $match->language == $this->getSite()->language) $filters[] = $match;
-			}
-			
-			if (count($filters) == 0) {
-				foreach ($matches as $match) {
-					if ($match->domain == $this->getSite()->domain) $filters[] = $match;
-				}
-			}
-			
-			/**
-			 * 현재 도메인과 일치하는 컨텍스트가 있는 경우
-			 */
-			if (count($filters) > 0) $matches = $filters;
-			
-			/**
-			 * 일치하는 컨텍스트가 유일할 경우 해당 컨텍스트 URL을 반환한다.
-			 */
-			if (count($matches) == 1) {
-				$routes = strlen(preg_replace('/^\//','',$matches[0]->route)) > 0 ? explode('/',preg_replace('/^\//','',$matches[0]->route)) : [];
-				$site = $this->getSite($matches[0]->domain,$matches[0]->language);
-				return $this->getRouteUrl($routes,$site,$is_site_url);
-			}
-		}
-		
-		/**
-		 * 설정과 일치하는 컨텍스트가 2개 이상일 경우, 다음 조건을 적용하여 계속 탐색한다.
-		 */
-		$filters = [];
-		
-		/**
-		 * $options 설정과 일치하는 설정값 갯수를 구한다.
-		 */
-		$options ??= [];
-		foreach ($matches as &$match) {
-			$match->matched_options = 0;
-			foreach ($options as $key=>$value) {
-				if (isset($match->context_configs->$key) == true && $match->context_configs->$key == $value) $match->matched_options++;
-			}
-		}
-		
-		/**
-		 * 일치하는 설정값 갯수로 정렬한다.
-		 */
-		usort($matches,function($left,$right) {
-			return $left->matched_options <=> $right->matched_options;
-		});
-		
-		/**
-		 * 가장 많이 일치한 컨텍스트 URL을 반환한다.
-		 */
-		$match = array_pop($matches);
-		$routes = strlen(preg_replace('/^\//','',$match->route)) > 0 ? explode('/',preg_replace('/^\//','',$match->route)) : [];
-		$site = $this->getSite($match->domain,$match->language);
-		return $this->getRouteUrl($routes,$site,$is_site_url);
-	}
-	
-	/**
-	 * 경로에 따른 컨텍스트를 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 컨텍스트 페이지
-	 */
-	public function getContext(?array $routes=null,?object $site=null):?object {
-		/**
-		 * 전체 컨텍스트 정보가 없다면, 전체 컨텍스트를 초기화한다.
-		 */
-		if (self::$_contexts === null) $this->_initContexts();
-		
-		$site ??= $this->getSite();
-		$routes ??= $this->getRoute();
-		if (isset(self::$_routings[$site->domain.'@'.$site->language.'/'.implode('/',$routes)]) == true) {
-			return self::$_routings[$site->domain.'@'.$site->language.'/'.implode('/',$routes)];
-		}
-		
-		$context = self::$_contexts[$site->domain.'@'.$site->language];
-		if ($context === null) return null;
-		
-		foreach ($routes as $route) {
-			if (isset($context->children[$route]) == true) {
-				/**
-				 * 현재 단계의 컨텍스트가 자체적인 세부 경로를 가질 경우 현재 단계를 반환한다.
-				 */
-				$context = $context->children[$route];
-				if ($context->index?->is_routing === true) break;
-			} else {
-				$context = null;
-				break;
-			}
-		}
-		
-		self::$_routings[$site->domain.'@'.$site->language.'/'.implode('/',$routes)] = $context;
-		
-		return $context;
-	}
-	
-	/**
-	 * 경로에 따른 컨텍스트 인덱스를 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 컨텍스트 페이지
-	 */
-	public function getContextIndex(?array $routes=null,?object $site=null):?object {
-		$context = $this->getContext($routes,$site);
-		return $context?->index;
-	}
-	
-	/**
-	 * 현재 컨텍스트가 시작된 경로를 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return array $route 최종 경로 경로
-	 */
-	public function getContextRoutes(?array $routes=null,?object $site=null):array {
-		$context = $this->getContext($routes,$site);
-		return $context?->route ?? [];
-	}
-	
-	/**
-	 * 경로에 따른 컨텍스트의 자식 컨텍스트를 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return ?object $context 컨텍스트 페이지
-	 */
-	public function getContextChildren(?array $routes=null,?object $site=null):array {
-		$context = $this->getContext($routes,$site);
-		return $context?->children ?? [];
-	}
-	
-	/**
-	 * 특정 경로에 해당하는 컨텍스트 문서(HTML)를 가져온다.
-	 *
-	 * @param ?array $routes 경로 경로
-	 * @param ?object $site 경로를 검색할 사이트객체
-	 * @return string $document 문서내용(HTML)
-	 */
-	public function getDocument(?array $routes=null,?object $site=null):string {
-		$context = $this->getContextIndex($routes,$site);
-		if ($context === null) {
-			return ErrorHandler::get($this->error('NOT_FOUND_PAGE'));
-		}
-		$routes = $this->getContextRoutes($routes,$site);
-		
-		/**
-		 * 컨텍스트 타입에 따라 컨텍스트 문서를 가져온다.
-		 */
-		$document = '';
-		switch ($context->type) {
-			case 'FILE' :
-				$document = $this->getDocumentFromFile($context->target,$context->context,$routes);
-				break;
-			
-			case 'MODULE' :
-				$document = $this->getDocumentFromModule($context->target,$context->context,$context->context_configs,$routes);
-				break;
-		}
-		
-		return $document;
-	}
-	
-	/**
-	 * 현재 문서의 제목을 가져온다.
-	 * 
-	 * @return string $title 문서제목
-	 */
-	public function getDocumentTitle():string {
-		$site = $this->getSite();
-		$context = $this->getContext();
-		
-		$title = $context?->index?->title;
-		return $title === null ? $site->title : $title.= '-'.$site->title;
-		
-		return $title;
-	}
-	
-	/**
-	 * 현재 문서의 설명을 가져온다.
-	 * 
-	 * @return string $description 문서설명
-	 */
-	public function getDocumentDescription():string {
-		$site = $this->getSite();
-		$context = $this->getContext();
-		
-		return $context?->index?->description ?? $site->description;
-	}
-	
-	/**
-	 * HTML 문서 헤더를 가져온다.
-	 *
-	 * @return string $header
-	 */
-	public function getDocumentHeader():string {
-		/**
-		 * 사이트 설명 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
-		 */
-		Html::title($this->getDocumentTitle());
-		Html::description($this->getDocumentDescription());
-		
-		/**
-		 * 기본 스크립트파일을 불러온다.
-		 * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
-		 */
-		Cache::script('core','/scripts/Modules.js');
-		Cache::script('core','/scripts/Module.js');
-		Html::script(Cache::script('core'),1);
-		
-		/*
-		$this->head('link',array('rel'=>'canonical','href'=>$this->getCanonical()));
-		$this->head('meta',array('name'=>'robots','content'=>$this->getRobots()));
-		*/
-		
-		/**
-		 * OG 태그를 설정한다.
-		 *
-		$this->head('meta',array('property'=>'og:url','content'=>$this->getCanonical()));
-		$this->head('meta',array('property'=>'og:type','content'=>'website'));
-		$this->head('meta',array('property'=>'og:title','content'=>$this->getViewTitle()));
-		$this->head('meta',array('property'=>'og:description','content'=>preg_replace('/(\r|\n)/',' ',$this->getViewDescription())));
-		$viewImage = $this->getViewImage(true,true);
-		if (is_object($viewImage) == true) {
-			$this->head('meta',array('property'=>'og:image','content'=>$this->getViewImage(true)));
-			$this->head('meta',array('property'=>'og:image:width','content'=>$viewImage->width));
-			$this->head('meta',array('property'=>'og:image:height','content'=>$viewImage->height));
-		} elseif ($viewImage != null) {
-			$this->head('meta',array('property'=>'og:image','content'=>$viewImage));
-		}
-		$this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
-		*/
-		
-		/**
-		 * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
-		 *
-		if ($this->getSiteEmblem() !== null) {
-			$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'57x57','href'=>$this->getSiteEmblem(true)));
-			$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'114x114','href'=>$this->getSiteEmblem(true)));
-			$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'72x72','href'=>$this->getSiteEmblem(true)));
-			$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'144x144','href'=>$this->getSiteEmblem(true)));
-		}
-		*/
-		
-		/**
-		 * 사이트 Favicon 태그를 정의한다.
-		 *
-		if ($this->getSiteFavicon() !== null) {
-			$this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
-		}
-		*/
-		
-		/**
-		 * 템플릿을 불러온다.
-		 */
-		return $this->getTheme()->getHeader();
-	}
-	
-	/**
-	 * HTML 문서 푸터를 가져온다.
-	 *
-	 * @return string $footer
-	 */
-	public function getDocumentFooter():string {
-		/**
-		 * 템플릿을 불러온다.
-		 */
-		return $this->getTheme()->getFooter();
-	}
-	
-	/**
-	 * 외부파일에서 컨텍스트 문서(HTML)을 가져온다.
-	 *
-	 * @param string $name 템플릿명
-	 * @param string $filename 외부파일명
-	 * @return int $document 문서내용(HTML)
-	 */
-	public function getDocumentFromFile(string $name,string $filename):string {
-		$temp = explode('/',$name);
-		$type = $temp[1];
-		
-		/**
-		 * 템플릿 경로에 따라 외부파일을 처리할 템플릿 클래스를 설정한다.
-		 */
-		switch ($type) {
-			/**
-			 * 사이트테마인 경우
-			 */
-			case 'themes' :
-				/**
-				 * 현재 사이트테마와 동일한 테마인 경우 사이트 테마 클래스를 통해 외부파일을 호출한다.
-				 */
-				if ($this->getTheme()->getName() === $name) {
-					return $this->getTheme()->getFile($filename);
-				} else {
-					$details = new stdClass();
-					$details->theme = $name;
-					$details->filename = $filename;
-					return ErrorHandler::get($this->error('NOT_MATCHED_FILE_THEME',null,$details));
-				}
-				break;
-		}
-		
-		return ErrorHandler::get($this->error('NOT_FOUND_DOCUMENT_FILE',$name.'/'.$filename));
-	}
-	
-	/**
-	 * 외부파일에서 컨텍스트 문서(HTML)을 가져온다.
-	 *
-	 * @param string $module 모듈명
-	 * @param string $context 컨텍스트명
-	 * @return int $document 문서내용(HTML)
-	 */
-	public function getDocumentFromModule(string $module,string $context,?object $configs=null,?array $routes=null):string {
-		/**
-		 * 모듈 컨텍스트가 시작된 경로를 지정한다.
-		 */
-		$routes ??= $this->getContextRoutes();
-		
-		/**
-		 * 모듈 클래스를 불러온다.
-		 */
-		$mModule = Modules::get($module,$routes);
-		if (method_exists($mModule,'getContext') == false) {
-			ErrorHandler::view('CONTEXT_METHOD_NOT_EXISTS');
-		}
-		
-		return $mModule->getContext($context,$configs);
-	}
-	
-	/**
-	 * URL 경로에 따라 프로세스를 처리한다.
-	 */
-	public function route():void {
-		switch ($this->getRouteTarget()) {
-			case 'web' :
-				$this->routeWeb();
-				break;
-				
-			case 'api' :
-				$this->routeApi();
-				break;
-				
-			case 'admin' :
-				$this->routeAdmin();
-				break;
-				
-			default :
-				ErrorHandler::view($this->error('NOT_FOUND_ROUTE_TARGET'));
-		}
-	}
+class iModules
+{
+    /**
+     * @var bool $_init 초기화여부
+     */
+    private static bool $_init = false;
 
-	/**
-	 * 웹페이지 경로를 처리한다.
-	 */
-	public function routeWeb():void {
-		/**
-		 * 현재 사이트 정보를 가져온다.
-		 */
-		$site = $this->getSite();
-		
-		/**
-		 * 현재 사이트정보와 접속한 주소가 다른 경우 정상적인 사이트주소로 이동한다.
-		 */
-		if (Request::host() != $site->domain || $this->getLanguage() != $site->language) {
-			header('location: '.$this->getRouteUrl(null,$site,true));
-			exit;
-		}
-		
-		// todo: 이벤트발생
-		
-		/**
-		 * 현재 경로에 해당하는 컨텍스트 HTML 을 가져온다.
-		 * 컨텍스트가 NULL 인 경우, 404 에러를 출력한다.
-		 */
-		$context = $this->getDocument();
-		
-		$footer = $this->getDocumentFooter();
-		$header = $this->getDocumentHeader();
-		
-		echo Html::tag(
-			$header,
-			$context,
-			$footer
-		);
-	}
-	
-	/**
-	 * API 경로를 처리한다.
-	 */
-	public function routeApi():void {
-		
-	}
-	
-	/**
-	 * 관리자 경로를 처리한다.
-	 */
-	public function routeAdmin():void {
-		
-	}
-	
-	/**
-	 * 특수한 에러코드의 경우 에러데이터를 현재 클래스에서 처리하여 에러클래스로 전달한다.
-	 *
-	 * @param string $code 에러코드
-	 * @param ?string $message 에러메시지
-	 * @param ?object $details 에러와 관련된 추가정보
-	 * @return object $error
-	 */
-	public function error(string $code,?string $message=null,?object $details=null):object {
-		$error = ErrorHandler::data();
-		
-		switch ($code) {
-			case 'NOT_FOUND_SITE' :
-				ErrorHandler::code(404);
-				
-				$error->prefix = ErrorHandler::getText('SITE_ERROR');
-				$error->message = ErrorHandler::getText('NOT_FOUND_SITE');
-				$error->suffix = $message;
-				$error->stacktrace = ErrorHandler::trace();
-				
-				break;
-				
-			case 'NOT_MATCHED_FILE_THEME' :
-				$error->prefix = ErrorHandler::getText('CONTEXT_ERROR');
-				$error->message = ErrorHandler::getText('NOT_MATCHED_FILE_THEME',['theme'=>$details->theme]);
-				$error->suffix = $details->filename;
-				$error->stacktrace = ErrorHandler::trace();
-				
-				break;
-			
-			case 'NOT_FOUND_TEMPLET_FILE' :
-				$error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
-				$error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET_FILE');
-				$error->suffix = $message;
-				$error->stacktrace = ErrorHandler::trace('Templet');
-				
-				break;
-				
-			default :
-				$error->message = ErrorHandler::getText($code);
-		}
-		
-		return $error;
-	}
+    /**
+     * 아이모듈을 초기화한다.
+     */
+    private static function init(): void
+    {
+        if (self::$_init == true) {
+            return;
+        }
+
+        /**
+         * 라우터를 초기화한다.
+         */
+        Router::init();
+
+        /**
+         * 설치가 되지 않았을 경우 설치화면으로 이동한다.
+         */
+        if (Configs::isInstalled() == false) {
+            exit();
+        }
+
+        /**
+         * 모듈을 초기화한다.
+         */
+        Modules::init();
+
+        /**
+         * 전체 도메인을 초기화한다.
+         */
+        Domains::init();
+
+        /**
+         * 전체 사이트를 초기화한다.
+         */
+        Sites::init();
+
+        /**
+         * 전체 컨텍스트를 초기화한다.
+         */
+        Contexts::init();
+    }
+
+    /**
+     * 데이터베이스 인터페이스 클래스를 가져온다.
+     *
+     * @param string $name 데이터베이스 인터페이스 고유명
+     * @param ?object $connector 데이터베이스정보
+     * @return DatabaseInterface $interface
+     */
+    public static function db(string $name = 'default', ?object $connector = null): DatabaseInterface
+    {
+        return Database::getInterface($name, $connector ?? Configs::get('db'));
+    }
+
+    /**
+     * 간략화된 테이블명으로 실제 데이터베이스 테이블명을 가져온다.
+     *
+     * @param string $table
+     * @return string $table
+     */
+    public static function table(string $table): string
+    {
+        // todo: prefix 설정 제대로
+        return 'im_' . $table;
+    }
+
+    /**
+     * 세션을 시작한다.
+     */
+    public static function session_start(): void
+    {
+        /**
+         * 별도의 세션폴더가 생성되어있다면, 해당 폴더에 세션을 저장한다.
+         */
+        if (
+            Configs::get('session_path') !== null &&
+            is_dir(Configs::get('session_path')) == true &&
+            is_writable(Configs::get('session_path')) == true
+        ) {
+            session_save_path(Configs::get('session_path'));
+        }
+
+        session_set_cookie_params(
+            0,
+            '/',
+            Configs::get('session_domain') ?? '',
+            Request::isHttps() == true,
+            Request::isHttps() == false
+        );
+        session_start();
+    }
+
+    /**
+     * 권한문자열을 파싱하여 권한이 있는지 여부를 확인한다.
+     *
+     * @param string $permission 권한문자열
+     * @return bool $has_permission
+     */
+    public static function parsePermissionString(string $permission): bool
+    {
+        // @todo 실제 권한여부 확인
+        return strlen($permission) > 0;
+    }
+
+    /**
+     * 문서 레이아웃을 초기화한다.
+     */
+    public static function initContent(): void
+    {
+        $route = Router::get();
+
+        /**
+         * 경로대상이 웹페이지, 관리자, 모듈인 경우 HTML 헤더를 정의하고,
+         * 그렇지 않은 경우 JSON 헤더를 정의한다.
+         */
+        if (in_array($route->getType(), ['context', 'html']) == true) {
+            /**
+             * Content-Type 을 지정한다.
+             */
+            header('Content-type: text/html; charset=utf-8');
+
+            /**
+             * 사이트명 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
+             */
+            $site = $route->getSite();
+            Html::title($site->getTitle());
+            Html::description($site->getDescription());
+
+            /**
+             * 기본 자바스크립트파일을 불러온다.
+             * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
+             */
+            //Cache::script('core', '/scripts/jquery.min.js');
+            Cache::script('core', '/scripts/iModules.js');
+            Cache::script('core', '/scripts/Html.js');
+            Cache::script('core', '/scripts/Dom.js');
+            Cache::script('core', '/scripts/DomList.js');
+            Cache::script('core', '/scripts/Modules.js');
+            Cache::script('core', '/scripts/Module.js');
+            Html::script(Cache::script('core'), 1);
+
+            /**
+             * 모듈의 자바스크립트파일을 불러온다.
+             */
+            Html::script(Cache::script('modules'), 5);
+            //Html::script(Modules::script(), 5);
+
+            /**
+             * 기본 스타일시트 및 폰트를 불러온다.
+             */
+            Html::font('moimz');
+            Cache::style('core', '/styles/common.scss');
+            Html::style(Cache::style('core'));
+
+            /*
+			$this->head('link',array('rel'=>'canonical','href'=>$this->getCanonical()));
+			$this->head('meta',array('name'=>'robots','content'=>$this->getRobots()));
+			*/
+
+            /**
+			 * OG 태그를 설정한다.
+			 *
+			$this->head('meta',array('property'=>'og:url','content'=>$this->getCanonical()));
+			$this->head('meta',array('property'=>'og:type','content'=>'website'));
+			$this->head('meta',array('property'=>'og:title','content'=>$this->getViewTitle()));
+			$this->head('meta',array('property'=>'og:description','content'=>preg_replace('/(\r|\n)/',' ',$this->getViewDescription())));
+			$viewImage = $this->getViewImage(true,true);
+			if (is_object($viewImage) == true) {
+				$this->head('meta',array('property'=>'og:image','content'=>$this->getViewImage(true)));
+				$this->head('meta',array('property'=>'og:image:width','content'=>$viewImage->width));
+				$this->head('meta',array('property'=>'og:image:height','content'=>$viewImage->height));
+			} elseif ($viewImage != null) {
+				$this->head('meta',array('property'=>'og:image','content'=>$viewImage));
+			}
+			$this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
+			*/
+
+            /**
+			 * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
+			 *
+			if ($this->getSiteEmblem() !== null) {
+				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'57x57','href'=>$this->getSiteEmblem(true)));
+				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'114x114','href'=>$this->getSiteEmblem(true)));
+				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'72x72','href'=>$this->getSiteEmblem(true)));
+				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'144x144','href'=>$this->getSiteEmblem(true)));
+			}
+			*/
+
+            /**
+			 * 사이트 Favicon 태그를 정의한다.
+			 *
+			if ($this->getSiteFavicon() !== null) {
+				$this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
+			}
+			*/
+        } else {
+        }
+    }
+
+    /**
+     * 요청에 따른 응답을 처리한다.
+     */
+    public static function respond(): void
+    {
+        self::init();
+
+        $route = Router::get();
+
+        /**
+         * 경로 타입에 따라 응답을 처리한다.
+         */
+        switch ($route->getType()) {
+            case 'context':
+                self::doContext($route);
+                break;
+
+            case 'html':
+                self::doHtml($route);
+                break;
+
+            case 'blob':
+                self::doBlob($route);
+                break;
+        }
+    }
+
+    /**
+     * 컨텍스트 요청을 처리한다.
+     *
+     * @param Route $route
+     */
+    public static function doContext(Route $route): void
+    {
+        /**
+         * 요청된 주소와 경로가 다를 경우, 정상적인 경로로 리다이렉트한다.
+         */
+        if (Request::url($route->getDomain()->isRewrite() == true ? false : ['route']) != $route->getUrl(true)) {
+            header('location: ' . Request::combine($route->getUrl(true), Request::query()));
+            exit();
+        }
+
+        /**
+         * 컨텍스트를 가져온다.
+         */
+        $context = Contexts::get($route);
+
+        /**
+         * 컨텍스트의 콘텐츠를 가져온다.
+         */
+        $content = $route->getContent();
+
+        /**
+         * 사이트 테마에 콘텐츠를 포함하여 가져온다.
+         */
+        $layout = $route->getSite()->getTheme();
+        $layout->assign('site', $context->getSite());
+        $layout->assign('context', $context);
+        $layout->assign('content', $content);
+        $layout = $layout->getLayout($context->getLayout());
+
+        /**
+         * 컨텍스트 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
+         */
+        if ($route->getPath() !== '/') {
+            Html::title($context->getTitle() . ' - ' . $context->getSite()->getTitle());
+        }
+        if ($context->getDescription()) {
+            Html::description($context->getDescription());
+        }
+
+        /**
+         * 컨텍스트 콘텐츠를 초기화한다.
+         */
+        self::initContent();
+
+        /**
+         * HTML 헤더 및 푸터를 포함하여 출력한다.
+         * @todo 이벤트
+         */
+        Html::print(Html::header(), $layout, Html::footer());
+    }
+
+    /**
+     * 컨텍스트 요청을 처리한다.
+     *
+     * @param Route $route
+     */
+    public static function doHtml(Route $route): void
+    {
+        /**
+         * 요청된 주소와 경로가 다를 경우, 정상적인 경로로 리다이렉트한다.
+         */
+        if (Request::url($route->getDomain()->isRewrite() == true ? false : ['route']) != $route->getUrl(true)) {
+            header('location: ' . Request::combine($route->getUrl(true), Request::query()));
+            exit();
+        }
+
+        /**
+         * 컨텍스트의 콘텐츠를 가져온다.
+         */
+        $content = $route->getContent();
+
+        /**
+         * 컨텍스트 콘텐츠를 초기화한다.
+         */
+        self::initContent();
+
+        /**
+         * HTML 헤더 및 푸터를 포함하여 출력한다.
+         * @todo 이벤트
+         */
+        Html::print(Html::header(), $content, Html::footer());
+    }
+
+    /**
+     * 파일 요청을 처리한다.
+     *
+     * @param Route $route
+     */
+    public static function doBlob(Route $route): void
+    {
+        $route->printContent();
+    }
+
+    /**
+     * 에러페이지를 출력하기 위한 데이터를 가공한다.
+     *
+     * @param string $code 에러코드
+     * @param ?string $message 에러메시지
+     * @param ?object $details 에러와 관련된 추가정보
+     * @return ErrorData $error
+     */
+    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
+    {
+        $error = ErrorHandler::data();
+
+        return $error;
+    }
 }
-?>

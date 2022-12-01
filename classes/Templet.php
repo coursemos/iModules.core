@@ -7,341 +7,339 @@
  * @file /classes/Templet.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 3. 18.
+ * @modified 2022. 12. 1.
  */
-class Templet {
-	/**
-	 * 템플릿이 처리되는 대상 객체
-	 * 모듈 / 플러그인 / 위젯 클래스 등
-	 */
-	private $_parent = null;
-	
-	/**
-	 * 템플릿 설정을 저장한다.
-	 */
-	private ?string $_name = null;
-	private ?object $_package = null;
-	private ?object $_configs = null;
-	
-	/**
-	 * 템플릿 클래스를 선언한다.
-	 *
-	 * @param mixed $parent 템플릿 클래스를 호출한 클래스
-	 */
-	public function __construct(mixed $parent=null) {
-		$this->_parent = $parent;
-	}
-	
-	/**
-	 * 템플릿 설정이 정의되어 있는지 확인한다.
-	 *
-	 * @return bool $isLoaded
-	 */
-	private function _isLoaded():bool {
-		return $this->_name !== null;
-	}
-	
-	/**
-	 * 템플릿을 설정한다.
-	 *
-	 * @param object $templet 템플릿설정
-	 * @return Templet $this
-	 */
-	public function setTemplet(object $templet):Templet {
-		if (strpos($templet->name,'/') === 0) {
-			$this->_name = $templet->name;
-		} else {
-			if ($this->_parent == null) {
-				$this->_name = Config::dir().'/themes/'.$templet->name;
-			} else {
-				$this->_name = $this->_parent->getDir().'/templets/'.$templet->name;
-			}
-		}
-		$this->_configs = $templet->configs;
-		
-		if (is_dir($this->getPath()) == false || is_file($this->getPath().'/package.json') == false) {
-			ErrorHandler::view($this->error('NOT_FOUND_TEMPLET',$this->_name));
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * 현재 템플릿명(템플릿 경로)를 가져온다.
-	 *
-	 * @return string $name
-	 */
-	public function getName():string {
-		return $this->_name ?? 'undefined';
-	}
-	
-	/**
-	 * 현재 템플릿의 절대경로를 가져온다.
-	 *
-	 * @return string $path
-	 */
-	public function getPath():string {
-		return Config::path().$this->getName();
-	}
-	
-	/**
-	 * 현재 템플릿의 상대경로를 가져온다.
-	 *
-	 * @return string $dir
-	 */
-	public function getDir():string {
-		return Config::dir().$this->getName();
-	}
-	
-	/**
-	 * 템플릿의 package.json 정보를 가져온다.
-	 *
-	 * @return ?object $package package.json 정보
-	 */
-	public function getPackage():?object {
-		if ($this->_isLoaded() === false) return null;
-		if ($this->_package !== null) return $this->_package;
-		$this->_package = json_decode(file_get_contents($this->getPath().'/package.json'));
-		return $this->_package;
-	}
-	
-	/**
-	 * 템플릿 파일에서 이용할 수 있는 데이터를 정리한다.
-	 *
-	 * @param array $values 데이터 배열
-	 * @return array $values 정리된 변수
-	 */
-	function getValues(array $values=[]):array {
-		unset($values['this'],$values['IM'],$values['Module'],$values['Widget'],$values['Templet'],$values['file'],$values['header'],$values['footer'],$values['layout']);
-		
-		$values['IM'] = iModules::getInstance();
-		$values['me'] = &$this->_parent;
-		$values['templet'] = &$this;
-		
-		return $values;
-	}
-	
-	/**
-	 * 템플릿 헤더를 불러온다.
-	 *
-	 * @return string $header 헤더 HTML
-	 */
-	public function getHeader():string {
-		/**
-		 * 템플릿을 설정되지 않은 경우 에러메시지를 반환한다.
-		 */
-		if ($this->_isLoaded() === false) return ErrorHandler::get($this->error('NOT_INITIALIZED_TEMPLET'));
-		
-		/**
-		 * 템플릿의 package.json 에 styles 나 scripts 가 설정되어 있다면, 해당 파일을 불러온다.
-		 */
-		$package = $this->getPackage();
-		if (isset($package->styles) == true && is_array($package->styles) == true) {
-			foreach ($package->styles as $style) {
-				$style = preg_match('/^(http(s)?:\/\//',$style) == true ? $style : $this->getDir().$style;
-				Html::style($style);
-			}
-		}
-		
-		if (isset($package->scripts) == true && is_array($package->scripts) == true) {
-			foreach ($package->scripts as $script) {
-				$script = preg_match('/^(http(s)?:\/\//',$style) == true ? $script : $this->getDir().$script;
-				Html::script($script);
-			}
-		}
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		
-		$header = '';
-		
-		/**
-		 * 템플릿파일에서 사용할 변수선언
-		 */
-		$values = $this->getValues();
-		foreach ($values as $key=>$value) {
-			${$key} = $value;
-		}
-		unset($values);
-		
-		ob_start();
-		include $this->getPath().'/header.php';
-		$header.= ob_get_clean();
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		
-		/**
-		 * 기본 HTML 헤더와 함께 템플릿 헤더를 반환한다.
-		 */
-		$html = Html::tag(
-			Html::header(),
-			$header
-		);
-		
-		return $html;
-	}
-	
-	/**
-	 * 템플릿 푸터를 불러온다.
-	 *
-	 * @return string $footer 푸터 HTML
-	 */
-	public function getFooter():string {
-		/**
-		 * 템플릿을 설정되지 않은 경우 에러메시지를 반환한다.
-		 */
-		if ($this->_isLoaded() === false) return ErrorHandler::get($this->error('NOT_INITIALIZED_TEMPLET'));
-		
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		
-		$footer = '';
-		
-		/**
-		 * 템플릿파일에서 사용할 변수선언
-		 */
-		$values = $this->getValues();
-		foreach ($values as $key=>$value) {
-			${$key} = $value;
-		}
-		unset($values);
-		
-		ob_start();
-		include $this->getPath().'/footer.php';
-		$footer.= ob_get_clean();
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		
-		/**
-		 * 기본 HTML 푸터와 함께 템플릿 푸터를 반환한다.
-		 */
-		$html = Html::tag(
-			$footer,
-			Html::footer()
-		);
-		
-		return $html;
-	}
-	
-	/**
-	 * 모듈에서 컨텍스트를 가져온다.
-	 *
-	 * @param string $file PHP 확장자를 포함하지 않는 컨텍스트 파일명
-	 * @param string $values 템플릿 호출시 넘어온 변수목록 (일반적으로 get_defined_vars() 함수결과가 넘어온다.)
-	 * @param string $header(옵션) 컨텍스트 HTML 상단에 포함할 헤더 HTML
-	 * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸더 HTML
-	 * @return string $html 컨텍스트 HTML
-	 */
-	function getContext(string $file,array $values=[],string $header='',string $footer=''):string {
-		/**
-		 * 템플릿폴더에 파일이 없다면 에러메세지를 출력한다.
-		 */
-		if (is_file($this->getPath().'/'.$file.'.php') == false) {
-			return ErrorHandler::get($this->error('NOT_FOUND_TEMPLET_FILE',$this->getPath().'/'.$file.'.php'));
-		}
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		
-		/**
-		 * 템플릿파일에서 사용할 변수선언
-		 */
-		$values = $this->getValues($values);
-		foreach ($values as $key=>$value) {
-			${$key} = $value;
-		}
-		unset($values);
-		
-		if (is_file($this->getPath().'/'.$file.'.php') == true) {
-			ob_start();
-			include $this->getPath().'/'.$file.'.php';
-			$context = ob_get_clean();
-		}
-		
-		/**
-		 * todo: 이벤트를 발생시킨다.
-		 */
-		$html = Html::tag(
-			$header,
-			$context,
-			$footer
-		);
-		
-		return $html;
-	}
-	
-	/**
-	 * 사이트테마에서 문서(HTML)를 가져온다.
-	 *
-	 * @param string $filename
-	 * @return string $document
-	 */
-	public function getFile(string $filename):string {
-		/**
-		 * 템플릿 폴더에 해당파일이 없다면 에러메세지를 출력한다.
-		 */
-		if (is_file($this->getPath().'/includes/'.$filename) === false) {
-			return ErrorHandler::get($this->error('NOT_FOUND_TEMPLET_FILE',$this->getPath().'/includes/'.$filename));
-		}
-		
-		// todo: 이벤트 발생
-		
-		/**
-		 * 템플릿파일에서 사용할 변수선언
-		 */
-		$IM = iModules::getInstance();
-		$Templet = $this;
-		$me = $this->_parent;
-		
-		ob_start();
-		include $this->getPath().'/includes/'.$filename;
-		$html = ob_get_clean();
-		
-		// todo: 이벤트 발생
-		
-		return $html;
-	}
-	
-	/**
-	 * 특수한 에러코드의 경우 에러데이터를 현재 클래스에서 처리하여 에러클래스로 전달한다.
-	 *
-	 * @param string $code 에러코드
-	 * @param ?string $message 에러메시지
-	 * @return object $error
-	 */
-	public function error(string $code,?string $message=null):object {
-		$error = ErrorHandler::data();
-		
-		switch ($code) {
-			case 'NOT_FOUND_TEMPLET' :
-				$error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
-				$error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET');
-				$error->suffix = $message;
-				$error->stacktrace = ErrorHandler::trace('Templet');
-				
-				break;
-			
-			case 'NOT_FOUND_TEMPLET_FILE' :
-				$error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
-				$error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET_FILE');
-				$error->suffix = $message;
-				$error->stacktrace = ErrorHandler::trace('Templet');
-				
-				break;
-				
-			default :
-				$error->message = ErrorHandler::getText($code);
-		}
-		
-		return $error;
-	}
+class Templet
+{
+    /**
+     * @var bool $_configs 템플릿 초기화여부
+     */
+    private bool $_init = false;
+
+    /**
+     * @var ?Component $_owner 템플릿 소유자 (NULL 인 경우 아이모듈 코어)
+     */
+    private ?Component $_owner = null;
+
+    /**
+     * @var Component $parent 템플릿을 처리할 부모클래스
+     */
+    private Component $_parent;
+
+    /**
+     * @var string $_path 템플릿경로
+     */
+    private string $_path;
+
+    /**
+     * @var string $_name 템플릿명 (템플릿 폴더명)
+     */
+    private string $_name;
+
+    /**
+     * @var object $_name 템플릿 패키지 정보 (package.json)
+     */
+    private object $_package;
+
+    /**
+     * @var ?object $_configs 템플릿 환경설정
+     */
+    private object $_configs;
+
+    /**
+     * @var mixed[] $_values 현재 템플릿에서 사용할 변수를 지정한다.
+     */
+    private array $_values = [];
+
+    /**
+     * 템플릿 클래스를 선언한다.
+     *
+     * @param Component $parent 템플릿을 처리할 부모클래스
+     * @param object $templet 템플릿정보
+     */
+    public function __construct(Component $parent, object $templet)
+    {
+        $this->_parent = $parent;
+
+        /**
+         * 템플릿명이 경로를 포함할 경우, 해당 경로에서 템플릿을 정의하고,
+         * 그렇지 않을 경우 템플릿을 처리할 부모클래스의 기본 템플릿 경로에서 템플릿을 정의한다.
+         */
+        if (strpos($templet->name, '/') === 0) {
+            /**
+             * 템플릿명에서 템플릿 경로를 적절하게 계산한다.
+             */
+            $paths = explode('/', preg_replace('/^\//', '', $templet->name));
+
+            /**
+             * 템플릿명
+             */
+            $this->_name = array_pop($paths);
+
+            /**
+             * 템플릿을 가진 테마명
+             */
+            $theme = array_pop($paths);
+
+            /**
+             * 템플릿을 가지고 있는 대상의 종류에 따라 템플릿 소유자를 정의한다.
+             */
+            if (count($paths) == 0) {
+                $this->_owner = null;
+                $this->_path = '';
+            } else {
+                switch (array_shift($paths)) {
+                    case 'modules':
+                        $this->_owner = Modules::get(implode('/', $paths));
+                        break;
+                }
+
+                if ($this->_owner == null) {
+                    // @todo 오류
+                }
+
+                $this->_path = $this->_owner->getBase();
+            }
+
+            $this->_path .= '/themes/' . $theme . '/modules/' . $this->_parent->getName();
+        } else {
+            $this->_owner = $parent;
+            $this->_name = $templet->name;
+            $this->_path = $this->_parent->getBase() . '/templets';
+        }
+        $this->_path .= '/' . $this->_name;
+
+        if (is_dir($this->getPath()) == false || is_file($this->getPath() . '/package.json') == false) {
+            ErrorHandler::print($this->error('NOT_FOUND_TEMPLET', $this->getPath()));
+        }
+
+        $package = $this->getPackage();
+        if (isset($package->configs) == true) {
+            $configs = $templet->configs ?? new stdClass();
+
+            $configKeys = [];
+            foreach ($package->configs as $configKey => $configValue) {
+                $configKeys[] = $configKey;
+                $configs->$configKey = Configs::getConfigsDefaultValue($configValue, $configs->$configKey ?? null);
+            }
+        } else {
+            $configs = new stdClass();
+        }
+        $this->_configs = $configs;
+    }
+
+    /**
+     * 템플릿을 정의된 요소들을 초기화한다.
+     */
+    public function init(): void
+    {
+        if ($this->_init == true) {
+            return;
+        }
+
+        /**
+         * 템플릿을 설정되지 않은 경우 에러메시지를 반환한다.
+         */
+        if ($this->_isLoaded() === false) {
+            ErrorHandler::print($this->error('NOT_INITIALIZED_TEMPLET'));
+        }
+
+        /**
+         * 템플릿의 package.json 에 styles 나 scripts 가 설정되어 있다면, 해당 파일을 불러온다.
+         */
+        $package = $this->getPackage();
+        if (isset($package->styles) == true && is_array($package->styles) == true) {
+            foreach ($package->styles as $style) {
+                $style = preg_match('/^http(s)?:\/\//', $style) == true ? $style : $this->getDir() . $style;
+                Html::style($style);
+            }
+        }
+
+        if (isset($package->scripts) == true && is_array($package->scripts) == true) {
+            foreach ($package->scripts as $script) {
+                $script = preg_match('/^http(s)?:\/\//', $style) == true ? $script : $this->getDir() . $script;
+                Html::script($script);
+            }
+        }
+
+        $this->_init = true;
+    }
+
+    /**
+     * 템플릿 설정이 정의되어 있는지 확인한다.
+     *
+     * @return bool $isLoaded
+     */
+    private function _isLoaded(): bool
+    {
+        return isset($this->_name) == true;
+    }
+
+    /**
+     * 현재 템플릿명(템플릿 폴더명)를 가져온다.
+     *
+     * @return string $name
+     */
+    public function getName(): string
+    {
+        return $this->_name ?? 'undefined';
+    }
+
+    /**
+     * 현재 템플릿의 절대경로를 가져온다.
+     *
+     * @return string $path
+     */
+    public function getPath(): string
+    {
+        return Configs::path() . $this->_path;
+    }
+
+    /**
+     * 현재 템플릿의 상대경로를 가져온다.
+     *
+     * @return string $dir
+     */
+    public function getDir(): string
+    {
+        return Configs::dir() . $this->_path;
+    }
+
+    /**
+     * 템플릿의 package.json 정보를 가져온다.
+     *
+     * @return object $package package.json 정보
+     */
+    public function getPackage(): object
+    {
+        if ($this->_isLoaded() === false) {
+            return null;
+        }
+        if (isset($this->_package) == true) {
+            return $this->_package;
+        }
+        $this->_package = json_decode(file_get_contents($this->getPath() . '/package.json'));
+        return $this->_package;
+    }
+
+    /**
+     * 템플릿의 환경설정을 가져온다.
+     *
+     * @param ?string $key 설정을 가져올 키값 (NULL인 경우 전체 환경설정을 가져온다.)
+     * @return mixed $value 환경설정값
+     */
+    public function getConfigs(?string $key = null): mixed
+    {
+        if ($key === null) {
+            return $this->_configs;
+        }
+        return $this->_configs->{$key} ?? null;
+    }
+
+    /**
+     * 템플릿 파일에서 사용할 변수를 할당한다.
+     *
+     * @param string|array $name 변수명
+     * @param mixed $value 변수데이터
+     * @param bool $is_clone 복제여부
+     * @return Templet $this
+     */
+    public function assign(string|array $name, mixed $value = null, bool $is_clone = false): Templet
+    {
+        if (is_array($name) == true) {
+            foreach ($name as $key => $value) {
+                $this->assign($key, $value, $is_clone);
+            }
+        } else {
+            $this->_values[$name] = $is_clone == true ? clone $value : $value;
+        }
+        return $this;
+    }
+
+    /**
+     * 템플릿 파일에서 이용할 수 있는 데이터를 정리한다.
+     *
+     * @return mixed[] $values 정리된 변수
+     */
+    function getValues(): array
+    {
+        $values = $this->_values;
+        $values['me'] = &$this->_parent;
+        $values['templet'] = &$this;
+        $values['route'] = Router::get();
+
+        return $values;
+    }
+
+    /**
+     * 콘텐츠 레이아웃을 가져온다.
+     *
+     * @param string $file PHP 확장자를 포함하지 않는 레이아웃 파일명
+     * @param string $header(옵션) 컨텍스트 HTML 상단에 포함할 헤더 HTML
+     * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸더 HTML
+     * @return string $html 컨텍스트 HTML
+     */
+    function getLayout(string $file, string $header = '', string $footer = ''): string
+    {
+        /**
+         * 템플릿폴더에 파일이 없다면 에러메세지를 출력한다.
+         */
+        if (is_file($this->getPath() . '/' . $file . '.html') == false) {
+            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLET_FILE', $this->getPath() . '/' . $file . '.html'));
+        }
+
+        $this->init();
+
+        /**
+         * todo: 이벤트를 발생시킨다.
+         */
+
+        /**
+         * 템플릿파일에서 사용할 변수선언
+         */
+        extract($this->getValues());
+
+        if (is_file($this->getPath() . '/' . $file . '.html') == true) {
+            ob_start();
+            include $this->getPath() . '/' . $file . '.html';
+            $context = ob_get_clean();
+        }
+
+        /**
+         * todo: 이벤트를 발생시킨다.
+         */
+        $html = Html::tag($header, $context, $footer);
+
+        return $html;
+    }
+
+    /**
+     * 템플릿 관련 에러를 처리한다.
+     *
+     * @param string $code 에러코드
+     * @param ?string $message 에러메시지
+     * @param ?object $details 에러와 관련된 추가정보
+     * @return ErrorData $error
+     */
+    public function error(string $code, ?string $message = null, ?object $details = null): ErrorData
+    {
+        switch ($code) {
+            case 'NOT_FOUND_TEMPLET':
+                $error = ErrorHandler::data();
+                $error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
+                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET');
+                $error->suffix = $message;
+                return $error;
+
+            case 'NOT_FOUND_TEMPLET_FILE':
+                $error = ErrorHandler::data();
+                $error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
+                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET_FILE');
+                $error->suffix = $message;
+                return $error;
+
+            default:
+                return iModules::error($code, $message, $details);
+        }
+    }
 }
-?>
