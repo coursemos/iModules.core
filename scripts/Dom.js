@@ -79,6 +79,52 @@ class Dom {
         return (this.dataValues[key] === undefined ? this.element.dataset[key] : this.dataValues[key]) ?? null;
     }
     /**
+     * HTML 엘리먼트의 부모요소를 가져온다.
+     *
+     * @return {Dom} parent
+     */
+    getParent() {
+        return Html.el(this.element?.parentElement);
+    }
+    /**
+     * HTML 엘리먼트의 부모요소 트리에서 특정 부모요소를 가져온다.
+     *
+     * @param {string} checker - 가져올 부모요소
+     * @return {Dom} parent
+     */
+    getParents(checker) {
+        let parent = this;
+        while (true) {
+            parent = parent.getParent();
+            if (parent.getEl() == null)
+                break;
+            if (parent.is(checker) == true) {
+                return parent;
+            }
+        }
+        return null;
+    }
+    /**
+     * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
+     *
+     * @param {string} querySelector - 일치할지 확인할 DOM 쿼리셀럭터
+     * @return {boolean} is_equal
+     */
+    is(querySelector) {
+        if (this.element == null) {
+            return false;
+        }
+        if (this.element.tagName != 'HTML' && this.element.parentElement == null) {
+        }
+        console.log(this.element);
+        for (const dom of Html.all(querySelector).getList()) {
+            if (dom.getEl().isEqualNode(this.element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * 스타일시트 등을 통해 현재 HTML 엘리먼트에 적용된 스타일을 가져온다.
      *
      * @param {string} key - 가져올 스타일명
