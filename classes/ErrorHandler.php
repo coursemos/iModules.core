@@ -99,8 +99,23 @@ class ErrorHandler
             $error->suffix = self::getText('DESCRIPTION_FOOTER');
         }
 
+        /**
+         * 기본 자바스크립트파일을 불러온다.
+         * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
+         */
+        Cache::script('core', '/scripts/Html.js');
+        Cache::script('core', '/scripts/Dom.js');
+        Cache::script('core', '/scripts/DomList.js');
+        Cache::script('core', '/scripts/Modules.js');
+        Cache::script('core', '/scripts/Module.js');
+        Cache::script('core', '/scripts/iModules.js');
+        Html::script(Cache::script('core'), 1);
+
+        Html::font('Pretendard');
+        Html::font('moimz');
+
         ob_start();
-        include Configs::path() . '/includes/error.php';
+        include Configs::path() . '/includes/error.html';
         $html = ob_get_clean();
 
         return $html;
