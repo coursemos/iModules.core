@@ -37,6 +37,15 @@ class DomList {
     }
 
     /**
+     * 전체 목록을 가져온다.
+     *
+     * @return {Dom[]} domList
+     */
+    getList(): Dom[] {
+        return this.domList;
+    }
+
+    /**
      * 목록에서 forEach() 함수를 실행한다.
      *
      * @param {Function} callback - forEach 함수
