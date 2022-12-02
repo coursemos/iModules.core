@@ -72,12 +72,21 @@ class Html {
         return new DomList(nodes);
     }
     /**
+     * document 이벤트를 등록한다.
+     *
+     * @param {string} name - 이벤트명
+     * @param {EventListener} listener - 이벤트리스너
+     */
+    static on(name, listener) {
+        document.addEventListener(name, listener);
+    }
+    /**
      * HTML 문서의 스크롤 이벤트리스너를 등록한다.
      *
      * @param {EventListener} listener - 이벤트리스너
      */
     static scroll(listener) {
-        document.addEventListener('scroll', listener);
+        Html.on('scroll', listener);
     }
     /**
      * HTML 문서의 스크롤위치를 조절한다.
