@@ -84,7 +84,10 @@ class Dom {
      * @return {Dom} parent
      */
     getParent() {
-        return Html.el(this.element?.parentElement);
+        if (this.element?.parentElement === null) {
+            return null;
+        }
+        return new Dom(this.element.parentElement);
     }
     /**
      * HTML 엘리먼트의 부모요소 트리에서 특정 부모요소를 가져온다.
@@ -96,8 +99,8 @@ class Dom {
         let parent = this;
         while (true) {
             parent = parent.getParent();
-            if (parent.getEl() == null)
-                break;
+            if (parent == null)
+                return null;
             if (parent.is(checker) == true) {
                 return parent;
             }
@@ -116,7 +119,6 @@ class Dom {
         }
         if (this.element.tagName != 'HTML' && this.element.parentElement == null) {
         }
-        console.log(this.element);
         for (const dom of Html.all(querySelector).getList()) {
             if (dom.getEl().isEqualNode(this.element)) {
                 return true;
@@ -268,6 +270,36 @@ class Dom {
         return { left: this.element.offsetLeft, top: this.element.offsetTop };
     }
     /**
+     * HTML 엘리먼트의 스크롤 위치를 가져온다.
+     *
+     * @return {{top:number, left:number}} scroll
+     */
+    getScroll() {
+        if (this.element == null)
+            return { top: 0, left: 0 };
+        return { left: this.element.scrollLeft, top: this.element.scrollTop };
+    }
+    /**
+     * summary
+     *
+     * @param {number} top - 상단위치 (NULL 인경우 이동하지 않음)
+     * @param {number} left - 좌측위치 (NULL 인경우 이동하지 않음)
+     * @param {boolean} animate - 애니메이션 여부
+     */
+    setScroll(top = null, left = null, animate = true) {
+        if (this.element == null)
+            return;
+        //document.documentElement.scroll({ top: top, behavior: animate === true ? 'smooth' : 'auto' });
+        let options = {
+            behavior: animate === true ? 'smooth' : 'auto',
+        };
+        if (top !== null)
+            options.top = top;
+        if (left !== null)
+            options.left = left;
+        this.element.scroll(options);
+    }
+    /**
      * HTML 엘리먼트에 스타일시트(class)를 추가한다.
      *
      * @param {string[]} className - 추가할 클래스명
@@ -372,17 +404,6 @@ class Dom {
             this.element.replaceWith(replacement.getEl());
         }
         return this;
-    }
-    /**
-     * 현재 Dom 의 상위 Dom 을 가져온다.
-     *
-     * @return {Dom} parent
-     */
-    parent() {
-        if (this.element?.parentElement === null) {
-            return null;
-        }
-        return new Dom(this.element.parentElement);
     }
     /**
      * 특정 Dom 이 현재 Dom 의 상위 Dom 인지 확인한다.
@@ -498,6 +519,14 @@ class Dom {
             listener(...args);
         });
         return this;
+    }
+    /**
+     * HTML 엘리먼트의 모든 하위요소를 제거한다.
+     */
+    empty() {
+        if (this.element == null)
+            return;
+        this.element.innerHTML = '';
     }
     /**
      * HTML 엘리먼트가 비었는지 확인한다.

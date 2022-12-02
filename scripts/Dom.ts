@@ -90,8 +90,12 @@ class Dom {
      *
      * @return {Dom} parent
      */
-    getParent(): Dom {
-        return Html.el(this.element?.parentElement);
+    getParent(): Dom | null {
+        if (this.element?.parentElement === null) {
+            return null;
+        }
+
+        return new Dom(this.element.parentElement);
     }
 
     /**
@@ -104,8 +108,7 @@ class Dom {
         let parent: Dom = this;
         while (true) {
             parent = parent.getParent();
-            if (parent.getEl() == null) break;
-
+            if (parent == null) return null;
             if (parent.is(checker) == true) {
                 return parent;
             }
@@ -127,7 +130,6 @@ class Dom {
 
         if (this.element.tagName != 'HTML' && this.element.parentElement == null) {
         }
-        console.log(this.element);
         for (const dom of Html.all(querySelector).getList()) {
             if (dom.getEl().isEqualNode(this.element)) {
                 return true;
@@ -146,7 +148,6 @@ class Dom {
      */
     getStyle(key: string, pseudo: string | null = null): string {
         if (this.element === null) return '';
-
         return window.getComputedStyle(this.element, pseudo).getPropertyValue(key);
     }
 
@@ -282,6 +283,35 @@ class Dom {
     }
 
     /**
+     * HTML 엘리먼트의 스크롤 위치를 가져온다.
+     *
+     * @return {{top:number, left:number}} scroll
+     */
+    getScroll(): { top: number; left: number } {
+        if (this.element == null) return { top: 0, left: 0 };
+        return { left: this.element.scrollLeft, top: this.element.scrollTop };
+    }
+
+    /**
+     * summary
+     *
+     * @param {number} top - 상단위치 (NULL 인경우 이동하지 않음)
+     * @param {number} left - 좌측위치 (NULL 인경우 이동하지 않음)
+     * @param {boolean} animate - 애니메이션 여부
+     */
+    setScroll(top: number = null, left: number = null, animate: boolean = true): void {
+        if (this.element == null) return;
+        //document.documentElement.scroll({ top: top, behavior: animate === true ? 'smooth' : 'auto' });
+
+        let options: ScrollToOptions = {
+            behavior: animate === true ? 'smooth' : 'auto',
+        };
+        if (top !== null) options.top = top;
+        if (left !== null) options.left = left;
+        this.element.scroll(options);
+    }
+
+    /**
      * HTML 엘리먼트에 스타일시트(class)를 추가한다.
      *
      * @param {string[]} className - 추가할 클래스명
@@ -391,19 +421,6 @@ class Dom {
             this.element.replaceWith(replacement.getEl());
         }
         return this;
-    }
-
-    /**
-     * 현재 Dom 의 상위 Dom 을 가져온다.
-     *
-     * @return {Dom} parent
-     */
-    parent(): Dom | null {
-        if (this.element?.parentElement === null) {
-            return null;
-        }
-
-        return new Dom(this.element.parentElement);
     }
 
     /**
@@ -527,6 +544,14 @@ class Dom {
             listener(...args);
         });
         return this;
+    }
+
+    /**
+     * HTML 엘리먼트의 모든 하위요소를 제거한다.
+     */
+    empty(): void {
+        if (this.element == null) return;
+        this.element.innerHTML = '';
     }
 
     /**
