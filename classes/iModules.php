@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2022. 12. 5.
  */
 class iModules
 {
@@ -144,6 +144,7 @@ class iModules
             $site = $route->getSite();
             Html::title($site->getTitle());
             Html::description($site->getDescription());
+            Html::canonical($route->getUrl(true, true), false);
 
             /**
              * 기본 자바스크립트파일을 불러온다.
@@ -161,19 +162,13 @@ class iModules
              * 모듈의 자바스크립트파일을 불러온다.
              */
             Html::script(Cache::script('modules'), 5);
-            //Html::script(Modules::script(), 5);
 
             /**
              * 기본 스타일시트 및 폰트를 불러온다.
              */
-            Html::font('moimz');
+            Html::font('moimz', true);
             Cache::style('core', '/styles/common.scss');
             Html::style(Cache::style('core'));
-
-            /*
-			$this->head('link',array('rel'=>'canonical','href'=>$this->getCanonical()));
-			$this->head('meta',array('name'=>'robots','content'=>$this->getRobots()));
-			*/
 
             /**
 			 * OG 태그를 설정한다.
