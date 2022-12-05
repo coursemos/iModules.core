@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2022. 12. 5.
  */
 class Html
 {
@@ -52,7 +52,7 @@ class Html
     private static array $_attributes = [];
 
     /**
-     * @var string[] $_fonts 불러올 웹폰트를 정의한다.
+     * @var bool[] $_fonts 불러올 웹폰트를 정의한다.
      */
     private static array $_fonts = [];
 
@@ -227,11 +227,12 @@ class Html
      * 웹폰트를 불러온다.
      *
      * @param string $font 폰트명
+     * @param bool $is_cache 캐시여부 (항상 사용되는 폰트가 이는 경우 캐시사용시 로드되지 않을 수 있음)
      */
-    public static function font(string $font): void
+    public static function font(string $font, bool $is_cache = false): void
     {
-        if (in_array($font, self::$_fonts) == false) {
-            self::$_fonts[] = $font;
+        if (isset(self::$_fonts[$font]) == false || self::$_fonts[$font] != $is_cache) {
+            self::$_fonts[$font] = $is_cache;
         }
     }
 
@@ -288,8 +289,12 @@ class Html
          * 웹폰트를 추가한다.
          */
         if (count(self::$_fonts) > 0) {
-            foreach (self::$_fonts as $font) {
-                Cache::style('font', '/fonts/' . $font . '.css');
+            foreach (self::$_fonts as $font => $is_cache) {
+                if ($is_cache == true) {
+                    Cache::style('font', '/fonts/' . $font . '.css');
+                } else {
+                    self::style('/fonts/' . $font . '.css');
+                }
             }
             self::style(Cache::style('font'));
         }
