@@ -22,6 +22,11 @@ class Html
     private static string $_robots = 'all';
 
     /**
+     * @var string $_canonical 페이지 고유주소를 설정한다.
+     */
+    private static ?string $_canonical = null;
+
+    /**
      * @var string[] $_scripts 호출되는 스크립트의 우선순위를 정의한다.
      */
     private static array $_scripts = [];
@@ -144,6 +149,19 @@ class Html
     public static function robots(string $robots): void
     {
         self::$_robots = $robots;
+    }
+
+    /**
+     * 페이지 고유주소를 설정한다.
+     *
+     * @param string $canonical 고유주소
+     * @param bool $is_replacement 이미 고유주소가 존재할 경우 해당 주소를 대치할지 여부
+     */
+    public static function canonical(?string $canonical, bool $is_replacement = true): void
+    {
+        if (self::$_canonical == null || $is_replacement == true) {
+            self::$_canonical = $canonical;
+        }
     }
 
     /**
@@ -283,7 +301,12 @@ class Html
             ]),
             3
         );
-        self::_head(self::element('meta', ['name' => 'robots', 'content' => self::$_robots]), 4);
+
+        if (self::$_canonical != null) {
+            Html::head('link', ['rel' => 'canonical', 'href' => self::$_canonical], 4);
+        }
+
+        self::_head(self::element('meta', ['name' => 'robots', 'content' => self::$_robots]), 5);
 
         /**
          * 웹폰트를 추가한다.
