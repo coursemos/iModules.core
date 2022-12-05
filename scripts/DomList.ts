@@ -50,7 +50,7 @@ class DomList {
      *
      * @param {Function} callback - forEach 함수
      */
-    forEach(callback: (dom: Dom) => void): void {
+    forEach(callback: (dom: Dom, index?: number, domList?: Dom[]) => void | boolean): void {
         this.domList.forEach(callback);
     }
 
