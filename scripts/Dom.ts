@@ -105,16 +105,16 @@ class Dom {
      * @return {Dom} parent
      */
     getParents(checker: string): Dom {
-        let parent: Dom = this;
-        while (true) {
-            parent = parent.getParent();
-            if (parent == null) return null;
-            if (parent.is(checker) == true) {
-                return parent;
-            }
+        if (this.element == null) {
+            return null;
         }
 
-        return null;
+        const parent = this.element.closest(checker);
+        if (parent == null) {
+            return null;
+        }
+
+        return Html.el(parent);
     }
 
     /**
@@ -128,15 +128,7 @@ class Dom {
             return false;
         }
 
-        if (this.element.tagName != 'HTML' && this.element.parentElement == null) {
-        }
-        for (const dom of Html.all(querySelector).getList()) {
-            if (dom.getEl().isEqualNode(this.element)) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.element.matches(querySelector);
     }
 
     /**

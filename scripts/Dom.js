@@ -96,16 +96,14 @@ class Dom {
      * @return {Dom} parent
      */
     getParents(checker) {
-        let parent = this;
-        while (true) {
-            parent = parent.getParent();
-            if (parent == null)
-                return null;
-            if (parent.is(checker) == true) {
-                return parent;
-            }
+        if (this.element == null) {
+            return null;
         }
-        return null;
+        const parent = this.element.closest(checker);
+        if (parent == null) {
+            return null;
+        }
+        return Html.el(parent);
     }
     /**
      * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
@@ -117,14 +115,7 @@ class Dom {
         if (this.element == null) {
             return false;
         }
-        if (this.element.tagName != 'HTML' && this.element.parentElement == null) {
-        }
-        for (const dom of Html.all(querySelector).getList()) {
-            if (dom.getEl().isEqualNode(this.element)) {
-                return true;
-            }
-        }
-        return false;
+        return this.element.matches(querySelector);
     }
     /**
      * 스타일시트 등을 통해 현재 HTML 엘리먼트에 적용된 스타일을 가져온다.
