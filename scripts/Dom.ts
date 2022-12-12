@@ -547,8 +547,16 @@ class Dom {
      * @return {Dom} this
      */
     hover(mouseenter: EventListener, mouseleave: EventListener): this {
-        this.on('mouseenter', mouseenter);
-        this.on('mouseleave', mouseleave);
+        this.on('mouseenter', (e: MouseEvent) => {
+            mouseenter(e);
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        });
+        this.on('mouseleave', (e: MouseEvent) => {
+            mouseleave(e);
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        });
         return this;
     }
 

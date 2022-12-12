@@ -523,8 +523,16 @@ class Dom {
      * @return {Dom} this
      */
     hover(mouseenter, mouseleave) {
-        this.on('mouseenter', mouseenter);
-        this.on('mouseleave', mouseleave);
+        this.on('mouseenter', (e) => {
+            mouseenter(e);
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        });
+        this.on('mouseleave', (e) => {
+            mouseleave(e);
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        });
         return this;
     }
     /**
