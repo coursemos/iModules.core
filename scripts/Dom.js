@@ -287,7 +287,48 @@ class Dom {
     getOffset() {
         if (this.element == null)
             return { top: 0, left: 0 };
-        return { left: this.element.offsetLeft, top: this.element.offsetTop };
+        let rect = this.element.getBoundingClientRect();
+        let view = this.element.ownerDocument.defaultView;
+        return {
+            top: rect.top + view.pageYOffset,
+            left: rect.left + view.pageXOffset,
+        };
+    }
+    /**
+     * HTML 엘리먼트의 부모 객체 기준으로 위치를 가져온다.
+     *
+     * @return {{top:number, left:number}} offset
+     */
+    getPosition() {
+        if (this.element == null)
+            return { top: 0, left: 0 };
+        let marginTop = parseInt(this.getStyle('margin-top').replace(/px$/, ''));
+        let marginLeft = parseInt(this.getStyle('margin-left').replace(/px$/, ''));
+        if (this.getStyle('position') == 'fixed') {
+            let offset = this.element.getBoundingClientRect();
+            return { top: offset.top - marginTop, left: offset.left - marginLeft };
+        }
+        else {
+            let parentOffset = { top: 0, left: 0 };
+            let offset = this.getOffset();
+            let doc = this.element.ownerDocument;
+            let offsetParent = this.element.offsetParent || doc.documentElement;
+            while (offsetParent &&
+                (offsetParent === doc.body || offsetParent === doc.documentElement) &&
+                window.getComputedStyle(offsetParent).getPropertyValue('position') === 'static') {
+                offsetParent = offsetParent.parentElement;
+            }
+            if (offsetParent && offsetParent !== this.element && offsetParent.nodeType === 1) {
+                let $parent = Html.el(offsetParent);
+                parentOffset = $parent.getOffset();
+                parentOffset.top += parseInt(this.getStyle('border-top-width').replace(/px$/, ''));
+                parentOffset.left += parseInt(this.getStyle('border-left-width').replace(/px$/, ''));
+            }
+            return {
+                top: offset.top - parentOffset.top - marginTop,
+                left: offset.left - parentOffset.left - marginLeft,
+            };
+        }
     }
     /**
      * HTML 엘리먼트의 스크롤 위치를 가져온다.
