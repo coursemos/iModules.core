@@ -42,17 +42,30 @@ class Html {
         }
     }
     /**
+     * 쿼리셀렉터 문자열을 표준화한다.
+     *
+     * @param {string} selector - 쿼리셀렉터
+     * @return {string} selector - 쿼리셀렉터
+     */
+    static selector(selector) {
+        selector = selector.trim();
+        if (selector.indexOf('>') === 0) {
+            selector = ':scope ' + selector;
+        }
+        return selector;
+    }
+    /**
      * 쿼리셀렉터에 해당하는 DOM Element 를 가져온다.
      *
-     * @param {string} selector - 쿼리셀럭터
+     * @param {string} selector - 쿼리셀렉터
      * @param {?Dom} context - DOM Element 를 가져올 부모요소
-     * @return {?Dom} dom - 쿼리셀럭터에 해당하는 Dom 객체
+     * @return {?Dom} dom - 쿼리셀렉터에 해당하는 Dom 객체
      */
     static get(selector, context) {
         if (context instanceof Dom === true) {
-            return new Dom(context.getEl()?.querySelector(selector) ?? null);
+            return new Dom(context.getEl()?.querySelector(Html.selector(selector)) ?? null);
         }
-        return new Dom(document.querySelector(selector));
+        return new Dom(document.querySelector(Html.selector(selector)));
     }
     /**
      * 쿼리셀렉터에 해당하는 모든 DOM Element 를 가져온다.
@@ -64,10 +77,10 @@ class Html {
     static all(selector, context) {
         let nodes;
         if (context !== undefined && context.constructor.name == 'Dom') {
-            nodes = context.getEl()?.querySelectorAll(selector);
+            nodes = context.getEl()?.querySelectorAll(Html.selector(selector));
         }
         else {
-            nodes = document.querySelectorAll(selector);
+            nodes = document.querySelectorAll(Html.selector(selector));
         }
         return new DomList(nodes);
     }
