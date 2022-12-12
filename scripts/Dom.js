@@ -535,9 +535,18 @@ class Dom {
      * @return {Dom} this
      */
     on(name, listener) {
-        this.element?.addEventListener(name, function (...args) {
-            listener(...args);
-        });
+        this.element?.addEventListener(name, listener);
+        return this;
+    }
+    /**
+     * HTML 엘리먼트에 이벤트를 제거한다.
+     *
+     * @param {string} name - 제거할 이벤트명
+     * @param {EventListener} listener - 이벤트리스너
+     * @return {Dom} this
+     */
+    off(name, listener) {
+        this.element?.removeEventListener(name, listener);
         return this;
     }
     /**
