@@ -1,28 +1,7 @@
 @font-face {
     font-family: 'NanumSquare';
-    font-weight: 300;
+    font-weight: 100 900;
     font-style: normal;
-    src: url(./NanumSquare-Light.woff2) format('woff2');
-    font-display: block;
-}
-@font-face {
-    font-family: 'NanumSquare';
-    font-weight: 400;
-    font-style: normal;
-    src: url(./NanumSquare-Regular.woff2) format('woff2');
-    font-display: block;
-}
-@font-face {
-    font-family: 'NanumSquare';
-    font-weight: 700;
-    font-style: normal;
-    src: url(./NanumSquare-Bold.woff2) format('woff2');
-    font-display: block;
-}
-@font-face {
-    font-family: 'NanumSquare';
-    font-weight: 800;
-    font-style: normal;
-    src: url(./NanumSquare-ExtraBold.woff2) format('woff2');
-    font-display: block;
+    font-display: swap;
+    src: url('./woff2/NanumSquare.woff2') format('woff2-variations');
 }
