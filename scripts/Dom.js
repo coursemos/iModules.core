@@ -260,7 +260,27 @@ class Dom {
         return this.element.offsetHeight;
     }
     /**
-     * HTML 엘리먼트의 위치를 가져온다.
+     * HTML 엘리먼트의 스크롤 너비를 가져온다.
+     *
+     * @return {number} scrollWidth
+     */
+    getScrollWidth() {
+        if (this.element == null)
+            return 0;
+        return this.element.scrollWidth;
+    }
+    /**
+     * HTML 엘리먼트의 스크롤 높이를 가져온다.
+     *
+     * @return {number} scrollHeight
+     */
+    getScrollHeight() {
+        if (this.element == null)
+            return 0;
+        return this.element.scrollHeight;
+    }
+    /**
+     * HTML 엘리먼트의 문서 전체 기준으로 위치를 가져온다.
      *
      * @return {{top:number, left:number}} offset
      */
