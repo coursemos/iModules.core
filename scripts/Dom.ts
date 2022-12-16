@@ -344,29 +344,28 @@ class Dom {
     /**
      * HTML 엘리먼트의 스크롤 위치를 가져온다.
      *
-     * @return {{top:number, left:number}} scroll
+     * @return {{left:number, top:number}} scroll
      */
-    getScroll(): { top: number; left: number } {
-        if (this.element == null) return { top: 0, left: 0 };
+    getScroll(): { left: number; top: number } {
+        if (this.element == null) return { left: 0, top: 0 };
         return { left: this.element.scrollLeft, top: this.element.scrollTop };
     }
 
     /**
-     * summary
+     * HTML 엘리먼트의 스크롤 위치를 설정한다.
      *
-     * @param {number} top - 상단위치 (NULL 인경우 이동하지 않음)
      * @param {number} left - 좌측위치 (NULL 인경우 이동하지 않음)
+     * @param {number} top - 상단위치 (NULL 인경우 이동하지 않음)
      * @param {boolean} animate - 애니메이션 여부
      */
-    setScroll(top: number = null, left: number = null, animate: boolean = true): void {
+    setScroll(left: number = null, top: number = null, animate: boolean = true): void {
         if (this.element == null) return;
-        //document.documentElement.scroll({ top: top, behavior: animate === true ? 'smooth' : 'auto' });
 
         let options: ScrollToOptions = {
             behavior: animate === true ? 'smooth' : 'auto',
         };
-        if (top !== null) options.top = top;
         if (left !== null) options.left = left;
+        if (top !== null) options.top = top;
         this.element.scroll(options);
     }
 
