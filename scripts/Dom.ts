@@ -157,6 +157,18 @@ class Dom {
     }
 
     /**
+     * HTML 엘리먼트 스타일의 변수값을 지정한다.
+     *
+     * @param {string} key - 변수명
+     * @param {(string|number)} value - 변수값
+     * @return {Dom} this
+     */
+    setStyleProperty(key: string, value: string | number, priority?: string): this {
+        this.element?.style.setProperty(key, value.toString(), priority);
+        return this;
+    }
+
+    /**
      * HTML 엘리먼트의 너비(테두리 및 여백제외)를 가져온다.
      *
      * @return {number} width
