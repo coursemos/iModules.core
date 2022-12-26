@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2022. 12. 26.
  */
 class Dom {
     element: HTMLElement | null;
@@ -63,7 +63,7 @@ class Dom {
      * HTML 엘리먼트의 Data-Attribute 또는 Data 값을 설정한다.
      *
      * @param {string} key - 값을 가져올 Data-Attribute 키
-     * @param {string} value - 값
+     * @param {any} value - 값
      * @param {boolean} is_dom - HTML 엘리먼트에 data-attribute 를 생성할 지 여부
      */
     setData(key: string, value: any, is_dom: boolean = true): this {
@@ -136,7 +136,7 @@ class Dom {
      *
      * @param {string} key - 가져올 스타일명
      * @param {string} pseudo - ::before 또는 ::after
-     * @return {any} value - 스타일값
+     * @return {string} value - 스타일값
      */
     getStyle(key: string, pseudo: string | null = null): string {
         if (this.element === null) return '';
@@ -147,7 +147,7 @@ class Dom {
      * HTML 엘리먼트 스타일을 지정한다.
      *
      * @param {string} key - 스타일명
-     * @param {any} value - 스타일값
+     * @param {(string|number)} value - 스타일값
      * @return {Dom} this
      */
     setStyle(key: string, value: string | number): this {
@@ -455,16 +455,29 @@ class Dom {
      * HTML 엘리먼트의 제일 마지막에 Dom 을 추가한다.
      *
      * @param {Dom} child - 추가할 Dom 객체
+     * @param {number} position - 추가할 위치 (NULL 인 경우 제일 마지막 위치)
      * @return {Dom} this
      */
-    append(child: Dom | Dom[]): this {
+    append(child: Dom | Dom[], position: number = null): this {
         if (child instanceof Array) {
             child.forEach((item: Dom) => {
-                this.element?.append(item.getEl());
+                this.append(item, position === null || position < 0 ? position : position++);
             });
         } else if (child instanceof Dom) {
-            this.element?.append(child.getEl());
+            if (position === null || position >= (this.element?.children.length ?? 0)) {
+                this.element?.append(child.getEl());
+            } else if (position < 0 && Math.abs(position) >= (this.element?.children.length ?? 0)) {
+                this.element?.prepend(child.getEl());
+            } else if (position < 0) {
+                this.element?.insertBefore(
+                    child.getEl(),
+                    this.element?.children[this.element?.children.length + position]
+                );
+            } else {
+                this.element?.insertBefore(child.getEl(), this.element?.children[position]);
+            }
         }
+
         return this;
     }
 
