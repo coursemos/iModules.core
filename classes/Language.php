@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class Language
 {
@@ -126,4 +126,3 @@ class Language
         return $string === null ? $text : self::replacePlaceHolder($string, $placeHolder);
     }
 }
-?>
