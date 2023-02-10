@@ -7,12 +7,22 @@
  * @file /classes/Cache.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class Cache
 {
     private static array $_scripts = [];
     private static array $_styles = [];
+
+    /**
+     * 캐시사용가능 여부를 확인한다.
+     *
+     * @param bool $available
+     */
+    public static function check(): bool
+    {
+        return is_dir(Configs::cache()) == true && is_writable(Configs::cache());
+    }
 
     /**
      * 캐시 내용을 업데이트한다.
@@ -36,7 +46,7 @@ class Cache
      */
     public static function has(string $name, int $lifetime): bool
     {
-        if (Configs::debug() == true) {
+        if (self::check() == true) {
             return false;
         }
         if (is_file(Configs::cache() . '/' . $name) == false) {
@@ -71,9 +81,9 @@ class Cache
             return self::$_scripts[$group];
         } else {
             /**
-             * 디버그모드인 경우 캐싱처리하지 않은 전체 파일을 반환한다.
+             * 캐시를 사용할 수 없는 경우 전체 파일을 반환한다.
              */
-            if (Configs::debug() == true) {
+            if (Configs::debug() == true || self::check() == false) {
                 return self::$_scripts[$group];
             } else {
                 $refresh = false;
@@ -113,7 +123,7 @@ class Cache
 
                         $description = [
                             '/**',
-                            ' * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)',
+                            ' * 이 파일은 자동으로 생성된 캐시파일의 일부입니다.',
                             ' *',
                             ' * 자바스크립트 캐시파일',
                             ' *',
@@ -138,68 +148,6 @@ class Cache
     }
 
     /**
-     * SCSS 파일을 CSS 파일로 컴파일한다.
-     *
-     * @param string $scss SCSS 파일경로
-     * @param string $css CSS 파일경로
-     */
-    public static function scss(string $path): string
-    {
-        if (is_file(Configs::path() . $path) == false) {
-            return $path;
-        }
-
-        $cached_file = preg_replace('/^\./', '', str_replace('/', '.', $path));
-        $cached_time =
-            is_file(Configs::cache() . '/' . $cached_file . '.css') === true
-                ? filemtime(Configs::cache() . '/' . $cached_file . '.css')
-                : 0;
-
-        /**
-         * 디버그모드가 아니며 캐시파일이 수정된지 5분 이상된 경우, 해당 그룹의 파일의 수정시간을 계산하여, 다시 캐싱을 해야하는지 여부를 확인한다.
-         */
-        if (Configs::debug() == true || $cached_time < time() - 300) {
-            if (true || filemtime(Configs::path() . $path) > $cached_time) {
-                $compiler = new \ScssPhp\ScssPhp\Compiler();
-                $compiler->setImportPaths(dirname(Configs::path() . $path));
-                $content = $compiler->compileString(file_get_contents(Configs::path() . $path))->getCss();
-
-                $converter = new \MatthiasMullie\PathConverter\Converter($path, Configs::cache(false));
-                $matches = [];
-
-                $relativeRegex = '/url\(\s*(?P<quotes>["\'])?(?P<path>.+?)(?(quotes)(?P=quotes))\s*\)/ix';
-                if (preg_match_all($relativeRegex, $content, $regexMatches, PREG_SET_ORDER) == true) {
-                    $matches = $regexMatches;
-                }
-
-                $search = [];
-                $replace = [];
-                foreach ($matches as $match) {
-                    $url = $match['path'];
-                    $params = strrchr($url, '?');
-                    $url = $params ? substr($url, 0, -strlen($params)) : $url;
-                    $url = $converter->convert($url);
-                    $url .= $params;
-                    $url = trim($url);
-                    if (preg_match('/[\s\)\'"#\x{7f}-\x{9f}]/u', $url)) {
-                        $url = $match['quotes'] . $url . $match['quotes'];
-                    }
-
-                    $search[] = $match[0];
-                    $replace[] = 'url(' . $url . ')';
-                }
-
-                $content = str_replace($search, $replace, $content);
-                file_put_contents(Configs::cache() . '/' . $cached_file . '.css', $content);
-            } else {
-                touch(Configs::cache() . '/' . $cached_file . '.css', time());
-            }
-        }
-
-        return Configs::cache(false) . '/' . $cached_file . '.css';
-    }
-
-    /**
      * 스타일시트 파일에 대해서 캐싱처리할 파일을 추가하고, 캐싱처리된 파일의 경로를 가져온다.
      * 다수의 스타일시트파일을 단일 그룹명으로 캐싱처리하면서 스타일시트 파일을 축소한다.
      *
@@ -219,16 +167,20 @@ class Cache
          */
         if ($path !== null) {
             if (preg_match('/\.scss$/', $path) == true) {
-                self::$_styles[$group][] = self::scss($path);
+                $path = self::scss($path);
+                if ($path !== null) {
+                    self::$_styles[$group][] = $path;
+                }
+            } else {
+                self::$_styles[$group][] = $path;
             }
-            self::$_styles[$group][] = $path;
 
             return self::$_styles[$group];
         } else {
             /**
-             * 디버그모드인 경우 캐싱처리하지 않은 전체 파일을 반환한다.
+             * 캐시를 사용할 수 없는 경우 전체 파일을 반환한다.
              */
-            if (Configs::debug() == true) {
+            if (Configs::debug() == true || self::check() == false) {
                 return self::$_styles[$group];
             } else {
                 $refresh = false;
@@ -268,7 +220,7 @@ class Cache
 
                         $destyleion = [
                             '/**',
-                            ' * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)',
+                            ' * 이 파일은 자동으로 생성된 캐시파일의 일부입니다.',
                             ' *',
                             ' * 스타일시트 캐시파일',
                             ' *',
@@ -290,5 +242,79 @@ class Cache
                 }
             }
         }
+    }
+
+    /**
+     * SCSS 파일을 CSS 파일로 컴파일한다.
+     *
+     * @param string $scss SCSS 파일경로
+     * @param ?string $css CSS 파일경로
+     */
+    public static function scss(string $path): ?string
+    {
+        if (is_file(Configs::path() . $path) == false) {
+            return null;
+        }
+
+        $is_convert = Configs::debug() == true || self::check() == false;
+        $cached_file = preg_replace('/^\./', '', str_replace('/', '.', $path));
+
+        if ($is_convert == false && self::check() == true) {
+            $cached_time =
+                is_file(Configs::cache() . '/' . $cached_file . '.css') === true
+                    ? filemtime(Configs::cache() . '/' . $cached_file . '.css')
+                    : 0;
+            if ($cached_time < time() - 300) {
+                if (filemtime(Configs::path() . $path) > $cached_time) {
+                    $is_convert = true;
+                } else {
+                    touch(Configs::cache() . '/' . $cached_file . '.css', time());
+                }
+            }
+        }
+
+        /**
+         * scss 파일의 컨버팅이 필요한 경우
+         */
+        if ($is_convert == true) {
+            $compiler = new \ScssPhp\ScssPhp\Compiler();
+            $compiler->setImportPaths(dirname(Configs::path() . $path));
+            $content = $compiler->compileString(file_get_contents(Configs::path() . $path))->getCss();
+
+            $converter = new \MatthiasMullie\PathConverter\Converter($path, Configs::cache(false));
+            $matches = [];
+
+            $relativeRegex = '/url\(\s*(?P<quotes>["\'])?(?P<path>.+?)(?(quotes)(?P=quotes))\s*\)/ix';
+            if (preg_match_all($relativeRegex, $content, $regexMatches, PREG_SET_ORDER) == true) {
+                $matches = $regexMatches;
+            }
+
+            $search = [];
+            $replace = [];
+            foreach ($matches as $match) {
+                $url = $match['path'];
+                $params = strrchr($url, '?');
+                $url = $params ? substr($url, 0, -strlen($params)) : $url;
+                $url = $converter->convert($url);
+                $url .= $params;
+                $url = trim($url);
+                if (preg_match('/[\s\)\'"#\x{7f}-\x{9f}]/u', $url)) {
+                    $url = $match['quotes'] . $url . $match['quotes'];
+                }
+
+                $search[] = $match[0];
+                $replace[] = 'url(' . $url . ')';
+            }
+
+            $content = str_replace($search, $replace, $content);
+            if (self::check() == true) {
+                file_put_contents(Configs::cache() . '/' . $cached_file . '.css', $content);
+            } else {
+                Html::head('style', [], 100, $content);
+                return null;
+            }
+        }
+
+        return Configs::cache(false) . '/' . $cached_file . '.css';
     }
 }
