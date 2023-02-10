@@ -32,9 +32,14 @@ class Modules
     private static array $_installeds = [];
 
     /**
-     * @var Module[] $_modules 모듈 클래스
+     * @var object[] $_modules 설치된 모듈목록
      */
     private static array $_modules = [];
+
+    /**
+     * @var Module[] $_classes 모듈 클래스
+     */
+    private static array $_classes = [];
 
     /**
      * 모듈 클래스를 초기화한다.
@@ -48,17 +53,38 @@ class Modules
         /**
          * 설치된 모듈을 초기화한다.
          */
-        $modules = self::db()
-            ->select()
-            ->from(self::table('modules'))
-            ->get();
-        foreach ($modules as $module) {
+        $globals = [];
+        foreach (
+            self::db()
+                ->select()
+                ->from(self::table('modules'))
+                ->get()
+            as $module
+        ) {
+            $module->is_admin = $module->is_admin == 'TRUE';
+            $module->is_global = $module->is_global == 'TRUE';
+            $module->is_context = $module->is_context == 'TRUE';
+            $module->is_widget = $module->is_widget == 'TRUE';
+            $module->is_theme = $module->is_theme == 'TRUE';
+            $module->is_cron = $module->is_cron == 'TRUE';
+            $module->configs = json_decode($module->configs);
+            $module->events = json_decode($module->events);
+
+            self::$_modules[$module->name] = $module;
+
             /**
-             * 모듈이 라우터를 가질 경우, 경로를 지정한다.
+             * 모듈이 전역모듈일 경우
              */
-            if ($module->is_router == 'TRUE') {
-                $class = self::get($module->name)->init();
+            if ($module->is_global == true) {
+                $globals[] = $module->name;
             }
+        }
+
+        /**
+         * 전역모듈을 초기화한다.
+         */
+        foreach ($globals as $global) {
+            self::get($global)->init();
         }
     }
 
@@ -100,6 +126,16 @@ class Modules
     }
 
     /**
+     * 전체모듈을 가져온다.
+     *
+     * @return object[] $modules
+     */
+    public static function all(): array
+    {
+        return array_values(self::$_modules);
+    }
+
+    /**
      * 모듈 클래스를 불러온다.
      *
      * @param string $name 모듈명
@@ -112,8 +148,8 @@ class Modules
             ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
         }
 
-        if ($route === null && isset(self::$_modules[$name]) == true) {
-            return self::$_modules[$name];
+        if ($route === null && isset(self::$_classes[$name]) == true) {
+            return self::$_classes[$name];
         }
 
         $classPaths = explode('/', $name);
@@ -121,7 +157,7 @@ class Modules
         $className = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
         $class = new $className($route);
         if ($route === null) {
-            self::$_modules[$name] = $class;
+            self::$_classes[$name] = $class;
         }
 
         return $class;
@@ -195,14 +231,7 @@ class Modules
         /**
          * 모듈이 설치정보를 가져온다.
          */
-        $installed = self::db()
-            ->select()
-            ->from(self::table('modules'))
-            ->where('name', $name)
-            ->getOne();
-        $installed->configs = json_decode($installed->configs);
-
-        self::$_installeds[$name] = $installed;
+        self::$_installeds[$name] = self::$_modules[$name] ?? null;
 
         return self::$_installeds[$name];
     }
@@ -261,5 +290,78 @@ class Modules
         }
 
         return $error;
+    }
+
+    /**
+     * 모듈이 설치가능한지 확인한다.
+     *
+     * @param string $name 설치가능여부를 확인할 모듈명
+     * @param bool $check_dependency 요구사항 확인여부
+     * @return object $installable 설치가능여부
+     */
+    public static function installable(string $name, bool $check_dependency = true): object
+    {
+        $installable = new stdClass();
+        $installable->success = false;
+        $installable->exists = false;
+        $installable->dependencies = [];
+
+        $package = self::getPackage($name);
+        if ($package == null) {
+            return $installable;
+        }
+
+        $classPaths = explode('/', $name);
+        $className = ucfirst(end($classPaths));
+        if (class_exists('\\modules\\' . implode('\\', $classPaths) . '\\' . $className) == false) {
+            return $installable;
+        }
+
+        $installable->exists = $package->version;
+
+        if ($check_dependency == true) {
+            $dependencies = $package->dependencies ?? [];
+            foreach ($dependencies as $name => $version) {
+                $installed = self::getInstalled($name);
+                if ($installed == null || version_compare($installed->version, $version, '<=') == false) {
+                    $installable->dependencies[$name] = new stdClass();
+                    $installable->dependencies[$name]->current = $installed?->version ?? '0.0.0';
+                    $installable->dependencies[$name]->requirement = $version;
+                }
+            }
+
+            if (count($installable->dependencies) > 0) {
+                return $installable;
+            }
+        }
+
+        $installable->success = true;
+        return $installable;
+    }
+
+    /**
+     * 모듈을 설치한다.
+     *
+     * @param string $name 설치한 모듈명
+     * @param bool $check_dependency 요구사항 확인여부
+     * @return bool $success 설치성공여부
+     */
+    public static function install(string $name, bool $check_dependency = true): bool
+    {
+        $installable = self::installable($name, $check_dependency);
+        if ($installable->success = false) {
+            return false;
+        }
+
+        $classPaths = explode('/', $name);
+        $className = ucfirst(end($classPaths));
+        $class = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
+
+        $installed = self::getInstalled($name);
+        $previous = $installed?->version ?? null;
+
+        $success = $class::install($previous);
+
+        return $success;
     }
 }
