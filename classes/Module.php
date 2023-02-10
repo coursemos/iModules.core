@@ -12,11 +12,6 @@
 class Module extends Component
 {
     /**
-     * @var string $_name 모듈명
-     */
-    private string $_name;
-
-    /**
      * @var bool $_init 모듈 클래스가 초기화되었는지 여부
      */
     private static bool $_init = false;
@@ -37,7 +32,7 @@ class Module extends Component
     private ?Route $_route = null;
 
     /**
-     * 모듈의 컨텍스트 템플릿을 초기화한다.
+     * @var object $_templet 모듈의 컨텍스트 템플릿을 초기화한다.
      */
     private object $_templet;
 
@@ -48,17 +43,16 @@ class Module extends Component
      */
     public function __construct(?Route $route = null)
     {
-        if (Modules::isInits($this->getName()) == false) {
+        if (Modules::isInits($this->getName(), true) == false) {
             if (is_file($this->getPath() . '/scripts/' . ucfirst($this->getName()) . '.js') == true) {
                 Cache::script('modules', $this->getBase() . '/scripts/' . ucfirst($this->getName()) . '.js');
             }
-            self::$_init = true;
         }
         $this->_route = $route;
     }
 
     /**
-     * 모듈을 설정을 초기화한다.
+     * 모듈 설정을 초기화한다.
      */
     public function init(): void
     {
@@ -67,13 +61,13 @@ class Module extends Component
     /**
      * 각 모듈에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
      *
-     * @param string $name 데이터베이스 인터페이스 고유명
+     * @param ?string $name 데이터베이스 인터페이스 고유명
      * @param ?object $connector 데이터베이스정보
      * @return DatabaseInterface $interface
      */
-    public function db(string $name = 'default', ?object $connector = null): DatabaseInterface
+    public static function db(?string $name = null, ?object $connector = null): DatabaseInterface
     {
-        return Database::getInterface($name, $connector ?? Configs::get('db'));
+        return Database::getInterface($name ?? 'modules/' . self::getName(), $connector ?? Configs::get('db'));
     }
 
     /**
@@ -82,9 +76,9 @@ class Module extends Component
      * @param string $table;
      * @return string $table;
      */
-    public function table(string $table): string
+    public static function table(string $table): string
     {
-        return iModules::table('module_' . $this->getName() . '_' . $table);
+        return iModules::table('module_' . str_replace('/', '_', self::getName()) . '_' . $table);
     }
 
     /**
@@ -94,9 +88,9 @@ class Module extends Component
      * @param ?array $placeHolder 치환자
      * @return string|array $message 치환된 메시지
      */
-    public function getText(string $text, ?array $placeHolder = null): string|array
+    public static function getText(string $text, ?array $placeHolder = null): string|array
     {
-        return Language::getText($text, $placeHolder, ['/modules/' . $this->getName(), '/']);
+        return Language::getText($text, $placeHolder, ['/modules/' . self::getName(), '/']);
     }
 
     /**
@@ -106,9 +100,24 @@ class Module extends Component
      * @param ?array $placeHolder 치환자
      * @return string $message 치환된 메시지
      */
-    public function getErrorText(string $code, ?array $placeHolder = null): string
+    public static function getErrorText(string $code, ?array $placeHolder = null): string
     {
-        return $this->getText('error/' . $code, $placeHolder);
+        return self::getText('error/' . $code, $placeHolder);
+    }
+
+    /**
+     * 모듈 패키지정보를 가져온다.
+     *
+     * @return object $package
+     */
+    public static function getPackage(): object
+    {
+        if (isset(self::$_package) == true) {
+            return self::$_package;
+        }
+
+        self::$_package = Modules::getPackage(self::getName());
+        return self::$_package;
     }
 
     /**
@@ -116,18 +125,25 @@ class Module extends Component
      *
      * @return string $module
      */
-    public function getName(): string
+    public static function getName(): string
     {
-        if (isset($this->_name) == true) {
-            return $this->_name;
-        }
-
-        $this->_name = str_replace(
+        return str_replace(
             '\\',
             '/',
-            preg_replace('/\\\[^\\\]+$/', '', preg_replace('/^(\\\)?modules\\\/', '', get_class($this)))
+            preg_replace('/\\\[^\\\]+$/', '', preg_replace('/^(\\\)?modules\\\/', '', get_called_class()))
         );
-        return $this->_name;
+    }
+
+    /**
+     * 모듈제목을 가져온다.
+     *
+     * @param string $language 언어코드
+     * @return string $title
+     */
+    public static function getTitle($language = null): string
+    {
+        $language ??= \Router::getLanguage();
+        return self::getPackage()->title->$language ?? self::getPackage()->title->{self::getPackage()->language};
     }
 
     /**
@@ -135,9 +151,9 @@ class Module extends Component
      *
      * @return string $base
      */
-    public function getBase(): string
+    public static function getBase(): string
     {
-        return '/modules/' . $this->getName();
+        return '/modules/' . self::getName();
     }
 
     /**
@@ -145,9 +161,9 @@ class Module extends Component
      *
      * @return string $dir
      */
-    public function getDir(): string
+    public static function getDir(): string
     {
-        return Configs::dir() . $this->getBase();
+        return Configs::dir() . self::getBase();
     }
 
     /**
@@ -155,9 +171,9 @@ class Module extends Component
      *
      * @return string $path
      */
-    public function getPath(): string
+    public static function getPath(): string
     {
-        return Configs::path() . $this->getBase();
+        return Configs::path() . self::getBase();
     }
 
     /**
@@ -219,21 +235,6 @@ class Module extends Component
     }
 
     /**
-     * 모듈 패키지정보를 가져온다.
-     *
-     * @return object $package
-     */
-    public function getPackage(): object
-    {
-        if (isset(self::$_package) == true) {
-            return self::$_package;
-        }
-
-        self::$_package = Modules::getPackage($this->getName());
-        return self::$_package;
-    }
-
-    /**
      * 모듈의 환경설정을 가져온다.
      *
      * @param ?string $key 환경설정코드값 (NULL인 경우 전체 환경설정값)
@@ -243,7 +244,7 @@ class Module extends Component
     {
         if (isset(self::$_configs) == false) {
             $installed = Modules::getInstalled($this->getName());
-            $configs = $installed->configs ?? new stdClass();
+            $configs = $installed?->configs ?? new stdClass();
             $package = $this->getPackage();
 
             $configKeys = [];
@@ -307,5 +308,31 @@ class Module extends Component
             default:
                 return iModules::error($code, $message, $details);
         }
+    }
+
+    /**
+     * 모듈을 설치한다.
+     * 모듈을 설치할때 데이터 마이그레이션 등이 필요한 경우 해당 함수를 각 모듈클래스에 재정의하여
+     * 현재 설치되어 있는 버전에 따라 데이터 마이그레이션을 수행하고 신규버전 데이터베이스를 구성할 수 있다.
+     *
+     * @param string $version 현재 설치되어 있는 버전 (NULL인 경우 신규설치)
+     * @return bool $success 설치성공여부
+     */
+    public static function install(string $version = null): bool
+    {
+        $db = self::db();
+        $db->displayError(false);
+        $package = self::getPackage();
+        $databases = $package->databases ?? [];
+        foreach ($databases as $table => $schema) {
+            if ($db->compare(self::table($table), $schema) == false) {
+                $success = $db->create(self::table($table), $schema);
+                if ($success !== true) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
