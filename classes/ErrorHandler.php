@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class ErrorHandler
 {
@@ -76,7 +76,7 @@ class ErrorHandler
         $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
         $error->debugMode = Configs::debug();
 
-        Html::style(Configs::dir() . '/styles/error.scss');
+        Html::style('/styles/error.scss');
 
         /**
          * $error->stacktrace 가 NULL 인 경우
@@ -103,13 +103,10 @@ class ErrorHandler
          * 기본 자바스크립트파일을 불러온다.
          * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
          */
-        Cache::script('core', '/scripts/Html.js');
-        Cache::script('core', '/scripts/Dom.js');
-        Cache::script('core', '/scripts/DomList.js');
-        Cache::script('core', '/scripts/Modules.js');
-        Cache::script('core', '/scripts/Module.js');
-        Cache::script('core', '/scripts/iModules.js');
-        Html::script(Cache::script('core'), 1);
+        Cache::script('common', '/scripts/Html.js');
+        Cache::script('common', '/scripts/Dom.js');
+        Cache::script('common', '/scripts/DomList.js');
+        Html::script(Cache::script('common'), 1);
 
         Html::font('Pretendard');
         Html::font('moimz');
@@ -134,12 +131,56 @@ class ErrorHandler
             ob_end_clean();
         }
 
-        $error = self::get($code, $message, $details);
+        if (Header::getType() == 'json') {
+            $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
 
-        Html::title(self::getText('TITLE'));
-        Html::body('data-type', 'error');
+            $json = new stdClass();
+            $json->success = false;
+            $json->message = [];
+            if ($error->prefix) {
+                $json->message[] = $error->prefix;
+            }
+            if ($error->message) {
+                $json->message[] = $error->message;
+            }
+            if ($error->suffix) {
+                $json->message[] = $error->suffix;
+            }
 
-        exit(Html::tag(Html::header(), $error, Html::footer()));
+            $json->message = implode("\n", $json->message);
+
+            if (Configs::debug() == true) {
+                /**
+                 * $error->stacktrace 가 NULL 인 경우
+                 */
+                if ($error->stacktrace === null) {
+                    $error->stacktrace = self::trace();
+                }
+
+                if (count($error->stacktrace) > 0 && $error->file === null) {
+                    $error->file = $error->stacktrace[0]->file;
+                    $error->line = $error->stacktrace[0]->line;
+                }
+
+                $json->file = $error->file;
+                $json->line = $error->line;
+                $json->stacktrace = $error->stacktrace;
+            } else {
+                if ($error->debugModeOnly == true && $error->debugMode == false) {
+                    $json->message = self::getText('DESCRIPTION') . "\n" . self::getText('DESCRIPTION_FOOTER');
+                    $json->message = str_replace('<br>', "\n", $json->message);
+                }
+            }
+
+            exit(json_encode($json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        } else {
+            $error = self::get($code, $message, $details);
+
+            Html::title(self::getText('TITLE'));
+            Html::body('data-type', 'error');
+
+            exit(Html::tag(Html::header(), $error, Html::footer()));
+        }
     }
 
     /**
@@ -312,7 +353,9 @@ class ErrorHandler
 
             default:
                 $error->prefix = self::getText($code);
-                $error->message = $message;
+                if ($message !== null) {
+                    $error->message = $message;
+                }
         }
 
         return $error;
@@ -374,4 +417,3 @@ class ErrorHandler
         return true;
     }
 }
-?>
