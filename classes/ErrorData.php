@@ -7,7 +7,7 @@
  * @file /classes/ErrorData.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class ErrorData
 {
@@ -60,13 +60,12 @@ class ErrorData
      * 에러데이터를 정의한다.
      *
      * @param string $title 에러명
-     * @param string $message 에러메시지
+     * @param ?string $message 에러메시지
      */
-    public function __construct(string $title, string $message)
+    public function __construct(string $title, ?string $message = null)
     {
         $this->title = $title;
         $this->message = $message;
         $this->debugMode = Configs::debug();
     }
 }
-?>
