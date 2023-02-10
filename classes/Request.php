@@ -252,6 +252,29 @@ class Request
     }
 
     /**
+     * 사용자 브라우져에서 설정된 모든 언어코드를 가져온다.
+     *
+     * @param bool $is_primary_only 최우선 언어코드 1개만 반환할지 여부
+     * @return array|string $languages
+     */
+    public static function languages(bool $is_primary_only = false): array|string
+    {
+        $languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        foreach ($languages as &$language) {
+            $language = substr($language, 0, 2);
+        }
+
+        $languages = array_unique($languages);
+
+        // 기본언어는 한국어이므로, 언어코드목록에 한국어가 없는 경우 포함시킨다.
+        if (in_array('ko', $languages) == false) {
+            $languages[] = 'ko';
+        }
+
+        return $is_primary_only == true ? $languages[0] : $languages;
+    }
+
+    /**
      * 디버깅을 위해 전달된 변수를 화면상에 출력한다.
      *
      * @param mixed $val
@@ -263,4 +286,3 @@ class Request
         echo '</pre>';
     }
 }
-?>
