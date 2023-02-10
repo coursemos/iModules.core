@@ -134,3 +134,29 @@ class Html {
         document.addEventListener('DOMContentLoaded', listener);
     }
 }
+
+/**
+ * 페이지가 출력되었을 때 기본 UI 이벤트를 등록한다.
+ */
+Html.ready(() => {
+    if (Html.get('main[data-type=error]').getEl() !== null) {
+        const $error = Html.get('main[data-type=error]');
+
+        Html.all('button[data-index]', $error).on('click', (e: Event) => {
+            const $button = Html.el(e.currentTarget);
+            const index = $button.getData('index');
+            Html.all('button[data-index]', $error).removeClass('selected');
+
+            $button.addClass('selected');
+
+            Html.all('ul[data-role=code]', $error).removeClass('selected');
+            Html.get("ul[data-role=code][data-index='" + index + "']", $error).addClass('selected');
+        });
+
+        Html.all('button[data-action=toggle]', $error).on('click', (e: Event) => {
+            const $button = Html.el(e.currentTarget);
+            const $aside = $button.getParents('div');
+            $aside.toggleClass('opened');
+        });
+    }
+});
