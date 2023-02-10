@@ -7,21 +7,53 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class AutoLoader
 {
     /**
-     * AutoLoad 규칙을 저장한다.
+     * @var string $_path 루트폴더 경로
+     */
+    private static ?string $_path = null;
+
+    /**
+     * @var object[] $_loader AutoLoad 규칙을 저장한다.
      */
     private static array $_loader = [];
 
     /**
      * AutoLoader 클래스를 초기화한다.
+     *
+     * @param string $path 최상위폴더의 상대경로 (NULL 인 경우 환경설정을 따른다.)
      */
-    public static function init(): void
+    public static function init(?string $path = null): void
     {
+        self::$_path = $path;
         spl_autoload_register('AutoLoader::loader');
+    }
+
+    /**
+     * 최상위 폴더의 상대경로를 가져온다.
+     *
+     * @return string $root
+     */
+    public static function getPath(): string
+    {
+        if (self::$_path === null) {
+            return Configs::path();
+        } else {
+            return self::$_path;
+        }
+    }
+
+    /**
+     * 최상위 폴더의 상대경로를 설정한다.
+     *
+     * @param string $path
+     */
+    public static function setPath(string $path): void
+    {
+        self::$_path = $path;
     }
 
     /**
@@ -63,7 +95,7 @@ class AutoLoader
                 } else {
                     $root = [];
                 }
-                $path = Configs::path() . ($loader->basePath == '/' ? '' : $loader->basePath);
+                $path = self::getPath() . ($loader->basePath == '/' ? '' : $loader->basePath);
                 if (count($root) > 0) {
                     $path .= '/' . implode('/', $root);
                 }
