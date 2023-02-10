@@ -83,10 +83,11 @@ abstract class DatabaseInterface
      * 테이블의 구조를 비교한다.
      *
      * @param string $table 테이블명
-     * @param array $schema 테이블구조
+     * @param object $schema 테이블구조
+     * @param bool $is_update 데이터손실이 없다면, 테이블구조를 변경할지 여부 (기본값 false)
      * @return bool $is_coincidence
      */
-    abstract public function compare(string $table, array $schema): bool;
+    abstract public function compare(string $table, object $schema, bool $is_update = false): bool;
 
     /**
      * 테이블을 생성한다.
@@ -95,7 +96,7 @@ abstract class DatabaseInterface
      * @paran object $schema 테이블구조
      * @return bool $success
      */
-    abstract public function create(string $table, array $schema): bool;
+    abstract public function create(string $table, object $schema): bool|string;
 
     /**
      * 테이블을 삭제한다.
@@ -131,33 +132,15 @@ abstract class DatabaseInterface
     abstract public function backup(string $table): bool;
 
     /**
-     * 컬럼을 추가한다.
-     *
-     * @param string $table 컬럼을 추가할 테이블명
-     * @param object $column 추가할컬럼구조
-     * @param ?string $after 컬럼을 추가할 위치
-     * @return bool $success
-     */
-    abstract public function alterAdd(string $table, object $column, ?string $after = null): bool;
-
-    /**
      * 컬럼을 수정한다.
      *
      * @param string $table 컬럼을 변경할 테이블명
-     * @param string $target 변경할 컬럼명
-     * @param object $column 변경할 컬럼구조
+     * @param string $target 변경할 컬럼명 (변경할 컬럼명이 테이블에 존재하지 않을 경우 컬럼을 추가한다.)
+     * @param object|bool $column 변경할 컬럼구조 (FALSE 인 경우 컬럼을 삭제한다.)
+     * @param ?string $after 컬럼을 추가할 위치 (NULL : 마지막, @ : 처음, 컬럼명 : 해당컬럼명 뒤)
      * @return bool $success
      */
-    abstract public function alterChange(string $table, string $target, object $column): bool;
-
-    /**
-     * 컬럼을 삭제한다.
-     *
-     * @param string $table 컬럼을 삭제할 테이블명
-     * @param string $target 삭제할 컬럼명
-     * @return bool $success
-     */
-    abstract public function alterDrop(string $table, string $target): bool;
+    abstract public function alter(string $table, string $target, object|bool $column, ?string $after = null): bool;
 
     /**
      * LOCK 방법을 설정한다.
@@ -386,10 +369,40 @@ abstract class DatabaseInterface
     abstract public function copy(): DatabaseInterface;
 
     /**
+     * 트랜잭션을 시작한다.
+     */
+    abstract public function transaction(): void;
+
+    /**
+     * 입력된 모든 쿼리를 커밋한다.
+     */
+    abstract public function commit(): void;
+
+    /**
+     * 입력된 쿼리를 롤백한다.
+     */
+    abstract public function rollback(): void;
+
+    /**
      * 마지막에 실행된 쿼리문을 가져온다.
      *
      * @return string $query
      */
     abstract public function getLastQuery(): ?string;
+
+    /**
+     * 마지막 에러메시지를 가져온다.
+     *
+     * @return ?string $error
+     */
+    abstract public function getLastError(): ?string;
+
+    /**
+     * 에러메시지 표시여부를 설정한다.
+     *
+     * @param bool $display
+     * @return DatabaseInterface $this
+     */
+    abstract public function displayError(bool $display): DatabaseInterface;
 }
 ?>

@@ -22,7 +22,7 @@ class mysql extends DatabaseInterface
      */
     private string $_charset = 'utf8mb4';
     private string $_collation = 'utf8mb4_unicode_ci';
-    private string $_engine = 'InnoDatabase';
+    private string $_engine = 'InnoDB';
 
     private ?string $_query = null;
     private ?string $_lastQuery = null;
@@ -48,6 +48,7 @@ class mysql extends DatabaseInterface
     private array $_tableDatas = [];
     private string $_tableLockMethod = 'READ';
     private int $_count = 0;
+    private bool $_displayError = true;
 
     /**
      * MySQLi 클래스를 가져온다.
@@ -71,7 +72,7 @@ class mysql extends DatabaseInterface
         mysqli_report(MYSQLI_REPORT_OFF);
         $this->_mysqli = new mysqli(
             $connector->host,
-            $connector->username,
+            $connector->id,
             $connector->password,
             $connector->database,
             $connector->port
@@ -196,7 +197,7 @@ class mysql extends DatabaseInterface
      */
     public function exists(string $table): bool
     {
-        return true;
+        return $this->query("SHOW TABLES LIKE '{$table}'")->count() > 0;
     }
 
     /**
@@ -225,11 +226,236 @@ class mysql extends DatabaseInterface
      * 테이블의 구조를 비교한다.
      *
      * @param string $table 테이블명
-     * @param array $schema 테이블구조
+     * @param object $schema 테이블구조
+     * @param bool $is_update 데이터손실이 없다면, 테이블구조를 변경할지 여부 (기본값 false)
+     * @param bool $is_force 데이터손실을 감수하고 테이블구조를 변경할지 여부 (기본값 false)
      * @return bool $is_coincidence
      */
-    public function compare(string $table, array $schema): bool
+    public function compare(string $table, object $schema, bool $is_update = false, bool $is_force = false): bool
     {
+        if ($this->exists($table) == false) {
+            return false;
+        }
+
+        /**
+         * 비교대상의 컬럼정보를 가져온다.
+         *
+         * @var object[] $columns 비교대상 테이블에 존재하는 컬럼 정보
+         * @var string[] $exists 비교대상 테이블에 존재하는 컬럼명
+         */
+        $columns = [];
+        $exists = [];
+        foreach ($this->query('SHOW FULL COLUMNS FROM `' . $table . '`')->get() as $column) {
+            $columns[$column->Field] = new stdClass();
+            $columns[$column->Field]->type = $column->Type;
+            $columns[$column->Field]->is_null = $column->Null == 'YES';
+
+            if ($column->Default !== null && $this->_isNumeric($column->Type) == true) {
+                $column->Default = intval($column->Default);
+            }
+
+            $columns[$column->Field]->default = $column->Default;
+            $columns[$column->Field]->comment = $column->Comment;
+            $columns[$column->Field]->collation = $column->Collation;
+
+            $exists[] = $column->Field;
+        }
+
+        /**
+         * @var string[] $alters 구조변경이 필요한 ALTER 쿼리문
+         */
+        $alters = [];
+
+        /**
+         * 기존 테이블에서 제거되는 컬럼이 존재하는지 확인한다.
+         */
+        foreach ($exists as $name) {
+            if (isset($schema->columns->$name) == false) {
+                if ($is_update == true && $is_force == true) {
+                    $alters[] = 'DROP `' . $name . '`';
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * 전체 컬럼을 비교한다.
+         */
+        foreach ($schema->columns as $name => $column) {
+            /**
+             * 컬럼이 존재하지 않는 경우
+             */
+            if (in_array($name, $exists) == false) {
+                // 구조변경이 가능한 경우 컬럼을 생성한다.
+                if ($is_update == true) {
+                    $alters[] = 'ADD ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            /**
+             * 컬럼 형태가 다른 경우
+             */
+            $type = strtolower($column->type);
+            if ($this->_isLength($column->type) == true && isset($column->length) == true) {
+                $type .= '(' . $column->length . ')';
+            }
+
+            if ($type != $columns[$name]->type) {
+                if ($is_update == true) {
+                    $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            if ($this->_isText($column->type) == true && $columns[$name]->collation != $this->_collation) {
+                if ($is_update == true) {
+                    $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            if (($column->is_null ?? false) !== $columns[$name]->is_null) {
+                if ($is_update == true) {
+                    $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            if (($column->default ?? null) !== $columns[$name]->default) {
+                if ($is_update == true) {
+                    $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            if (($column->comment ?? '') != $columns[$name]->comment) {
+                if ($is_update == true) {
+                    $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * 비교대상의 컬럼정보를 가져온다.
+         *
+         * @var object[] $indexes 비교대상 테이블에 존재하는 인덱스 정보
+         * @var string[] $exists 인덱스 대상의 컬럼명
+         */
+        $indexes = [];
+        $exists = [];
+        foreach ($this->query('SHOW INDEX FROM `' . $table . '`')->get() as $index) {
+            if (isset($indexes[$index->Key_name]) == false) {
+                $indexes[$index->Key_name] = new stdClass();
+                if ($index->Key_name == 'PRIMARY') {
+                    $indexes[$index->Key_name]->type = 'primary_key';
+                } elseif ($index->Index_type == 'FULLTEXT') {
+                    $indexes[$index->Key_name]->type = 'fulltext';
+                } elseif ($index->Non_unique == 0) {
+                    $indexes[$index->Key_name]->type = 'unique';
+                } else {
+                    $indexes[$index->Key_name]->type = 'index';
+                }
+                $indexes[$index->Key_name]->columns = [];
+            }
+            $indexes[$index->Key_name]->columns[] = $index->Column_name;
+        }
+
+        /**
+         * 제거된 인덱스가 존재할 경우 인덱스를 변경한다.
+         */
+        foreach ($indexes as $name => $index) {
+            $key = implode(',', $index->columns);
+            if (isset($schema->indexes?->{$key}) == true) {
+                if ($schema->indexes->{$key} == $index->type) {
+                }
+
+                $exists[] = $key;
+            } else {
+                if ($is_update == true) {
+                    $alters[] = $index->type == 'primary_key' ? 'DROP PRIMARY KEY' : 'DROP INDEX `' . $name . '`';
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * 신규 인덱스를 추가한다.
+         */
+        if (isset($schema->indexes) == true) {
+            foreach ($schema->indexes as $column => $type) {
+                $columns = explode(',', $column);
+                $columns = '`' . implode('`,`', $columns) . '`';
+
+                if (in_array($column, $exists) == false) {
+                    if ($is_update == true) {
+                        if ($type == 'primary_key') {
+                            $alters[] = 'ADD PRIMARY KEY(' . $columns . ')';
+                        } elseif ($type == 'unique') {
+                            $alters[] = 'ADD UNIQUE(' . $columns . ')';
+                        } elseif ($type == 'fulltext') {
+                            $alters[] = 'ADD FULLTEXT(' . $columns . ')'; // @todo ngram 고민을 해보자 WITH PARSER ngram';
+                        } else {
+                            $alters[] = 'ADD INDEX(' . $columns . ')';
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        /**
+         * 구조변경이 가능하고, 구조변경내역이 있다면 쿼리를 실행한다.
+         * 쿼리 실행이 실패할 경우 구조변경을 취소하고 false 를 반환한다.
+         */
+        if ($is_update == true && count($alters) > 0) {
+            $query = 'ALTER TABLE `' . $table . '` ';
+            $alter = implode(', ', $alters);
+            $query .= $alter;
+
+            $this->query($query)->execute();
+            $error = $this->getLastError();
+
+            if ($error !== null) {
+                return false;
+            }
+        }
+
+        /**
+         * 컬럼순서를 변경한다.
+         */
+        $positions = [];
+        foreach ($this->query('SHOW FULL COLUMNS FROM `' . $table . '`')->get() as $position => $column) {
+            $positions[$column->Field] = $position;
+        }
+
+        $loop = 0;
+        $current = null;
+        foreach ($schema->columns as $name => $column) {
+            if ($positions[$name] != $loop) {
+                $this->alter($table, $name, $column, $current ?? '@');
+            }
+
+            $current = $name;
+            $loop++;
+        }
+
         return true;
     }
 
@@ -238,10 +464,124 @@ class mysql extends DatabaseInterface
      *
      * @param string $table 테이블명
      * @paran object $schema 테이블구조
-     * @return bool $success
+     * @return bool|string $success
      */
-    public function create(string $table, array $schema): bool
+    public function create(string $table, object $schema): bool|string
     {
+        /**
+         * 테이블이 존재할 경우, 임시 테이블을 생성한다.
+         */
+        if ($this->exists($table) == true) {
+            /**
+             * 기존테이블이 동일할 경우 테이블 생성을 중단한다.
+             */
+            if ($this->compare($table, $schema) == true) {
+                return true;
+            }
+
+            $created = $table . '_TEMP_' . date('Y-m-d_H:i:s');
+        } else {
+            $created = $table;
+        }
+
+        $query = 'CREATE TABLE `' . $created . '`';
+
+        $columns = [];
+        foreach ($schema->columns as $name => $column) {
+            $columns[] = $this->_columnQuery($name, $column);
+        }
+
+        $query .= ' (' . implode(', ', $columns) . ')';
+        $query .= ' ENGINE = ' . $this->_engine . ' CHARACTER SET ' . $this->_charset . ' COLLATE ' . $this->_collation;
+        if (isset($schema->comment) == true) {
+            $query .= ' COMMENT="' . $schema->comment . '"';
+        }
+
+        $results = $this->query($query)->execute();
+        if ($results->success == false) {
+            return $this->getLastError();
+        }
+
+        if (isset($schema->indexes) == true) {
+            $indexes = [];
+            foreach ($schema->indexes as $column => $type) {
+                $columns = explode(',', $column);
+                $columns = '`' . implode('`,`', $columns) . '`';
+
+                if ($type == 'primary_key') {
+                    $indexes[] = 'ADD PRIMARY KEY(' . $columns . ')';
+                } elseif ($type == 'unique') {
+                    $indexes[] = 'ADD UNIQUE(' . $columns . ')';
+                } elseif ($type == 'fulltext') {
+                    $indexes[] = 'ADD FULLTEXT(' . $columns . ')'; // @todo ngram 고민을 해보자 WITH PARSER ngram';
+                } else {
+                    $indexes[] = 'ADD INDEX(' . $columns . ')';
+                }
+            }
+
+            $query = 'ALTER TABLE `' . $created . '` ';
+            $query .= implode(', ', $indexes);
+
+            $results = $this->query($query)->execute();
+            if ($results->success == false) {
+                $this->drop($created);
+                return $this->getLastError();
+            }
+        }
+
+        if ($table != $created) {
+            $datas = $this->select()
+                ->from($table)
+                ->get();
+            if (count($datas) > 0) {
+                $defaults = [];
+                foreach ($schema->columns as $name => $column) {
+                    if (isset($column->default) == true) {
+                        $defaults[$name] = $column->default;
+                    } elseif (isset($column->is_null) == true && $column->is_null == true) {
+                        $defaults[$name] = null;
+                    } elseif ($this->_isNumeric($column->type) == true) {
+                        $defaults[$name] = 0;
+                    } elseif ($column->type == 'enum') {
+                        $temp = explode(',', $column->length);
+                        $defaults[$name] = substr($temp[0], 1, -1);
+                    } elseif ($column->type == 'json') {
+                        $defaults[$name] = 'null';
+                    } elseif ($column->type == 'date') {
+                        $defaults[$name] = '0000-00-00';
+                    } elseif ($column->type == 'datetime') {
+                        $defaults[$name] = '0000-00-00 00:00:00';
+                    } else {
+                        $defaults[$name] = '';
+                    }
+                }
+
+                $this->transaction();
+                foreach ($datas as $data) {
+                    $insert = $defaults;
+                    foreach ($data as $name => $value) {
+                        if (isset($insert[$name]) == true) {
+                            $insert[$name] = $value;
+                        }
+                    }
+                    $this->insert($created, $insert)->execute();
+                }
+
+                if ($this->getLastError() !== null) {
+                    $this->rollback();
+                    $this->drop($created);
+                    return $this->getLastError();
+                }
+
+                $this->commit();
+                $this->rename($table, $table . '_BACKUP_' . date('Y-m-d_H:i:s'));
+            } else {
+                $this->drop($table);
+            }
+
+            $this->rename($created, $table);
+        }
+
         return true;
     }
 
@@ -253,7 +593,8 @@ class mysql extends DatabaseInterface
      */
     public function drop(string $table): bool
     {
-        return true;
+        $results = $this->query('DROP TABLE `' . $table . '`')->execute();
+        return $results->success;
     }
 
     /**
@@ -277,7 +618,8 @@ class mysql extends DatabaseInterface
      */
     public function rename(string $table, string $newname): bool
     {
-        return true;
+        $results = $this->query('RENAME TABLE `' . $table . '` TO `' . $newname . '`')->execute();
+        return $results->success;
     }
 
     /**
@@ -292,40 +634,58 @@ class mysql extends DatabaseInterface
     }
 
     /**
-     * 컬럼을 추가한다.
-     *
-     * @param string $table 컬럼을 추가할 테이블명
-     * @param object $column 추가할컬럼구조
-     * @param ?string $after 컬럼을 추가할 위치
-     * @return bool $success
-     */
-    public function alterAdd(string $table, object $column, ?string $after = null): bool
-    {
-        return true;
-    }
-
-    /**
      * 컬럼을 수정한다.
      *
      * @param string $table 컬럼을 변경할 테이블명
-     * @param string $target 변경할 컬럼명
-     * @param object $column 변경할 컬럼구조
+     * @param string $target 변경할 컬럼명 (변경할 컬럼명이 테이블에 존재하지 않을 경우 컬럼을 추가한다.)
+     * @param object|bool $column 변경할 컬럼구조 (FALSE 인 경우 컬럼을 삭제한다.)
+     * @param ?string $after 컬럼을 추가할 위치 (NULL : 마지막, @ : 처음, 컬럼명 : 해당컬럼명 뒤)
      * @return bool $success
      */
-    public function alterChange(string $table, string $target, object $column): bool
+    public function alter(string $table, string $target, object|bool $column, ?string $after = null): bool
     {
-        return true;
-    }
+        /**
+         * 테이블이 존재하는지 확인한다.
+         */
+        if ($this->exists($table) == false) {
+            return false;
+        }
 
-    /**
-     * 컬럼을 삭제한다.
-     *
-     * @param string $table 컬럼을 삭제할 테이블명
-     * @param string $target 삭제할 컬럼명
-     * @return bool $success
-     */
-    public function alterDrop(string $table, string $target): bool
-    {
+        /**
+         * 컬럼이 존재하는지 확인한다.
+         */
+        $alter = '';
+        $check = $this->query('SHOW FULL COLUMNS FROM `' . $table . '` WHERE `Field`=?', [$target])->has();
+        if ($check == true) {
+            if (is_bool($column) == true && $column === false) {
+                $alter = 'DROP';
+            } elseif (is_object($column) == true) {
+                $alter = 'CHANGE';
+            } else {
+                return false;
+            }
+        } else {
+            if (is_object($column) == true) {
+                $alter = 'ADD';
+            } else {
+                return false;
+            }
+        }
+
+        $query = 'ALTER TABLE `' . $table . '` ' . $alter;
+        if ($alter == 'CHANGE') {
+            $query .= ' `' . $target . '`';
+        }
+
+        if ($alter != 'DROP') {
+            $query .= ' ' . $this->_columnQuery($column->name ?? $target, $column);
+            if ($after !== null) {
+                $query .= $after == '@' ? ' FIRST' : ' AFTER `' . $after . '`';
+            }
+        }
+
+        $this->query($query)->execute();
+
         return true;
     }
 
@@ -680,26 +1040,11 @@ class mysql extends DatabaseInterface
             $this->_error('No execute query');
         }
 
-        /**
-         * GROUP 절을 사용하지 않았을 경우 COUNT(*) 함수를 사용하여 갯수만 가져온다.
-         * GROUP 절이 있는 경우, 쿼리를 실행시킨 뒤 갯수를 가져온다.
-         */
-        if (count($this->_groupBy) == 0) {
-            $this->_columns = ['COUNT(*) AS ROW_COUNT'];
-            $this->_buildQuery();
-            $results = $this->_execute();
-            $this->_end();
+        $this->_buildQuery();
+        $results = $this->_execute(false);
+        $this->_end();
 
-            return count($results->datas) == 1 && isset($results->datas[0]->ROW_COUNT) == true
-                ? $results->datas[0]->ROW_COUNT
-                : 0;
-        } else {
-            $this->_buildQuery();
-            $results = $this->_execute(false);
-            $this->_end();
-
-            return $results->num_rows;
-        }
+        return $results->num_rows;
     }
 
     /**
@@ -782,6 +1127,36 @@ class mysql extends DatabaseInterface
     }
 
     /**
+     * 트랜잭션을 시작한다.
+     */
+    public function transaction(): void
+    {
+        $this->_mysqli->autocommit(false);
+        $this->_transaction_in_progress = true;
+        //register_shutdown_function([$this, '_transaction_status_check']);
+    }
+
+    /**
+     * 입력된 모든 쿼리를 커밋한다.
+     */
+    public function commit(): void
+    {
+        $this->_mysqli->commit();
+        $this->_transaction_in_progress = false;
+        $this->_mysqli->autocommit(true);
+    }
+
+    /**
+     * 입력된 쿼리를 롤백한다.
+     */
+    public function rollback(): void
+    {
+        $this->_mysqli->rollback();
+        $this->_transaction_in_progress = false;
+        $this->_mysqli->autocommit(true);
+    }
+
+    /**
      * 마지막에 실행된 쿼리문을 가져온다.
      *
      * @return string $query
@@ -789,6 +1164,28 @@ class mysql extends DatabaseInterface
     public function getLastQuery(): ?string
     {
         return $this->_lastQuery;
+    }
+
+    /**
+     * 마지막 에러메시지를 가져온다.
+     *
+     * @return ?string $error
+     */
+    public function getLastError(): ?string
+    {
+        return $this->_mysqli->error ? $this->_mysqli->error : null;
+    }
+
+    /**
+     * 에러메시지 표시여부를 설정한다.
+     *
+     * @param bool $display
+     * @return DatabaseInterface $this
+     */
+    public function displayError(bool $display): DatabaseInterface
+    {
+        $this->_displayError = $display;
+        return $this;
     }
 
     /**
@@ -957,78 +1354,11 @@ class mysql extends DatabaseInterface
                 $this->_query .= '?,';
                 continue;
             }
-
-            /*
-			$key = key($value);
-			echo $key;
-			exit;
-			$val = $value[$key];
-			switch ($key) {
-				case '[I]':
-					$this->_query.= $column.$val.',';
-					break;
-				case '[F]':
-					$this->_query.= $val[0].',';
-					if (empty($val[1]) == false) $this->_bindParams($val[1]);
-					break;
-				case '[N]':
-					if ($val == null) $this->_query.= '!'.$column.',';
-					else $this->_query.= '!'.$val.',';
-					break;
-				default:
-					$this->_error('Wrong operation');
-			}
-			*/
         }
         $this->_query = rtrim($this->_query, ',');
         if ($this->_startQuery !== 'UPDATE') {
             $this->_query .= ')';
         }
-
-        /*
-		$isInsert = strpos($this->_query,'INSERT') !== false || strpos($this->_query,'REPLACE') !== false;
-		$isUpdate = strpos($this->_query,'UPDATE');
-		if ($isInsert !== false) {
-			$this->_query.= '(`'.implode('`,`',array_keys($tableData)).'`)';
-			$this->_query.= ' VALUES(';
-		}
-		
-		foreach ($tableData as $column=>$value) {
-			if ($isUpdate !== false) $this->_query.= '`'.$column.'` = ';
-			if (is_null($value) == true) {
-				$this->_query.= 'NULL,';
-				continue;
-			}
-			if (is_object($value) == true) {
-				$this->_query.= $this->_buildPair('',$value).',';
-				continue;
-			}
-			if (is_array($value) == false) {
-				$this->_bindParam($value);
-				$this->_query.= '?,';
-				continue;
-			}
-			$key = key($value);
-			$val = $value[$key];
-			switch ($key) {
-				case '[I]':
-					$this->_query.= $column.$val.',';
-					break;
-				case '[F]':
-					$this->_query.= $val[0].',';
-					if (empty($val[1]) == false) $this->_bindParams($val[1]);
-					break;
-				case '[N]':
-					if ($val == null) $this->_query.= '!'.$column.',';
-					else $this->_query.= '!'.$val.',';
-					break;
-				default:
-					$this->_error('Wrong operation');
-			}
-		}
-		$this->_query = rtrim($this->_query,',');
-		if ($isInsert !== false) $this->_query.= ')';
-		*/
     }
 
     /**
@@ -1205,6 +1535,8 @@ class mysql extends DatabaseInterface
 
     /**
      * 바인딩 데이터를 처리한다.
+     *
+     * @param array $values
      */
     private function _bindParams(array $values): void
     {
@@ -1284,7 +1616,9 @@ class mysql extends DatabaseInterface
         $details->query = $this->_replacePlaceHolders();
 
         $this->reset();
-        ErrorHandler::print('DATABASE_ERROR', $message, $details);
+        if ($this->_displayError == true) {
+            ErrorHandler::print('DATABASE_ERROR', $message, $details);
+        }
     }
 
     /**
@@ -1340,7 +1674,7 @@ class mysql extends DatabaseInterface
         while ($stmt->fetch()) {
             $result = [];
             foreach ($row as $key => $val) {
-                $result[$key] = isset($val) == false || $val === null ? '' : $val;
+                $result[$key] = $val; //isset($val) == false || $val === null ? '' : $val;
             }
             array_push($results, (object) $result);
             $this->_count++;
@@ -1348,5 +1682,76 @@ class mysql extends DatabaseInterface
         $stmt->free_result();
 
         return $results;
+    }
+
+    /**
+     * 컬럼이 숫자형태의 컬럼인지 확인한다.
+     *
+     * @param string $type 컬럼종류
+     * @return bool $is_numeric
+     */
+    private function _isNumeric(string $type): bool
+    {
+        return in_array(strtolower($type), ['tinyint', 'int', 'bigint', 'float', 'double']) == true;
+    }
+
+    /**
+     * 컬럼이 인코딩 설정이 필요한 컬럼인지 확인한다.
+     *
+     * @param string $type 컬럼종류
+     * @return bool $is_text
+     */
+    private function _isText(string $type): bool
+    {
+        return in_array(strtolower($type), ['varchar', 'text', 'longtext']) == true;
+    }
+
+    /**
+     * 컬럼이 길이 설정이 필요한 컬럼인지 확인한다.
+     *
+     * @param string $type 컬럼종류
+     * @return bool $is_length
+     */
+    private function _isLength(string $type): bool
+    {
+        return in_array(strtolower($type), ['char', 'varchar', 'enum']) == true;
+    }
+
+    /**
+     * 컬럼 구조에 대한 쿼리스트링을 가져온다.
+     */
+    private function _columnQuery(string $name, object $column): string
+    {
+        $query = '`' . $name . '` ';
+        $query .= strtolower($column->type);
+        if ($this->_isLength($column->type) == true && isset($column->length) == true) {
+            $query .= '(' . $column->length . ')';
+        }
+
+        if ($this->_isText($column->type) == true) {
+            $query .= ' CHARACTER SET ' . $this->_charset . ' COLLATE ' . $this->_collation;
+        }
+
+        if (($column->is_null ?? false) == true) {
+            $query .= ' NULL';
+        } else {
+            $query .= ' NOT NULL';
+        }
+
+        if (isset($column->default) == true) {
+            if ($column->default === null) {
+                $query .= ' DEFAULT NULL';
+            } else {
+                $query .=
+                    ' DEFAULT ' .
+                    ($this->_isNumeric($column->type) == true ? $column->default : "'{$column->default}'");
+            }
+        }
+
+        if (isset($column->comment) == true) {
+            $query .= ' COMMENT \'' . $column->comment . '\'';
+        }
+
+        return $query;
     }
 }
