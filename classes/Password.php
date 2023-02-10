@@ -7,7 +7,7 @@
  * @file /classes/Password.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class Password
 {
@@ -70,5 +70,73 @@ class Password
         }
         return $diff === 0;
     }
+
+    /**
+     * 복호화가 가능한 방식(AES-256-CBC)으로 문자열을 암호화한다.
+     *
+     * @param string $value 암호화할 문자열
+     * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
+     * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
+     * @return string $ciphertext
+     */
+    public static function encoder(string $value, ?string $key = null, string $mode = 'base64')
+    {
+        $key = md5($key ?? (Configs::get('key') ?? 'MoimzTools'));
+        $padSize = 16 - (strlen($value) % 16);
+        $value = $value . str_repeat(chr($padSize), $padSize);
+
+        $output = openssl_encrypt(
+            $value,
+            'AES-256-CBC',
+            $key,
+            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+            str_repeat(chr(0), 16)
+        );
+
+        return $mode == 'base64' ? base64_encode($output) : bin2hex($output);
+    }
+
+    /**
+     * 복호화가 가능한 방식(AES-256-CBC)으로 암호화된 문자열을 복호화한다.
+     *
+     * @param string $value 암호화된 문자열
+     * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
+     * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
+     * @return string $plaintext
+     */
+    public static function decoder($value, $key = null, $mode = 'base64')
+    {
+        $key = md5($key ?? (Configs::get('key') ?? 'MoimzTools'));
+        $value = $mode == 'base64' ? base64_decode(str_replace(' ', '+', $value)) : hex2bin($value);
+
+        $output = openssl_decrypt(
+            $value,
+            'AES-256-CBC',
+            $key,
+            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+            str_repeat(chr(0), 16)
+        );
+
+        if ($output === false || strlen($output) == 0) {
+            return false;
+        }
+
+        $valueLen = strlen($output);
+        if ($valueLen % 16 > 0) {
+            return false;
+        }
+
+        $padSize = ord($output[$valueLen - 1]);
+        if ($padSize < 1 || $padSize > 16) {
+            return false;
+        }
+
+        for ($i = 0; $i < $padSize; $i++) {
+            if (ord($output[$valueLen - $i - 1]) != $padSize) {
+                return false;
+            }
+        }
+
+        return substr($output, 0, $valueLen - $padSize);
+    }
 }
-?>
