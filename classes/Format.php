@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 class Format
 {
@@ -88,19 +88,7 @@ class Format
              * 정규식에 들어갈 수 있도록 정규식에 사용되는 문자열을 치환한다.
              */
             case 'reg':
-                $str = str_replace('\\', '\\\\', $str);
-                $str = str_replace('[', '\[', $str);
-                $str = str_replace(']', '\]', $str);
-                $str = str_replace('(', '\(', $str);
-                $str = str_replace(')', '\)', $str);
-                $str = str_replace('?', '\?', $str);
-                $str = str_replace('.', '\.', $str);
-                $str = str_replace('*', '\*', $str);
-                $str = str_replace('-', '\-', $str);
-                $str = str_replace('+', '\+', $str);
-                $str = str_replace('^', '\^', $str);
-                $str = str_replace('$', '\$', $str);
-                $str = str_replace('/', '\/', $str);
+                $str = preg_quote($str, '/');
 
                 break;
 
@@ -198,71 +186,25 @@ class Format
     }
 
     /**
-     * 복호화가 가능한 방식(AES-256-CBC)으로 문자열을 암호화한다.
+     * 이메일이 형식에 맞는지 확인한다.
      *
-     * @param string $value 암호화할 문자열
-     * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
-     * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
-     * @return string $ciphertext
+     * @param string $email 이메일
+     * @return bool $isValid
      */
-    public static function encoder(string $value, ?string $key = null, string $mode = 'base64')
+    public static function checkEmail(string $email): bool
     {
-        $key = $key !== null ? md5($key) : md5(Configs::get('key'));
-        $padSize = 16 - (strlen($value) % 16);
-        $value = $value . str_repeat(chr($padSize), $padSize);
-
-        $output = openssl_encrypt(
-            $value,
-            'AES-256-CBC',
-            $key,
-            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-            str_repeat(chr(0), 16)
-        );
-
-        return $mode == 'base64' ? base64_encode($output) : bin2hex($output);
+        return preg_match('/^[_\.0-9a-zA-Z-]+@([0-9a-zA-Z][0-9a-zA-Z-]+\.)+[a-zA-Z]{2,6}$/', $email) === 1;
     }
 
     /**
-     * 복호화가 가능한 방식(AES-256-CBC)으로 암호화된 문자열을 복호화한다.
+     * 패스워드가 형식에 맞는지 확인한다.
      *
-     * @param string $value 암호화된 문자열
-     * @param ?string $key 암호화키 (NULL인 경우 환경설정의 암호화키)
-     * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
-     * @return string $plaintext
+     * @param string $password 패스워드
+     * @return bool $isValid
      */
-    public static function decoder($value, $key = null, $mode = 'base64')
+    public static function checkPassword(string $password): bool
     {
-        $key = $key !== null ? md5($key) : md5(Configs::get('key'));
-        $value = $mode == 'base64' ? base64_decode(str_replace(' ', '+', $value)) : hex2bin($value);
-
-        $output = openssl_decrypt(
-            $value,
-            'AES-256-CBC',
-            $key,
-            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-            str_repeat(chr(0), 16)
-        );
-        if ($output === false) {
-            return false;
-        }
-
-        $valueLen = strlen($output);
-        if ($valueLen % 16 > 0) {
-            return false;
-        }
-
-        $padSize = ord($output[$valueLen - 1]);
-        if ($padSize < 1 || $padSize > 16) {
-            return false;
-        }
-
-        for ($i = 0; $i < $padSize; $i++) {
-            if (ord($output[$valueLen - $i - 1]) != $padSize) {
-                return false;
-            }
-        }
-
-        return substr($output, 0, $valueLen - $padSize);
+        $pattern = self::string('!@#$%^&*()+=-[];,./{}|:<>?~', 'reg');
+        return preg_match('/^[A-Za-z\d' . $pattern . ']{6,}$/', $password) === 1;
     }
 }
-?>
