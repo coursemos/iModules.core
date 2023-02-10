@@ -3,21 +3,296 @@
     "title": "iModules",
     "version": "4.0.0",
     "language": "ko",
-    "dependencies": {
+    "requirements": {
         "php": "8.0.0",
+        "mysql_server": "5.7.8",
         "mysql_client": "5.0.0",
-        "mysql_server": "5.6.4",
         "curl": "*",
         "zip": "*",
         "mbstring": "*",
         "gd": "*",
-        "encrypt": "*",
+        "openssl": "*",
         "rewrite": "/process/check"
     },
-    "requirements": {},
-    "directories": {
-        "configs": "0707"
+    "dependencies": {
+        "modules/admin": "4.0.0",
+        "modules/naddle/coursemos": "4.0.0"
     },
-    "configs": "configs.php",
-    "databases": {}
+    "prefix": "im_",
+    "databases": {
+        "domains": {
+            "columns": {
+                "host": {
+                    "type": "varchar",
+                    "length": 100,
+                    "comment": "호스트명"
+                },
+                "alias": {
+                    "type": "text",
+                    "comment": "별칭호스트"
+                },
+                "language": {
+                    "type": "char",
+                    "length": 2,
+                    "comment": "기본언어코드"
+                },
+                "membership": {
+                    "type": "enum",
+                    "length": "'INDEPENDENCE', 'DEPENDENCE'",
+                    "comment": "통합회원설정"
+                },
+                "is_https": {
+                    "type": "enum",
+                    "length": "'TRUE', 'FALSE'",
+                    "comment": "HTTPS사용여부"
+                },
+                "is_rewrite": {
+                    "type": "enum",
+                    "length": "'TRUE', 'FALSE'",
+                    "comment": "REWRITE사용여부"
+                },
+                "is_internationalization": {
+                    "type": "enum",
+                    "length": "'TRUE', 'FALSE'",
+                    "comment": "다국어사용여부"
+                },
+                "sort": {
+                    "type": "int",
+                    "comment": "정렬"
+                }
+            },
+            "indexes": {
+                "host": "primary_key"
+            },
+            "comment": "아이모듈 도메인 관리"
+        },
+        "sites": {
+            "columns": {
+                "host": {
+                    "type": "varchar",
+                    "length": 100,
+                    "comment": "호스트명"
+                },
+                "language": {
+                    "type": "char",
+                    "length": 2,
+                    "comment": "언어코드"
+                },
+                "title": {
+                    "type": "varchar",
+                    "length": 100,
+                    "comment": "사이트명"
+                },
+                "description": {
+                    "type": "text",
+                    "comment": "사이트설명"
+                },
+                "theme": {
+                    "type": "json",
+                    "comment": "테마설정"
+                },
+                "image": {
+                    "type": "int",
+                    "comment": "대표이미지"
+                },
+                "logo": {
+                    "type": "json",
+                    "comment": "로고이미지"
+                },
+                "emblem": {
+                    "type": "int",
+                    "comment": "엠블럼이미지"
+                },
+                "favicon": {
+                    "type": "int",
+                    "comment": "패비콘이미지"
+                },
+                "header": {
+                    "type": "json",
+                    "comment": "상단내용"
+                },
+                "footer": {
+                    "type": "json",
+                    "comment": "하단내용"
+                }
+            },
+            "indexes": {
+                "host,language": "primary_key"
+            },
+            "comment": "아이모듈 사이트 관리"
+        },
+        "contexts": {
+            "columns": {
+                "host": {
+                    "type": "varchar",
+                    "length": 100,
+                    "comment": "호스트명"
+                },
+                "language": {
+                    "type": "char",
+                    "length": 2,
+                    "comment": "언어코드"
+                },
+                "path": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "경로"
+                },
+                "icon": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "아이콘"
+                },
+                "title": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "제목"
+                },
+                "type": {
+                    "type": "enum",
+                    "length": "'CHILD','PAGE','DASHBOARD','MODULE','HTML','LINK','EMPTY'",
+                    "default": "EMPTY",
+                    "comment": "종류"
+                },
+                "image": {
+                    "type": "int",
+                    "comment": "대표이미지"
+                },
+                "description": {
+                    "type": "text",
+                    "comment": "설명"
+                },
+                "target": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "대상"
+                },
+                "context": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "컨텍스트"
+                },
+                "context_configs": {
+                    "type": "json",
+                    "comment": "컨텍스트설정"
+                },
+                "layout": {
+                    "type": "varchar",
+                    "length": 20,
+                    "comment": "레이아웃"
+                },
+                "header": {
+                    "type": "json",
+                    "comment": "상단내용"
+                },
+                "footer": {
+                    "type": "json",
+                    "comment": "하단내용"
+                },
+                "permission": {
+                    "type": "varchar",
+                    "length": 255,
+                    "comment": "접근권한"
+                },
+                "is_routing": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "하위경로 처리여부"
+                },
+                "is_sitemap": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "사이트맵 표시여부"
+                },
+                "is_footer_menu": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "하단메뉴 표시여부"
+                },
+                "sort": {
+                    "type": "int",
+                    "comment": "순서"
+                }
+            },
+            "indexes": {
+                "host,language,path": "primary_key"
+            },
+            "comment": "아이모듈 컨텍스트 관리"
+        },
+        "modules": {
+            "columns": {
+                "name": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "모듈명"
+                },
+                "version": {
+                    "type": "varchar",
+                    "length": 20,
+                    "comment": "현재버전"
+                },
+                "hash": {
+                    "type": "char",
+                    "length": 32,
+                    "comment": "패키지고유값"
+                },
+                "databases": {
+                    "type": "bigint",
+                    "default": 0,
+                    "comment": "데이터베이스용량"
+                },
+                "attachments": {
+                    "type": "bigint",
+                    "default": 0,
+                    "comment": "첨부파일용량"
+                },
+                "is_admin": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "관리자여부"
+                },
+                "is_global": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "전역모듈여부"
+                },
+                "is_context": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "컨텍스트여부"
+                },
+                "is_widget": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "위젯여부"
+                },
+                "is_theme": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "사이트테마여부"
+                },
+                "is_cron": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "자동화여부"
+                },
+                "configs": {
+                    "type": "json",
+                    "comment": "모듈설정"
+                },
+                "events": {
+                    "type": "json",
+                    "comment": "이벤트리스너설정"
+                },
+                "sort": {
+                    "type": "int",
+                    "comment": "정렬"
+                }
+            },
+            "indexes": {
+                "name": "primary_key"
+            },
+            "comment": "아이모듈 모듈 관리"
+        }
+    }
 }
