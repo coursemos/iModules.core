@@ -7,57 +7,67 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 5.
+ * @modified 2023. 1. 26.
  */
 class Html
 {
     /**
-     * @var string[] $_heads <HEAD> 태그내에 포함될 태그를 정의한다.
+     * @var string[] $_heads <HEAD> 태그내에 포함될 태그
      */
     private static array $_heads = [];
 
     /**
-     * @var string $_robots <META NAME="ROBOTS"> 태그에 들어갈 설정을 정의한다.
-     */
-    private static string $_robots = 'all';
-
-    /**
-     * @var string $_canonical 페이지 고유주소를 설정한다.
-     */
-    private static ?string $_canonical = null;
-
-    /**
-     * @var string[] $_scripts 호출되는 스크립트의 우선순위를 정의한다.
+     * @var string[] $_scripts 호출되는 스크립트 우선순위
      */
     private static array $_scripts = [];
 
     /**
-     * @var string[] $_styles 호출되는 스타일시트의 우선순위를 정의한다.
+     * @var string[] $_styles 호출되는 스타일시트 우선순위
      */
     private static array $_styles = [];
 
     /**
-     * @var string[][] $_listeners HTML 문서 이벤트리스너를 정의한다.
+     * @var string[][] $_listeners HTML 문서 이벤트리스너
      */
     private static array $_listeners = [];
 
     /**
-     * @var ?string $_title <TITLE> 태그에 들어갈 문서제목을 정의한다.
+     * @var string $_langage HTML 문서 언어코드
+     */
+    private static string $_langage = 'ko';
+
+    /**
+     * @var ?string $_title HTML 문서 제목
      */
     private static ?string $_title = null;
 
     /**
-     * @var ?string $_description <META NAME="DESCRIPTION"> 태그에 들어갈 문서설명을 정의한다.
+     * @var ?string $_description HTML 문서 설명
      */
     private static ?string $_description = null;
 
     /**
-     * @var string[] $_attributes <BODY> 태그의 attribute 를 정의한다.
+     * @var string $_robots <META NAME="ROBOTS"> 태그설정
+     */
+    private static string $_robots = 'all';
+
+    /**
+     * @var string $_viewport <META NAME="VIEWPORT"> 태그설정
+     */
+    private static string $_viewport = 'user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width';
+
+    /**
+     * @var string $_canonical 페이지 고유주소
+     */
+    private static ?string $_canonical = null;
+
+    /**
+     * @var string[] $_attributes <BODY> 태그 속성값
      */
     private static array $_attributes = [];
 
     /**
-     * @var bool[] $_fonts 불러올 웹폰트를 정의한다.
+     * @var bool[] $_fonts 불러올 웹폰트
      */
     private static array $_fonts = [];
 
@@ -98,11 +108,12 @@ class Html
      * @param string $name 태그명
      * @param array $attributes 태그속성
      * @param int $priority 우선순위 (0 ~ 10, 우선순위가 낮을수록 먼저 출력된다.)
+     * @param ?string $content 태그본문
      */
-    public static function head(string $name, array $attributes, int $priority = 10): void
+    public static function head(string $name, array $attributes, int $priority = 10, ?string $content = null): void
     {
         $priority = min(max(-1, $priority), 10);
-        $element = self::element($name, $attributes, null);
+        $element = self::element($name, $attributes, $content);
 
         self::_head($element, $priority + 100);
     }
@@ -116,6 +127,16 @@ class Html
     private static function _head(string $element, int $priority): void
     {
         self::$_heads[$element] = $priority;
+    }
+
+    /**
+     * HTML 문서의 언어코드를 정의한다.
+     *
+     * @param string $langauge
+     */
+    public static function language(string $language): void
+    {
+        self::$_langage = $language;
     }
 
     /**
@@ -149,6 +170,16 @@ class Html
     public static function robots(string $robots): void
     {
         self::$_robots = $robots;
+    }
+
+    /**
+     * <META NAME="VIEWPORT"> 태그설정을 정의한다.
+     *
+     * @param string $viewport
+     */
+    public static function viewport(string $viewport): void
+    {
+        self::$_viewport = $viewport;
     }
 
     /**
@@ -208,6 +239,9 @@ class Html
              */
             if (preg_match('/\.scss$/i', $path) == true) {
                 $path = Cache::scss($path);
+                if ($path == null) {
+                    return;
+                }
             }
 
             if ($priority == -1 && isset(self::$_styles[$path]) == true) {
@@ -283,7 +317,7 @@ class Html
      */
     public static function header(): string
     {
-        $header = self::tag('<!DOCTYPE HTML>', '<html lang="ko">', '<head>', '');
+        $header = self::tag('<!DOCTYPE HTML>', '<html lang="' . self::$_langage . '">', '<head>', '');
 
         /**
          * 기본 <HEAD> 태그요소를 추가한다.
@@ -293,14 +327,7 @@ class Html
         $title = self::$_title ?? 'iModules';
         self::_head(self::element('title', null, $title), 1);
         self::_head(self::element('meta', ['name' => 'description', 'content' => self::$_description]), 2);
-        self::_head(
-            self::element('meta', [
-                'name' => 'viewport',
-                'content' =>
-                    'user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width',
-            ]),
-            3
-        );
+        self::_head(self::element('meta', ['name' => 'viewport', 'content' => self::$_viewport]), 3);
 
         if (self::$_canonical != null) {
             Html::head('link', ['rel' => 'canonical', 'href' => self::$_canonical], 4);
@@ -375,7 +402,7 @@ class Html
         if (isset(self::$_listeners['ready']) == true && count(self::$_listeners['ready']) > 0) {
             $footer .= self::tag(
                 '<script>',
-                '$(document).ready(function() {',
+                'Html.ready(() => {',
                 implode("\n", self::$_listeners['ready']),
                 '});',
                 '</script>'
@@ -411,4 +438,3 @@ class Html
         return $time;
     }
 }
-?>
