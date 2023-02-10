@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 5.
+ * @modified 2023. 1. 26.
  */
 class iModules
 {
@@ -150,9 +150,11 @@ class iModules
              * 기본 자바스크립트파일을 불러온다.
              * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
              */
-            Cache::script('core', '/scripts/Html.js');
-            Cache::script('core', '/scripts/Dom.js');
-            Cache::script('core', '/scripts/DomList.js');
+            Cache::script('common', '/scripts/Html.js');
+            Cache::script('common', '/scripts/Dom.js');
+            Cache::script('common', '/scripts/DomList.js');
+            Html::script(Cache::script('common'), 1);
+
             Cache::script('core', '/scripts/Modules.js');
             Cache::script('core', '/scripts/Module.js');
             Cache::script('core', '/scripts/iModules.js');
