@@ -4,12 +4,12 @@
  *
  * 테마 및 템플릿을 화면에 출력하기 위한 템플릿 엔진 클래스를 정의한다.
  *
- * @file /classes/Templet.php
+ * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @modified 2022. 12. 1.
  */
-class Templet
+class Template
 {
     /**
      * @var bool $_configs 템플릿 초기화여부
@@ -55,9 +55,9 @@ class Templet
      * 템플릿 클래스를 선언한다.
      *
      * @param Component $parent 템플릿을 처리할 부모클래스
-     * @param object $templet 템플릿정보
+     * @param object $template 템플릿정보
      */
-    public function __construct(Component $parent, object $templet)
+    public function __construct(Component $parent, object $template)
     {
         $this->_parent = $parent;
 
@@ -65,11 +65,11 @@ class Templet
          * 템플릿명이 경로를 포함할 경우, 해당 경로에서 템플릿을 정의하고,
          * 그렇지 않을 경우 템플릿을 처리할 부모클래스의 기본 템플릿 경로에서 템플릿을 정의한다.
          */
-        if (strpos($templet->name, '/') === 0) {
+        if (strpos($template->name, '/') === 0) {
             /**
              * 템플릿명에서 템플릿 경로를 적절하게 계산한다.
              */
-            $paths = explode('/', preg_replace('/^\//', '', $templet->name));
+            $paths = explode('/', preg_replace('/^\//', '', $template->name));
 
             /**
              * 템플릿명
@@ -104,18 +104,18 @@ class Templet
             $this->_path .= '/themes/' . $theme . '/modules/' . $this->_parent->getName();
         } else {
             $this->_owner = $parent;
-            $this->_name = $templet->name;
-            $this->_path = $this->_parent->getBase() . '/templets';
+            $this->_name = $template->name;
+            $this->_path = $this->_parent->getBase() . '/templates';
         }
         $this->_path .= '/' . $this->_name;
 
         if (is_dir($this->getPath()) == false || is_file($this->getPath() . '/package.json') == false) {
-            ErrorHandler::print($this->error('NOT_FOUND_TEMPLET', $this->getPath()));
+            ErrorHandler::print($this->error('NOT_FOUND_TEMPLATE', $this->getPath()));
         }
 
         $package = $this->getPackage();
         if (isset($package->configs) == true) {
-            $configs = $templet->configs ?? new stdClass();
+            $configs = $template->configs ?? new stdClass();
 
             $configKeys = [];
             foreach ($package->configs as $configKey => $configValue) {
@@ -141,7 +141,7 @@ class Templet
          * 템플릿을 설정되지 않은 경우 에러메시지를 반환한다.
          */
         if ($this->_isLoaded() === false) {
-            ErrorHandler::print($this->error('NOT_INITIALIZED_TEMPLET'));
+            ErrorHandler::print($this->error('NOT_INITIALIZED_TEMPLATE'));
         }
 
         /**
@@ -242,9 +242,9 @@ class Templet
      * @param string|array $name 변수명
      * @param mixed $value 변수데이터
      * @param bool $is_clone 복제여부
-     * @return Templet $this
+     * @return Template $this
      */
-    public function assign(string|array $name, mixed $value = null, bool $is_clone = false): Templet
+    public function assign(string|array $name, mixed $value = null, bool $is_clone = false): Template
     {
         if (is_array($name) == true) {
             foreach ($name as $key => $value) {
@@ -265,7 +265,7 @@ class Templet
     {
         $values = $this->_values;
         $values['me'] = &$this->_parent;
-        $values['templet'] = &$this;
+        $values['template'] = &$this;
         $values['route'] = Router::get();
 
         return $values;
@@ -285,7 +285,7 @@ class Templet
          * 템플릿폴더에 파일이 없다면 에러메세지를 출력한다.
          */
         if (is_file($this->getPath() . '/' . $file . '.html') == false) {
-            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLET_FILE', $this->getPath() . '/' . $file . '.html'));
+            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLATE_FILE', $this->getPath() . '/' . $file . '.html'));
         }
 
         $this->init();
@@ -324,17 +324,17 @@ class Templet
     public function error(string $code, ?string $message = null, ?object $details = null): ErrorData
     {
         switch ($code) {
-            case 'NOT_FOUND_TEMPLET':
+            case 'NOT_FOUND_TEMPLATE':
                 $error = ErrorHandler::data();
-                $error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
-                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET');
+                $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
+                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLATE');
                 $error->suffix = $message;
                 return $error;
 
-            case 'NOT_FOUND_TEMPLET_FILE':
+            case 'NOT_FOUND_TEMPLATE_FILE':
                 $error = ErrorHandler::data();
-                $error->prefix = ErrorHandler::getText('TEMPLET_ERROR');
-                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLET_FILE');
+                $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
+                $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLATE_FILE');
                 $error->suffix = $message;
                 return $error;
 

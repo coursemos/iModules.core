@@ -186,7 +186,7 @@ class Configs
     {
         switch ($config->type) {
             case 'theme':
-            case 'templet':
+            case 'template':
                 if (
                     $value == null ||
                     is_object($value) == false ||

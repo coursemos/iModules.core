@@ -32,9 +32,9 @@ class Module extends Component
     private ?Route $_route = null;
 
     /**
-     * @var object $_templet 모듈의 컨텍스트 템플릿을 초기화한다.
+     * @var object $_template 모듈의 컨텍스트 템플릿을 초기화한다.
      */
-    private object $_templet;
+    private object $_template;
 
     /**
      * 모듈을 초기화한다.
@@ -209,29 +209,29 @@ class Module extends Component
     /**
      * 모듈의 컨텍스트 템플릿을 설정한다.
      *
-     * @param object $templet 템플릿설정
+     * @param object $template 템플릿설정
      */
-    public function setTemplet(object $templet): self
+    public function setTemplate(object $template): self
     {
-        $this->_templet = $templet;
+        $this->_template = $template;
         return $this;
     }
 
     /**
      * 모듈의 컨텍스트 템플릿을 가져온다.
      *
-     * @return Templet $templet
+     * @return Template $template
      */
-    public function getTemplet(): Templet
+    public function getTemplate(): Template
     {
         /**
          * 모듈의 컨텍스트 템플릿이 지정되지 않은 경우 에러메시지를 출력한다.
          */
-        if (isset($this->_templet) == false) {
-            ErrorHandler::get($this->error('UNDEFINED_TEMPLET'));
+        if (isset($this->_template) == false) {
+            ErrorHandler::get($this->error('UNDEFINED_TEMPLATE'));
         }
 
-        return new Templet($this, $this->_templet);
+        return new Template($this, $this->_template);
     }
 
     /**
