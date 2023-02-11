@@ -93,4 +93,22 @@ abstract class Component
      * @return string $path
      */
     abstract public static function getPath(): string;
+
+    /**
+     * 컴포넌트 종류를 가져온다.
+     *
+     * @return string $type 컴포넌트 종류(module, plugin, widget)
+     */
+    public static function getType(): string
+    {
+        /**
+         * 컴포넌트 종류를 가져온다.
+         */
+        $regExp = '/^(module|plugin|widget)s\\\/';
+        if (preg_match($regExp, get_called_class(), $match) == true) {
+            return $match[1];
+        } else {
+            return null;
+        }
+    }
 }
