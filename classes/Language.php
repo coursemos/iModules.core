@@ -7,39 +7,42 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 2. 23.
  */
 class Language
 {
     /**
-     * @var object[] $_texts 언어팩이 저장될 객체
+     * @var object[][] $_texts 언어팩이 저장될 객체
      */
     private static array $_texts = [];
 
     /**
-     * 언어팩을 초기화한다.
+     * 언어팩을 불러온다.
      *
      * @param string $path 언어팩을 탐색할 경로
      * @param array $codes 언어팩을 탐색할 언어코드
      */
-    public static function init(string $path, array $codes): void
+    public static function load(string $path, string $code): array
     {
-        if (is_dir(self::getPath($path)) == false) {
-            return;
-        }
-        if (isset(self::$_texts[$path]) == true) {
-            return;
+        if (isset(self::$_texts[$path]) == true && isset(self::$_texts[$path][$code]) == true) {
+            return self::$_texts[$path][$code];
         }
 
-        self::$_texts[$path] = [];
-        foreach ($codes as $code) {
-            if (is_file(self::getPath($path) . '/' . $code . '.json') == true) {
-                self::$_texts[$path][$code] = json_decode(
-                    file_get_contents(self::getPath($path) . '/' . $code . '.json'),
-                    JSON_OBJECT_AS_ARRAY
-                );
-            }
+        if (is_dir(self::getPath($path)) == false) {
+            return [];
         }
+
+        self::$_texts[$path] ??= [];
+        if (is_file(self::getPath($path) . '/' . $code . '.json') == true) {
+            self::$_texts[$path][$code] = json_decode(
+                file_get_contents(self::getPath($path) . '/' . $code . '.json'),
+                JSON_OBJECT_AS_ARRAY
+            );
+
+            return self::$_texts[$path][$code];
+        }
+
+        return [];
     }
 
     /**
@@ -56,13 +59,13 @@ class Language
     /**
      * 문자열 템플릿에서 치환자를 실제 데이터로 변환한다.
      *
-     * @param string|array $text 문자열 템플릿
+     * @param string $text 문자열 템플릿
      * @param ?array $placeHolder 치환될 데이터
      * @return string $message 치환된 메시지
      */
-    public static function replacePlaceHolder(string|array $text, ?array $placeHolder = null): string|array
+    public static function replacePlaceHolder(string $text, ?array $placeHolder = null): string
     {
-        if ($placeHolder === null) {
+        if ($placeHolder === null || is_string($text) == false) {
             return $text;
         }
 
@@ -95,20 +98,12 @@ class Language
         ?array $codes = null
     ): string|array {
         $paths ??= ['/'];
-        $codes ??= Configs::languages();
+        $codes ??= array_unique([Router::has()?->getLanguage() ?? Request::languages(true), ...Request::languages()]);
         $keys = explode('/', $text);
         $string = null;
         foreach ($paths as $path) {
-            if (isset(self::$_texts[$path]) == false) {
-                self::init($path, $codes);
-            }
-
             foreach ($codes as $code) {
-                if (isset(self::$_texts[$path][$code]) == false) {
-                    continue;
-                }
-
-                $string = self::$_texts[$path][$code];
+                $string = self::load($path, $code);
                 foreach ($keys as $key) {
                     if (isset($string[$key]) == false) {
                         $string = null;
@@ -118,11 +113,15 @@ class Language
                 }
 
                 if ($string !== null) {
-                    return self::replacePlaceHolder($string, $placeHolder);
+                    return is_string($string) == true ? self::replacePlaceHolder($string, $placeHolder) : $string;
                 }
             }
         }
 
-        return $string === null ? $text : self::replacePlaceHolder($string, $placeHolder);
+        if ($string === null) {
+            return $text;
+        }
+
+        return is_string($string) == true ? self::replacePlaceHolder($string, $placeHolder) : $string;
     }
 }
