@@ -158,6 +158,7 @@ class iModules
             Cache::script('core', '/scripts/Modules.js');
             Cache::script('core', '/scripts/Module.js');
             Cache::script('core', '/scripts/iModules.js');
+            Cache::script('core', '/scripts/Language.js');
             Html::script(Cache::script('core'), 1);
 
             /**
@@ -168,7 +169,7 @@ class iModules
             /**
              * 기본 스타일시트 및 폰트를 불러온다.
              */
-            Html::font('moimz', true);
+            Html::font('moimz');
             Cache::style('core', '/styles/common.scss');
             Html::style(Cache::style('core'));
 
