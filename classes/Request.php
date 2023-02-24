@@ -12,6 +12,11 @@
 class Request
 {
     /**
+     * @var object $_configs 언어코드
+     */
+    private static array $_languages = [];
+
+    /**
      * 현재 호스트를 가져온다.
      *
      * @return string $host
@@ -259,19 +264,21 @@ class Request
      */
     public static function languages(bool $is_primary_only = false): array|string
     {
-        $languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-        foreach ($languages as &$language) {
-            $language = substr($language, 0, 2);
+        if (count(self::$_languages) == 0) {
+            $languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            foreach ($languages as &$language) {
+                $language = substr($language, 0, 2);
+            }
+
+            self::$_languages = array_unique($languages);
+
+            // 기본언어는 한국어이므로, 언어코드목록에 한국어가 없는 경우 포함시킨다.
+            if (in_array('ko', self::$_languages) == false) {
+                self::$_languages[] = 'ko';
+            }
         }
 
-        $languages = array_unique($languages);
-
-        // 기본언어는 한국어이므로, 언어코드목록에 한국어가 없는 경우 포함시킨다.
-        if (in_array('ko', $languages) == false) {
-            $languages[] = 'ko';
-        }
-
-        return $is_primary_only == true ? $languages[0] : $languages;
+        return $is_primary_only == true ? self::$_languages[0] : self::$_languages;
     }
 
     /**
