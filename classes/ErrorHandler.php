@@ -147,7 +147,7 @@ class ErrorHandler
                 $json->message[] = $error->suffix;
             }
 
-            $json->message = implode("\n", $json->message);
+            $json->message = implode('<br>', $json->message);
 
             if (Configs::debug() == true) {
                 /**
@@ -167,8 +167,7 @@ class ErrorHandler
                 $json->stacktrace = $error->stacktrace;
             } else {
                 if ($error->debugModeOnly == true && $error->debugMode == false) {
-                    $json->message = self::getText('DESCRIPTION') . "\n" . self::getText('DESCRIPTION_FOOTER');
-                    $json->message = str_replace('<br>', "\n", $json->message);
+                    $json->message = self::getText('DESCRIPTION') . '<br>' . self::getText('DESCRIPTION_FOOTER');
                 }
             }
 
