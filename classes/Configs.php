@@ -27,11 +27,6 @@ class Configs
     private static object $_package;
 
     /**
-     * @var object $_configs 언어코드
-     */
-    private static array $_languages = [];
-
-    /**
      * 환경설정을 초기화한다.
      *
      * @param object $configs 환경설정값
@@ -127,31 +122,6 @@ class Configs
         $dir = explode('?', $dir);
         $dir = $dir[0];
         return preg_replace('/^' . str_replace('/', '\\/', self::dir()) . '/', self::path(), $dir);
-    }
-
-    /**
-     * 사용자 브라우져에서 설정된 모든 언어코드를 가져온다.
-     *
-     * @param bool $is_primary_only 최우선 언어코드 1개만 반환할지 여부
-     * @return array|string $languages
-     */
-    public static function languages(bool $is_primary_only = false): array|string
-    {
-        if (count(self::$_languages) == 0) {
-            $languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            foreach ($languages as &$language) {
-                $language = substr($language, 0, 2);
-            }
-
-            self::$_languages = array_unique($languages);
-
-            // 기본언어는 한국어이므로, 언어코드목록에 한국어가 없는 경우 포함시킨다.
-            if (in_array('ko', self::$_languages) == false) {
-                self::$_languages[] = 'ko';
-            }
-        }
-
-        return $is_primary_only == true ? self::$_languages[0] : self::$_languages;
     }
 
     /**
