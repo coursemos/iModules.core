@@ -378,7 +378,7 @@ class Html
         });
         $header .= self::tag(...array_keys(self::$_heads));
 
-        $attributes = '';
+        $attributes = ' data-base="' . Configs::dir() . '"';
         foreach (self::$_attributes as $key => $value) {
             $attributes .= ' ' . $key;
             if ($value !== null) {
