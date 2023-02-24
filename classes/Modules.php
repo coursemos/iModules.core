@@ -86,6 +86,11 @@ class Modules
         foreach ($globals as $global) {
             self::get($global)->init();
         }
+
+        /**
+         * 모듈 라우터를 초기화한다.
+         */
+        Router::add('/module/{name}/process/{path}', '#', 'blob', ['Modules', 'doProcess']);
     }
 
     /**
@@ -268,31 +273,6 @@ class Modules
     }
 
     /**
-     * 특수한 에러코드의 경우 에러데이터를 현재 클래스에서 처리하여 에러클래스로 전달한다.
-     *
-     * @param string $code 에러코드
-     * @param ?string $message 에러메시지
-     * @param ?object $details 에러와 관련된 추가정보
-     * @return ErrorData $error
-     */
-    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
-    {
-        $error = ErrorHandler::data();
-
-        switch ($code) {
-            case 'NOT_FOUND_MODULE':
-                $error->message = ErrorHandler::getText($code, ['module' => $message]);
-                $error->suffix = Request::url();
-                break;
-
-            default:
-                return iModules::error($code, $message, $details);
-        }
-
-        return $error;
-    }
-
-    /**
      * 모듈이 설치가능한지 확인한다.
      *
      * @param string $name 설치가능여부를 확인할 모듈명
@@ -363,5 +343,72 @@ class Modules
         $success = $class::install($previous);
 
         return $success;
+    }
+
+    /**
+     * 모듈 프로세스 라우팅을 처리한다.
+     *
+     * @param Route $route 현재경로
+     * @param string $name 모듈명
+     * @param string $path 요청주소
+     */
+    public static function doProcess(Route $route, string $name, string $path): void
+    {
+        Header::setType('json');
+
+        $language = Request::languages(true);
+        $route->setLanguage($language);
+        $method = strtolower(Request::method());
+
+        $body = file_get_contents('php://input');
+        $values = json_decode($body);
+
+        $results = new stdClass();
+        if (self::isInstalled($name) == true) {
+            $mModule = self::get($name);
+            call_user_func_array([$mModule, 'doProcess'], [&$results, $method, $path, &$values]);
+            if (isset($results->success) == false) {
+                ErrorHandler::print(self::error('NOT_FOUND_MODULE_PROCESS', $name));
+            }
+        } else {
+            ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
+        }
+
+        exit(json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * 특수한 에러코드의 경우 에러데이터를 현재 클래스에서 처리하여 에러클래스로 전달한다.
+     *
+     * @param string $code 에러코드
+     * @param ?string $message 에러메시지
+     * @param ?object $details 에러와 관련된 추가정보
+     * @return ErrorData $error
+     */
+    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
+    {
+        $error = ErrorHandler::data();
+
+        switch ($code) {
+            case 'NOT_FOUND_MODULE':
+                $error->message = ErrorHandler::getText($code, ['module' => $message]);
+                $error->suffix = Request::url();
+                break;
+
+            case 'NOT_FOUND_MODULE_PROCESS':
+                $error->message = ErrorHandler::getText($code, ['module' => $message]);
+                $error->suffix = Request::url();
+                break;
+
+            case 'NOT_FOUND_MODULE_PROCESS_FILE':
+                $error->message = ErrorHandler::getText($code);
+                $error->suffix = $message;
+                break;
+
+            default:
+                return iModules::error($code, $message, $details);
+        }
+
+        return $error;
     }
 }

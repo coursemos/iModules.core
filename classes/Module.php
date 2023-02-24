@@ -287,6 +287,30 @@ class Module extends Component
     }
 
     /**
+     * 모듈 프로세스 라우팅을 처리한다.
+     *
+     * @param &object $results 요청처리 결과를 담을 변수
+     * @param string $method 요청방법
+     * @param string $path 요청주소
+     * @param object $values 데이터
+     */
+    public function doProcess(object &$results, string $method, string $path, object &$values = null): void
+    {
+        define('__IM_PROCESS__', true);
+
+        if (is_file($this->getPath() . '/process/' . $path . '.' . $method . '.php') == true) {
+            require_once $this->getPath() . '/process/' . $path . '.' . $method . '.php';
+        } else {
+            ErrorHandler::print(
+                $this->error(
+                    'NOT_FOUND_MODULE_PROCESS_FILE',
+                    $this->getPath() . '/process/' . $path . '.' . $method . '.php'
+                )
+            );
+        }
+    }
+
+    /**
      * 특수한 에러코드의 경우 에러데이터를 클래스에서 처리하여 에러클래스로 전달한다.
      *
      * @param string $code 에러코드
@@ -306,7 +330,7 @@ class Module extends Component
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return Modules::error($code, $message, $details);
         }
     }
 
