@@ -94,6 +94,21 @@ class Router
      */
     public static function get(): Route
     {
+        $route = self::has();
+        if ($route === null) {
+            ErrorHandler::print(self::error('NOT_FOUND_URL'));
+        }
+
+        return $route;
+    }
+
+    /**
+     * 경로가 존재한다면 경로 객체를 반환한다.
+     *
+     * @return Route $route
+     */
+    public static function has(): ?Route
+    {
         $paths = array_keys(self::$_routes);
         foreach ($paths as $path) {
             $matcher = str_replace('/', '\/', $path);
@@ -108,7 +123,7 @@ class Router
             }
         }
 
-        ErrorHandler::print(self::error('NOT_FOUND_URL'));
+        return null;
     }
 
     /**
