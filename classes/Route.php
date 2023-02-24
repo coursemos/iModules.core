@@ -75,7 +75,11 @@ class Route
      */
     public function getPath($is_included_subpage = false): string
     {
-        $path = preg_split('/\/\*/', $this->_path)[0];
+        $path = preg_replace('/\/\*$/', '', $this->_path);
+        foreach ($this->getValues() as $key => $value) {
+            $path = str_replace('{' . $key . '}', $value, $path);
+        }
+
         if ($is_included_subpage == true) {
             $path .= $this->getSubPath();
         }
@@ -86,24 +90,15 @@ class Route
     /**
      * 하위 경로를 가져온다.
      *
-     * @param bool $is_included_path (기본값 : false)
      * @return string $subpath
      */
-    public function getSubPath($is_included_path = false): string
+    public function getSubPath(): string
     {
-        $matcher = str_replace('/', '\/', $this->_path);
-        $matcher = str_replace('*', '(.*?)', $matcher);
-        $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
-
-        if (preg_match('/^' . $matcher . '$/', Router::getPath(), $match) == true && count($match) > 1) {
-            $path = array_shift($match);
-            $subpath = '/' . implode('/', $match);
-        } else {
-            $path = $this->getPath();
-            $subpath = '';
+        $values = $this->getValues();
+        if (isset($values['*']) == true) {
+            return $values['*'];
         }
-
-        return $is_included_path == true ? $path : $subpath;
+        return '';
     }
 
     /**
@@ -113,18 +108,18 @@ class Route
      */
     public function getValues(): array
     {
-        $matcher = $this->getPath();
-        $matcher = str_replace('/', '\/', $matcher);
+        $path = preg_replace('/\/\*$/', '{*}', $this->_path);
+        $matcher = str_replace('/', '\/', $path);
         $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
 
         $keys = [];
-        if (preg_match_all('/\{(.*?)\}/', $this->getPath(), $keys) == true) {
+        if (preg_match_all('/\{(.*?)\}/', $path, $keys) == true) {
             $keys = $keys[1];
         }
 
         $values = [];
         if (count($keys) > 0) {
-            if (preg_match('/' . $matcher . '$/', Request::url(), $values) == true) {
+            if (preg_match('/' . $matcher . '$/', Router::getPath(), $values) == true) {
                 array_shift($values);
             }
         }
