@@ -27,6 +27,16 @@ class Request
     }
 
     /**
+     * 현재 요청방식을 가져온다.
+     *
+     * @return string $method (GET, POST)
+     */
+    public static function method(): string
+    {
+        return isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET';
+    }
+
+    /**
      * 현재 URL을 가져온다.
      *
      * @param bool|array $query 쿼리스트링 포함 여부 (true : 전체, false : 포함하지 않음, array : 포함할 쿼리스트링)
