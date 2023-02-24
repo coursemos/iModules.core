@@ -70,6 +70,20 @@ class DomList {
     }
 
     /**
+     * 목록의 모든 HTML 엘리먼트의 Attribute 값을 제거한다.
+     *
+     * @param {string} key - 설정할 Attribute키
+     * @return {Dom} this
+     */
+    removeAttr(key: string): this {
+        this.domList.forEach((dom: Dom) => {
+            dom.removeAttr(key);
+        });
+
+        return this;
+    }
+
+    /**
      * 목록의 모든 HTML 엘리먼트의 Attribute 값을 가져온다.
      *
      * @param {string} key - 가져올 Attribute키
