@@ -10,6 +10,7 @@
  */
 class Html {
     static dataValues: WeakMap<object, any> = new WeakMap();
+    static eventListeners: WeakMap<object, any> = new WeakMap();
 
     /**
      * HTML 객체를 생성한다.

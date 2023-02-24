@@ -11,6 +11,7 @@
 class Dom {
     element: HTMLElement | null;
     dataValues: { [key: string]: any } = {};
+    eventListeners: { [name: string]: EventListener[] } = {};
 
     /**
      * Dom 객체를 생성한다.
@@ -24,6 +25,12 @@ class Dom {
                 this.dataValues = Html.dataValues.get(this.element);
             } else {
                 Html.dataValues.set(this.element, this.dataValues);
+            }
+
+            if (Html.eventListeners.has(this.element) == true) {
+                this.eventListeners = Html.eventListeners.get(this.element);
+            } else {
+                Html.eventListeners.set(this.element, this.eventListeners);
             }
         }
     }
@@ -46,6 +53,17 @@ class Dom {
      */
     setAttr(key: string, value: string): this {
         this.element?.setAttribute(key, value);
+        return this;
+    }
+
+    /**
+     * HTML 엘리먼트의 Attribute 값을 제거한다.
+     *
+     * @param {string} key - 설정할 Attribute키
+     * @return {Dom} this
+     */
+    removeAttr(key: string): this {
+        this.element?.removeAttribute(key);
         return this;
     }
 
@@ -152,7 +170,11 @@ class Dom {
      */
     setStyle(key: string, value: string | number): this {
         if (this.element === null) return this;
-        this.element.style[key] = value;
+        if (value === null) {
+            this.element.style.removeProperty(key);
+        } else {
+            this.element.style[key] = value;
+        }
         return this;
     }
 
@@ -399,7 +421,11 @@ class Dom {
      * @return {Dom} this
      */
     removeClass(...className: string[]): this {
-        this.element?.classList.remove(...className);
+        if (className.length == 0) {
+            this.element?.classList.remove(...this.element?.classList);
+        } else {
+            this.element?.classList.remove(...className);
+        }
         return this;
     }
 
@@ -434,6 +460,18 @@ class Dom {
     text(text: string): this {
         if (this.element === null) return this;
         this.element.textContent = text;
+        return this;
+    }
+
+    /**
+     * HTML 엘리먼트에 HTML 태그를 추가한다.
+     *
+     * @param {string} html - 추가할 HTML
+     * @return {Dom} this
+     */
+    html(html: string): this {
+        if (this.element === null) return this;
+        this.element.innerHTML = html;
         return this;
     }
 
@@ -594,12 +632,29 @@ class Dom {
     /**
      * HTML 엘리먼트의 재생중인 애니메이션을 중단한다.
      */
-    stop() {
+    stop(): void {
         this.element?.getAnimations()?.forEach((animate: Animation) => {
             if (animate.constructor.name !== 'Animation') return;
             animate.commitStyles();
             animate.cancel();
         });
+    }
+
+    /**
+     * HTML 엘리먼트를 좌우로 흔든다.
+     *
+     * @param {number} times - 반복횟수(기본값 : 4)
+     * @param {number} duration - 애니메이션시각(기본값 : 800)
+     * @param {number} distance - 이동거리(기본값 : 10)
+     */
+    shake(times: number = 4, duration: number = 800, distance: number = 10): void {
+        const keyFrames: Keyframe[] = [];
+        for (let i = 0; i < times; i++) {
+            keyFrames.push({ transform: 'translateX(' + distance + 'px)' });
+            keyFrames.push({ transform: 'translateX(' + distance * -1 + 'px)' });
+        }
+        keyFrames.push({ transform: 'translateX(0px)' });
+        this.element?.animate(keyFrames, { duration: duration, easing: 'ease-out' });
     }
 
     /**
@@ -631,6 +686,8 @@ class Dom {
      * @return {Dom} this
      */
     on(name: string, listener: EventListener): this {
+        this.eventListeners[name] ??= [];
+        this.eventListeners[name].push(listener);
         this.element?.addEventListener(name, listener);
         return this;
     }
@@ -662,5 +719,38 @@ class Dom {
      */
     isEmpty(): boolean {
         return this.element?.hasChildNodes() === false;
+    }
+
+    /**
+     * HTML 엘리먼트를 복제한다.
+     *
+     * @param {boolean} is_event_listeners - 이벤트 리스너를 복제할지 여부
+     * @return {Dom} clone
+     */
+    clone(is_event_listeners: boolean = false): Dom {
+        if (this.element === null) {
+            return new Dom(null);
+        }
+
+        const clone = this.element.cloneNode(true) as HTMLElement;
+        const $clone = new Dom(clone);
+
+        if (is_event_listeners == true) {
+            const children = clone.querySelectorAll('*');
+            this.element.querySelectorAll('*').forEach((element: HTMLElement, index: number) => {
+                const dom = new Dom(element);
+
+                for (const name in dom.eventListeners) {
+                    for (const listener of dom.eventListeners[name]) {
+                        let $child = new Dom(children[index] as HTMLElement);
+                        $child.on(name, listener);
+                    }
+                }
+            });
+        }
+
+        if (this.element instanceof HTMLElement) {
+            return $clone;
+        }
     }
 }

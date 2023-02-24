@@ -11,6 +11,7 @@
 class Dom {
     element;
     dataValues = {};
+    eventListeners = {};
     /**
      * Dom 객체를 생성한다.
      *
@@ -24,6 +25,12 @@ class Dom {
             }
             else {
                 Html.dataValues.set(this.element, this.dataValues);
+            }
+            if (Html.eventListeners.has(this.element) == true) {
+                this.eventListeners = Html.eventListeners.get(this.element);
+            }
+            else {
+                Html.eventListeners.set(this.element, this.eventListeners);
             }
         }
     }
@@ -44,6 +51,16 @@ class Dom {
      */
     setAttr(key, value) {
         this.element?.setAttribute(key, value);
+        return this;
+    }
+    /**
+     * HTML 엘리먼트의 Attribute 값을 제거한다.
+     *
+     * @param {string} key - 설정할 Attribute키
+     * @return {Dom} this
+     */
+    removeAttr(key) {
+        this.element?.removeAttribute(key);
         return this;
     }
     /**
@@ -139,7 +156,12 @@ class Dom {
     setStyle(key, value) {
         if (this.element === null)
             return this;
-        this.element.style[key] = value;
+        if (value === null) {
+            this.element.style.removeProperty(key);
+        }
+        else {
+            this.element.style[key] = value;
+        }
         return this;
     }
     /**
@@ -378,7 +400,12 @@ class Dom {
      * @return {Dom} this
      */
     removeClass(...className) {
-        this.element?.classList.remove(...className);
+        if (className.length == 0) {
+            this.element?.classList.remove(...this.element?.classList);
+        }
+        else {
+            this.element?.classList.remove(...className);
+        }
         return this;
     }
     /**
@@ -411,6 +438,18 @@ class Dom {
         if (this.element === null)
             return this;
         this.element.textContent = text;
+        return this;
+    }
+    /**
+     * HTML 엘리먼트에 HTML 태그를 추가한다.
+     *
+     * @param {string} html - 추가할 HTML
+     * @return {Dom} this
+     */
+    html(html) {
+        if (this.element === null)
+            return this;
+        this.element.innerHTML = html;
         return this;
     }
     /**
@@ -570,6 +609,22 @@ class Dom {
         });
     }
     /**
+     * HTML 엘리먼트를 좌우로 흔든다.
+     *
+     * @param {number} times - 반복횟수(기본값 : 4)
+     * @param {number} duration - 애니메이션시각(기본값 : 800)
+     * @param {number} distance - 이동거리(기본값 : 10)
+     */
+    shake(times = 4, duration = 800, distance = 10) {
+        const keyFrames = [];
+        for (let i = 0; i < times; i++) {
+            keyFrames.push({ transform: 'translateX(' + distance + 'px)' });
+            keyFrames.push({ transform: 'translateX(' + distance * -1 + 'px)' });
+        }
+        keyFrames.push({ transform: 'translateX(0px)' });
+        this.element?.animate(keyFrames, { duration: duration, easing: 'ease-out' });
+    }
+    /**
      * HTML 엘리먼트에 마우스 HOVER 이벤트를 추가한다.
      *
      * @param {EventListener} mouseenter - 마우스 OVER 시 이벤트리스너
@@ -597,6 +652,8 @@ class Dom {
      * @return {Dom} this
      */
     on(name, listener) {
+        this.eventListeners[name] ??= [];
+        this.eventListeners[name].push(listener);
         this.element?.addEventListener(name, listener);
         return this;
     }
@@ -626,5 +683,33 @@ class Dom {
      */
     isEmpty() {
         return this.element?.hasChildNodes() === false;
+    }
+    /**
+     * HTML 엘리먼트를 복제한다.
+     *
+     * @param {boolean} is_event_listeners - 이벤트 리스너를 복제할지 여부
+     * @return {Dom} clone
+     */
+    clone(is_event_listeners = false) {
+        if (this.element === null) {
+            return new Dom(null);
+        }
+        const clone = this.element.cloneNode(true);
+        const $clone = new Dom(clone);
+        if (is_event_listeners == true) {
+            const children = clone.querySelectorAll('*');
+            this.element.querySelectorAll('*').forEach((element, index) => {
+                const dom = new Dom(element);
+                for (const name in dom.eventListeners) {
+                    for (const listener of dom.eventListeners[name]) {
+                        let $child = new Dom(children[index]);
+                        $child.on(name, listener);
+                    }
+                }
+            });
+        }
+        if (this.element instanceof HTMLElement) {
+            return $clone;
+        }
     }
 }
