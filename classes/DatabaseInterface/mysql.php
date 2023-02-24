@@ -1098,20 +1098,7 @@ class mysql extends DatabaseInterface
     public function getOne(?string $field = null): mixed
     {
         $result = $this->get($field);
-
-        $item = null;
-        if (is_object($result) == true) {
-            $item = $result;
-        }
-        if (isset($result[0]) == true) {
-            $item = $result[0];
-        }
-
-        if ($field != null) {
-            return $item != null && isset($item->{$field}) == true ? $item->{$field} : null;
-        } else {
-            return $item;
-        }
+        return count($result) > 0 ? $result[0] : null;
     }
 
     /**
