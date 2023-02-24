@@ -58,6 +58,16 @@ class Route
     }
 
     /**
+     * 사용자 언어코드를 강제로 지정한다.
+     *
+     * @paran string $language
+     */
+    public function setLanguage(string $language): void
+    {
+        $this->_language = $language;
+    }
+
+    /**
      * 경로를 가져온다.
      *
      * @param bool $is_included_subpage 하위 경로 포함 여부 (기본값 : false)
