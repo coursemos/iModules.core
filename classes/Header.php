@@ -11,7 +11,7 @@
  */
 class Header
 {
-    private static string $_type = 'text/html';
+    private static string $_type = 'html';
 
     /**
      * 콘텐츠 타입을 가져온다.
@@ -20,6 +20,15 @@ class Header
      */
     public static function getType(): string
     {
+        $accept = isset($_SERVER['HTTP_ACCEPT']) == true ? $_SERVER['HTTP_ACCEPT'] : '';
+        if (preg_match('/(html|json)/', $accept, $match) == true) {
+            $accept = $match[1];
+        }
+
+        if ($accept == 'json' || self::$_type == 'json') {
+            return 'json';
+        }
+
         return self::$_type;
     }
 
