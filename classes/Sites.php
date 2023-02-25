@@ -7,7 +7,7 @@
  * @file /classes/Sites.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 2. 25.
  */
 class Sites
 {
@@ -23,17 +23,22 @@ class Sites
     {
         /**
          * 사이트 정보를 초기화한다.
-         * @todo 캐시적용
          */
-        $sites = iModules::db()
-            ->select()
-            ->from(iModules::table('sites'))
-            ->get();
-        foreach ($sites as $site) {
-            self::$_sites[$site->host] ??= [];
-            self::$_sites[$site->host][$site->language] = new Site($site);
+        if (Cache::has('sites') === true) {
+            self::$_sites = Cache::get('sites');
+        } else {
+            $sites = iModules::db()
+                ->select()
+                ->from(iModules::table('sites'))
+                ->get();
+            foreach ($sites as $site) {
+                self::$_sites[$site->host] ??= [];
+                self::$_sites[$site->host][$site->language] = new Site($site);
 
-            Domains::get($site->host)->addSite(self::$_sites[$site->host][$site->language]);
+                Domains::get($site->host)->addSite(self::$_sites[$site->host][$site->language]);
+            }
+
+            Cache::store('sites', self::$_sites);
         }
     }
 
@@ -42,9 +47,26 @@ class Sites
      *
      * @param ?string $host 사이트 호스트명 (없을 경우 현재 호스트)
      * @param ?string $language 사이트 언어 (없을 경우 현재 언어)
-     * @return ?Site $site
+     * @return Site $site
      */
     public static function get(?string $host = null, ?string $language = null): Site
+    {
+        $site = self::has($host, $language);
+        if ($site === null) {
+            ErrorHandler::print(self::error('NOT_FOUND_SITE'), $host . '/' . $language);
+        }
+
+        return $site;
+    }
+
+    /**
+     * 특정 사이트정보가 존재한다면 가져온다.
+     *
+     * @param ?string $host 사이트 호스트명 (없을 경우 현재 호스트)
+     * @param ?string $language 사이트 언어 (없을 경우 현재 언어)
+     * @return ?Site $site
+     */
+    public static function has(?string $host = null, ?string $language = null): ?Site
     {
         if (isset(self::$_sites) == false) {
             self::init();
@@ -54,11 +76,11 @@ class Sites
         $host = $domain->getHost();
         $language ??= Router::getLanguage();
 
-        if (isset(self::$_sites[$host][$language]) == false) {
-            ErrorHandler::print(self::error('NOT_FOUND_SITE'), $host . '/' . $language);
+        if (isset(self::$_sites[$host][$language]) == true) {
+            return self::$_sites[$host][$language];
         }
 
-        return self::$_sites[$host][$language];
+        return null;
     }
 
     /**
