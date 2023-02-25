@@ -134,10 +134,11 @@ class Theme
         }
 
         if (count($cssValues) > 0) {
-            if (Cache::has($this->getCacheName('values.css'), 3600) == false) {
+            if (Cache::has($this->getCacheName('values.css'), 3600, true) == false) {
                 Cache::store(
                     $this->getCacheName('values.css'),
-                    ':root {' . "\n" . '    ' . implode("\n    ", $cssValues) . "\n" . '}'
+                    ':root {' . "\n" . '    ' . implode("\n    ", $cssValues) . "\n" . '}',
+                    true
                 );
             }
             Cache::style($this->getCacheName(), Configs::cache() . '/' . $this->getCacheName('values.css'));
