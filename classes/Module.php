@@ -17,11 +17,6 @@ class Module extends Component
     private static bool $_init = false;
 
     /**
-     * @var object $_package 모듈 패키지정보
-     */
-    private static object $_package;
-
-    /**
      * @var object $_configs 모듈 환경설정
      */
     private static object $_configs;
@@ -56,124 +51,9 @@ class Module extends Component
      */
     public function init(): void
     {
-    }
-
-    /**
-     * 각 모듈에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
-     *
-     * @param ?string $name 데이터베이스 인터페이스 고유명
-     * @param ?object $connector 데이터베이스정보
-     * @return DatabaseInterface $interface
-     */
-    public static function db(?string $name = null, ?object $connector = null): DatabaseInterface
-    {
-        return Database::getInterface($name ?? 'modules/' . self::getName(), $connector ?? Configs::get('db'));
-    }
-
-    /**
-     * 간략화된 테이블명으로 실제 데이터베이스 테이블명을 가져온다.
-     *
-     * @param string $table;
-     * @return string $table;
-     */
-    public static function table(string $table): string
-    {
-        return iModules::table('module_' . str_replace('/', '_', self::getName()) . '_' . $table);
-    }
-
-    /**
-     * 언어팩 코드 문자열을 가져온다.
-     *
-     * @param string $text 코드
-     * @param ?array $placeHolder 치환자
-     * @return string|array $message 치환된 메시지
-     */
-    public static function getText(string $text, ?array $placeHolder = null): string|array
-    {
-        return Language::getText($text, $placeHolder, ['/modules/' . self::getName(), '/']);
-    }
-
-    /**
-     * 언어팩 에러코드 문자열을 가져온다.
-     *
-     * @param string $code 에러코드
-     * @param ?array $placeHolder 치환자
-     * @return string $message 치환된 메시지
-     */
-    public static function getErrorText(string $code, ?array $placeHolder = null): string
-    {
-        return self::getText('error/' . $code, $placeHolder);
-    }
-
-    /**
-     * 모듈 패키지정보를 가져온다.
-     *
-     * @return object $package
-     */
-    public static function getPackage(): object
-    {
-        if (isset(self::$_package) == true) {
-            return self::$_package;
+        if (self::$_init == false) {
+            self::$_init = true;
         }
-
-        self::$_package = Modules::getPackage(self::getName());
-        return self::$_package;
-    }
-
-    /**
-     * 모듈명을 가져온다.
-     *
-     * @return string $module
-     */
-    public static function getName(): string
-    {
-        return str_replace(
-            '\\',
-            '/',
-            preg_replace('/\\\[^\\\]+$/', '', preg_replace('/^(\\\)?modules\\\/', '', get_called_class()))
-        );
-    }
-
-    /**
-     * 모듈제목을 가져온다.
-     *
-     * @param string $language 언어코드
-     * @return string $title
-     */
-    public static function getTitle($language = null): string
-    {
-        $language ??= \Router::getLanguage();
-        return self::getPackage()->title->$language ?? self::getPackage()->title->{self::getPackage()->language};
-    }
-
-    /**
-     * 모듈의 기본경로를 가져온다.
-     *
-     * @return string $base
-     */
-    public static function getBase(): string
-    {
-        return '/modules/' . self::getName();
-    }
-
-    /**
-     * 모듈의 상태경로를 가져온다.
-     *
-     * @return string $dir
-     */
-    public static function getDir(): string
-    {
-        return Configs::dir() . self::getBase();
-    }
-
-    /**
-     * 모듈의 절대경로를 가져온다.
-     *
-     * @return string $path
-     */
-    public static function getPath(): string
-    {
-        return Configs::path() . self::getBase();
     }
 
     /**

@@ -7,51 +7,22 @@
  * @file /classes/Plugin.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 2. 25.
  */
 class Plugin extends Component
 {
-    function __construct()
-    {
-    }
+    /**
+     * @var bool $_init 플러그인 클래스가 초기화되었는지 여부
+     */
+    private static bool $_init = false;
 
     /**
-     * 플러그인명을 가져온다.
-     *
-     * @return string $module
+     * 플러그인 설정을 초기화한다.
      */
-    public function getName(): string
+    public function init(): void
     {
-        return '';
-    }
-
-    /**
-     * 플러그인의 기본경로를 가져온다.
-     *
-     * @return string $base
-     */
-    public function getBase(): string
-    {
-        return '';
-    }
-
-    /**
-     * 플러그인의 상태경로를 가져온다.
-     *
-     * @return string $dir
-     */
-    public function getDir(): string
-    {
-        return '';
-    }
-
-    /**
-     * 플러그인의 절대경로를 가져온다.
-     *
-     * @return string $path
-     */
-    public function getPath(): string
-    {
-        return '';
+        if (self::$_init == false) {
+            self::$_init = true;
+        }
     }
 }

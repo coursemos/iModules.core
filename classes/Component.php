@@ -7,10 +7,15 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 10.
+ * @modified 2023. 2. 25.
  */
 abstract class Component
 {
+    /**
+     * @var object $_package 컴포넌트 패키지정보
+     */
+    private static object $_package;
+
     /**
      * 컴포넌트 설정을 초기화한다.
      */
@@ -23,7 +28,13 @@ abstract class Component
      * @param ?object $connector 데이터베이스정보
      * @return DatabaseInterface $interface
      */
-    abstract public static function db(?string $name = null, ?object $connector = null): DatabaseInterface;
+    public static function db(?string $name = null, ?object $connector = null): DatabaseInterface
+    {
+        return Database::getInterface(
+            $name ?? self::getType() . '/' . self::getName(),
+            $connector ?? Configs::get('db')
+        );
+    }
 
     /**
      * 간략화된 테이블명으로 실제 데이터베이스 테이블명을 가져온다.
@@ -31,7 +42,10 @@ abstract class Component
      * @param string $table;
      * @return string $table;
      */
-    abstract public static function table(string $table): string;
+    public static function table(string $table): string
+    {
+        return iModules::table(self::getType() . '_' . str_replace('/', '_', self::getName()) . '_' . $table);
+    }
 
     /**
      * 언어팩 코드 문자열을 가져온다.
@@ -40,7 +54,10 @@ abstract class Component
      * @param ?array $placeHolder 치환자
      * @return string|array $message 치환된 메시지
      */
-    abstract public static function getText(string $text, ?array $placeHolder = null): string|array;
+    public static function getText(string $text, ?array $placeHolder = null): string|array
+    {
+        return Language::getText($text, $placeHolder, [self::getBase(), '/']);
+    }
 
     /**
      * 언어팩 에러코드 문자열을 가져온다.
@@ -49,21 +66,42 @@ abstract class Component
      * @param ?array $placeHolder 치환자
      * @return string $message 치환된 메시지
      */
-    abstract public static function getErrorText(string $code, ?array $placeHolder = null): string;
+    public static function getErrorText(string $code, ?array $placeHolder = null): string
+    {
+        return self::getText('error/' . $code, $placeHolder);
+    }
 
     /**
      * 컴포넌트명의 패키지 정보를 가져온다.
      *
-     * @return string $module
+     * @return object $package
      */
-    abstract public static function getPackage(): object;
+    public static function getPackage(): object
+    {
+        if (isset(self::$_package) == true) {
+            return self::$_package;
+        }
+
+        if (is_file(self::getPath() . '/package.json') == true) {
+            self::$_package = json_decode(file_get_contents(self::getPath() . '/package.json'));
+        } else {
+            self::$_package = null;
+        }
+
+        return self::$_package;
+    }
 
     /**
      * 컴포넌트명을 가져온다.
      *
      * @return string $module
      */
-    abstract public static function getName(): string;
+    public static function getName(): string
+    {
+        $className = str_replace('\\', '/', get_called_class());
+        $namespace = preg_replace('/\/[^\/]+$/', '', $className);
+        return preg_replace('/^\/?' . self::getType() . 's\//', '', $namespace);
+    }
 
     /**
      * 컴포넌트제목을 가져온다.
@@ -71,28 +109,41 @@ abstract class Component
      * @param string $language 언어코드
      * @return string $title
      */
-    abstract public static function getTitle($language = null): string;
+    public static function getTitle($language = null): string
+    {
+        $language ??= \Router::getLanguage();
+        return self::getPackage()->title->$language ?? self::getPackage()->title->{self::getPackage()->language};
+    }
 
     /**
      * 컴포넌트의 기본경로를 가져온다.
      *
      * @return string $base
      */
-    abstract public static function getBase(): string;
+    public static function getBase(): string
+    {
+        return '/' . self::getType() . 's/' . self::getName();
+    }
 
     /**
      * 컴포넌트의 상태경로를 가져온다.
      *
      * @return string $dir
      */
-    abstract public static function getDir(): string;
+    public static function getDir(): string
+    {
+        return Configs::dir() . self::getBase();
+    }
 
     /**
      * 컴포넌트의 절대경로를 가져온다.
      *
      * @return string $path
      */
-    abstract public static function getPath(): string;
+    public static function getPath(): string
+    {
+        return Configs::path() . self::getBase();
+    }
 
     /**
      * 컴포넌트 종류를 가져온다.

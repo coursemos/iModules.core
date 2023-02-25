@@ -11,47 +11,18 @@
  */
 class Widget extends Component
 {
-    function __construct()
-    {
-    }
+    /**
+     * @var bool $_init 위젯 클래스가 초기화되었는지 여부
+     */
+    private static bool $_init = false;
 
     /**
-     * 위젯명을 가져온다.
-     *
-     * @return string $module
+     * 모듈 설정을 초기화한다.
      */
-    public function getName(): string
+    public function init(): void
     {
-        return '';
-    }
-
-    /**
-     * 위젯의 기본경로를 가져온다.
-     *
-     * @return string $base
-     */
-    public function getBase(): string
-    {
-        return '';
-    }
-
-    /**
-     * 위젯의 상태경로를 가져온다.
-     *
-     * @return string $dir
-     */
-    public function getDir(): string
-    {
-        return '';
-    }
-
-    /**
-     * 위젯의 절대경로를 가져온다.
-     *
-     * @return string $path
-     */
-    public function getPath(): string
-    {
-        return '';
+        if (self::$_init == false) {
+            self::$_init = true;
+        }
     }
 }
