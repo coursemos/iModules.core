@@ -379,6 +379,7 @@ class Html
         $header .= self::tag(...array_keys(self::$_heads));
 
         $attributes = ' data-base="' . Configs::dir() . '"';
+        $attributes .= ' data-rewrite="' . (Domains::has()?->isRewrite() == true ? 'true' : 'false') . '"';
         foreach (self::$_attributes as $key => $value) {
             $attributes .= ' ' . $key;
             if ($value !== null) {
