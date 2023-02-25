@@ -191,4 +191,3 @@ class Domain
         return ($this->isHttps() == true ? 'https://' : 'http://') . $this->getHost();
     }
 }
-?>

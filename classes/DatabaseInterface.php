@@ -405,4 +405,3 @@ abstract class DatabaseInterface
      */
     abstract public function displayError(bool $display): DatabaseInterface;
 }
-?>

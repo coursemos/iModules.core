@@ -63,4 +63,3 @@ class Database
         return self::$_interfaces[$name];
     }
 }
-?>
