@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 2. 25.
  */
 class ErrorHandler
 {
@@ -76,7 +76,7 @@ class ErrorHandler
         $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
         $error->debugMode = Configs::debug();
 
-        Html::style('/styles/error.scss');
+        Html::style(Configs::dir() . '/styles/error.scss');
 
         /**
          * $error->stacktrace 가 NULL 인 경우
