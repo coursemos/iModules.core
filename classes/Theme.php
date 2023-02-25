@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 2. 25.
  */
 class Theme
 {
@@ -78,7 +78,7 @@ class Theme
             }
 
             if ($this->_owner == null) {
-                // @todo 오류
+                ErrorHandler::print($this->error('NOT_FOUND_THEME', $this->getPath()));
             }
 
             $this->_path = $this->_owner->getBase() . '/themes';
@@ -140,7 +140,7 @@ class Theme
                     ':root {' . "\n" . '    ' . implode("\n    ", $cssValues) . "\n" . '}'
                 );
             }
-            Cache::style($this->getCacheName(), Configs::cache(false) . '/' . $this->getCacheName('values.css'));
+            Cache::style($this->getCacheName(), Configs::cache() . '/' . $this->getCacheName('values.css'));
         }
 
         /**
@@ -304,7 +304,7 @@ class Theme
         $this->init();
 
         /**
-         * todo: 이벤트를 발생시킨다.
+         * @todo 이벤트를 발생시킨다.
          */
 
         /**
@@ -319,7 +319,7 @@ class Theme
         }
 
         /**
-         * todo: 이벤트를 발생시킨다.
+         * @todo 이벤트를 발생시킨다.
          */
         $html = Html::tag($header, $context, $footer);
 
@@ -345,7 +345,7 @@ class Theme
 
         $this->init();
 
-        // todo: 이벤트 발생
+        // @todo 이벤트 발생
 
         /**
          * 테마파일에서 사용할 변수선언
@@ -356,7 +356,7 @@ class Theme
         include $this->getPath() . '/pages/' . $file . '.html';
         $html = ob_get_clean();
 
-        // todo: 이벤트 발생
+        // @todo 이벤트 발생
 
         return $html;
     }
