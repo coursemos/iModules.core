@@ -39,6 +39,11 @@ class iModules
         }
 
         /**
+         * 캐시를 초기화한다.
+         */
+        Cache::init();
+
+        /**
          * 모듈을 초기화한다.
          */
         Modules::init();
