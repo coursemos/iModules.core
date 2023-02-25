@@ -21,8 +21,8 @@ class ErrorHandler
          */
         error_reporting(E_ALL);
         ini_set('display_errors', true);
-        register_shutdown_function('ErrorHandler::shutdownHandler');
-        set_error_handler('ErrorHandler::errorHandler', E_ALL);
+        register_shutdown_function(['ErrorHandler', 'shutdownHandler']);
+        set_error_handler(['ErrorHandler', 'errorHandler'], E_ALL);
     }
 
     /**
@@ -44,23 +44,7 @@ class ErrorHandler
      */
     public static function code(int $code): void
     {
-        $codes = [
-            200 => 'OK',
-            307 => 'Temporary Redirect',
-            308 => 'Permanent Redirect',
-            400 => 'Bad Request',
-            401 => 'Unauthorized',
-            403 => 'Forbidden',
-            404 => 'Not Found',
-            405 => 'Method Not Allowed',
-            406 => 'Not Acceptable',
-            413 => 'Content Too Large',
-            414 => 'URI Too Long',
-        ];
-
-        if (headers_sent() === false && isset($codes[$code]) == true) {
-            header('HTTP/1.1 ' . $code . ' ' . $codes[$code]);
-        }
+        Header::setCode($code);
     }
 
     /**
