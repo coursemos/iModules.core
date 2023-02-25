@@ -29,7 +29,7 @@ class AutoLoader
     public static function init(?string $path = null): void
     {
         self::$_path = $path;
-        spl_autoload_register('AutoLoader::loader');
+        spl_autoload_register(['AutoLoader', 'loader']);
     }
 
     /**
