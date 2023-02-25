@@ -79,7 +79,7 @@ class Cache
      *
      * @return bool $hasCache 캐시파일 존재여부
      */
-    public static function has(string $name, int $lifetime): bool
+    public static function has(string $name, int $lifetime = 0): bool
     {
         if (self::check() == true) {
             return false;
@@ -87,7 +87,7 @@ class Cache
         if (is_file(Configs::cache() . '/' . $name) == false) {
             return false;
         }
-        if (filemtime(Configs::cache() . '/' . $name) < time() - $lifetime) {
+        if ($lifetime > 0 && filemtime(Configs::cache() . '/' . $name) < time() - $lifetime) {
             return false;
         }
         return true;
