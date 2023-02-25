@@ -139,10 +139,9 @@ class Configs
      *
      * @return string $cache
      */
-    public static function cache(bool $is_path = true): string
+    public static function cache(): string
     {
-        $path = self::get('cache') ?? self::attachment() . '/cache';
-        return $is_path == true ? $path : preg_replace('/^' . Format::string(self::path(), 'reg') . '/', '', $path);
+        return self::get('cache') ?? self::attachment() . '/cache';
     }
 
     /**
@@ -365,9 +364,6 @@ class Configs
         $need_to_write = $need_to_write || $attachment != ($_CONFIGS?->attachment ?? '');
 
         $cache = preg_replace('/\/$/', '', $configs->cache ?? self::cache());
-        if (preg_match('/^' . Format::string($path, 'reg') . '/', $cache) == false) {
-            $errors['cache'] = $cache;
-        }
         if (strlen($cache) == 0 || is_dir($cache) == false || is_writable($cache) == false) {
             $errors['cache'] = $cache;
         }
