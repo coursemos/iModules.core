@@ -95,7 +95,7 @@ class Template
                 }
 
                 if ($this->_owner == null) {
-                    // @todo 오류
+                    ErrorHandler::print($this->error('NOT_FOUND_TEMPLATE', $this->getPath()));
                 }
 
                 $this->_path = $this->_owner->getBase();
@@ -291,7 +291,7 @@ class Template
         $this->init();
 
         /**
-         * todo: 이벤트를 발생시킨다.
+         * @todo 이벤트를 발생시킨다.
          */
 
         /**
@@ -306,7 +306,7 @@ class Template
         }
 
         /**
-         * todo: 이벤트를 발생시킨다.
+         * @todo 이벤트를 발생시킨다.
          */
         $html = Html::tag($header, $context, $footer);
 
