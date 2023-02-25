@@ -53,9 +53,25 @@ class Domains
      * 특정 도메인정보를 가져온다.
      *
      * @param ?string $host 도메인 호스트명 (없을 경우 현재 호스트)
-     * @return ?Domain $domain
+     * @return Domain $domain
      */
     public static function get(?string $host = null): Domain
+    {
+        $domain = self::has($host);
+        if ($domain === null) {
+            ErrorHandler::print(self::error('NOT_FOUND_DOMAIN', $host));
+        }
+
+        return $domain;
+    }
+
+    /**
+     * 특정 도메인정보가 존재한다면 가져온다.
+     *
+     * @param ?string $host 도메인 호스트명 (없을 경우 현재 호스트)
+     * @return ?Domain $domain
+     */
+    public static function has(?string $host = null): ?Domain
     {
         if (isset(self::$_domains) == false) {
             self::init();
@@ -78,7 +94,7 @@ class Domains
             }
         }
 
-        ErrorHandler::print(self::error('NOT_FOUND_DOMAIN', $host));
+        return null;
     }
 
     /**
