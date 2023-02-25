@@ -7,11 +7,36 @@
  * @file /classes/Header.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 2. 25.
  */
 class Header
 {
     private static string $_type = 'html';
+
+    /**
+     * HTTP 응답코드를 설정한다.
+     *
+     * @param int $code HTTP 응답코드
+     */
+    public static function setCode(int $code): void
+    {
+        if (headers_sent() == true) {
+            return;
+        }
+
+        switch ($code) {
+            case 200:
+                break;
+
+            case 403:
+                header('HTTP/1.0 403 Forbidden');
+                break;
+
+            case 404:
+                header('HTTP/1.0 404 Not Fount');
+                break;
+        }
+    }
 
     /**
      * 콘텐츠 타입을 가져온다.
