@@ -64,11 +64,28 @@ class Cache
      *
      * @param string $name 캐시파일명
      * @param string $data 캐시데이터
+     * @param bool $is_raw RAW 데이터 여부
      * @return bool $success
      */
-    public static function store(string $name, string $data): bool
+    public static function store(string $name, mixed $data, bool $is_raw = false): bool
     {
+        if ($is_raw === false) {
+            $name .= '.cache';
+            $data = serialize($data);
+        }
         return file_put_contents(Configs::cache() . '/' . $name, $data) !== false;
+    }
+
+    /**
+     * 캐시 데이터를 가져온다.
+     *
+     * @param string $name 캐시파일명
+     * @return mixed $data
+     */
+    public static function get(string $name): mixed
+    {
+        $data = file_get_contents(Configs::cache() . '/' . $name . '.cache');
+        return $data === false ? null : unserialize($data);
     }
 
     /**
@@ -76,12 +93,16 @@ class Cache
      *
      * @param string $name 캐시파일명
      * @param int $lifetime 캐시유지시간(초)
-     *
+     * @param bool $is_raw RAW 데이터 여부
      * @return bool $hasCache 캐시파일 존재여부
      */
-    public static function has(string $name, int $lifetime = 0): bool
+    public static function has(string $name, int $lifetime = 0, bool $is_raw = false): bool
     {
-        if (self::check() == true) {
+        if ($is_raw === false) {
+            $name .= '.cache';
+        }
+
+        if (self::check() == false) {
             return false;
         }
         if (is_file(Configs::cache() . '/' . $name) == false) {
