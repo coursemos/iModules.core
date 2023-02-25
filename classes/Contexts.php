@@ -7,7 +7,7 @@
  * @file /classes/Contexts.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 2. 25.
  */
 class Contexts
 {
@@ -28,17 +28,22 @@ class Contexts
     {
         /**
          * 전체 컨텍스트 정보를 초기화한다.
-         * @todo 캐시적용
          */
-        $contexts = iModules::db()
-            ->select()
-            ->from(iModules::table('contexts'))
-            ->orderBy('sort', 'asc')
-            ->get();
-        foreach ($contexts as $context) {
-            self::$_contexts[$context->host] ??= [];
-            self::$_contexts[$context->host][$context->language] ??= [];
-            self::$_contexts[$context->host][$context->language][$context->path] = new Context($context);
+        if (Cache::has('contexts') === true) {
+            self::$_contexts = Cache::get('contexts');
+        } else {
+            $contexts = iModules::db()
+                ->select()
+                ->from(iModules::table('contexts'))
+                ->orderBy('sort', 'asc')
+                ->get();
+            foreach ($contexts as $context) {
+                self::$_contexts[$context->host] ??= [];
+                self::$_contexts[$context->host][$context->language] ??= [];
+                self::$_contexts[$context->host][$context->language][$context->path] = new Context($context);
+            }
+
+            Cache::store('contexts', self::$_contexts);
         }
 
         /**
