@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 2. 25.
  */
 class Format
 {
@@ -77,22 +77,6 @@ class Format
                 break;
 
             /**
-             * URL을 인코딩한다.
-             */
-            case 'encode':
-                $str = urlencode($str);
-
-                break;
-
-            /**
-             * 정규식에 들어갈 수 있도록 정규식에 사용되는 문자열을 치환한다.
-             */
-            case 'reg':
-                $str = preg_quote($str, '/');
-
-                break;
-
-            /**
              * 데이터베이스 인덱스에 사용할 수 있게 HTML태그 및 HTML엔티티, 그리고 불필요한 공백문자를 제거한다.
              */
             case 'index':
@@ -110,6 +94,17 @@ class Format
         }
 
         return trim($str);
+    }
+
+    /**
+     * 정규표현식에 사용되는 문자열을 치환한다.
+     *
+     * @param string $string 원본문자열
+     * @param string $replace 치환된문자열
+     */
+    public static function reg(string $string): string
+    {
+        return preg_quote($string, '/');
     }
 
     /**

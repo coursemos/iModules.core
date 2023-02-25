@@ -641,7 +641,7 @@ class CSS extends Minify
 
             return $placeholder;
         };
-//        $this->registerPattern('/\n?\/\*(!|.*?@license|.*?@preserve).*?\*\/\n?/s', $callback);
+        $this->registerPattern('/\n?\/\*(!|.*?@origin|.*?@preserve).*?\*\/\n?/s', $callback);
 
         $this->registerPattern('/\/\*.*?\*\//s', '');
     }
