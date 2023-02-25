@@ -24,18 +24,21 @@ class Header
             return;
         }
 
-        switch ($code) {
-            case 200:
-                break;
+        $codes = [
+            200 => 'OK',
+            307 => 'Temporary Redirect',
+            308 => 'Permanent Redirect',
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            405 => 'Method Not Allowed',
+            406 => 'Not Acceptable',
+            413 => 'Content Too Large',
+            414 => 'URI Too Long',
+        ];
 
-            case 403:
-                header('HTTP/1.0 403 Forbidden');
-                break;
-
-            case 404:
-                header('HTTP/1.0 404 Not Fount');
-                break;
-        }
+        header('HTTP/1.1 ' . $code . ' ' . $codes[$code]);
     }
 
     /**
