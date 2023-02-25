@@ -7,7 +7,7 @@
  * @file /classes/Domains.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 2. 25.
  */
 class Domains
 {
@@ -23,15 +23,20 @@ class Domains
     {
         /**
          * 도메인 정보를 초기화한다.
-         * @todo 캐시적용
          */
-        $domains = iModules::db()
-            ->select()
-            ->from(iModules::table('domains'))
-            ->orderBy('sort', 'asc')
-            ->get();
-        foreach ($domains as $domain) {
-            self::$_domains[$domain->host] = new Domain($domain);
+        if (Cache::has('domains') === true) {
+            self::$_domains = Cache::get('domains');
+        } else {
+            $domains = iModules::db()
+                ->select()
+                ->from(iModules::table('domains'))
+                ->orderBy('sort', 'asc')
+                ->get();
+            foreach ($domains as $domain) {
+                self::$_domains[$domain->host] = new Domain($domain);
+            }
+
+            Cache::store('domains', self::$_domains);
         }
     }
 
@@ -87,7 +92,7 @@ class Domains
          */
         foreach (self::$_domains as $domain) {
             foreach ($domain->getAlias() as $alias) {
-                $alias = str_replace('\*', '[^\.]+', Format::string($alias, 'reg'));
+                $alias = str_replace('\*', '[^\.]+', Format::reg($alias));
                 if (preg_match('/' . $alias . '/i', $host) == true) {
                     return $domain;
                 }
