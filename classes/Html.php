@@ -32,9 +32,9 @@ class Html
     private static array $_listeners = [];
 
     /**
-     * @var string $_langage HTML 문서 언어코드
+     * @var string $_language HTML 문서 언어코드
      */
-    private static string $_langage = 'ko';
+    private static string $_language = 'ko';
 
     /**
      * @var ?string $_title HTML 문서 제목
@@ -136,7 +136,7 @@ class Html
      */
     public static function language(string $language): void
     {
-        self::$_langage = $language;
+        self::$_language = $language;
     }
 
     /**
@@ -317,7 +317,7 @@ class Html
      */
     public static function header(): string
     {
-        $header = self::tag('<!DOCTYPE HTML>', '<html lang="' . self::$_langage . '">', '<head>', '');
+        $header = self::tag('<!DOCTYPE HTML>', '<html lang="' . self::$_language . '">', '<head>', '');
 
         /**
          * 기본 <HEAD> 태그요소를 추가한다.
