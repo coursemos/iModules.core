@@ -7,12 +7,23 @@
  * @file /classes/Cache.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 2. 25.
  */
 class Cache
 {
     private static array $_scripts = [];
     private static array $_styles = [];
+
+    /**
+     * 캐시 클래스를 초기화한다.
+     */
+    public static function init(): void
+    {
+        /**
+         * 캐시 라우터를 초기화한다.
+         */
+        Router::add('/caches/{name}', '#', 'blob', ['Cache', 'doRoute']);
+    }
 
     /**
      * 캐시사용가능 여부를 확인한다.
@@ -22,6 +33,30 @@ class Cache
     public static function check(): bool
     {
         return is_dir(Configs::cache()) == true && is_writable(Configs::cache());
+    }
+
+    /**
+     * 캐시파일의 URL 을 가져온다.
+     * 캐시파일에 바로 접근해야하는 자바스크립트 및 스타일시트 캐시파일에만 사용한다.
+     */
+    public static function url(string $name = '', int $time = 0): string
+    {
+        $url = Configs::dir();
+        if (Domains::has()?->isRewrite() == true) {
+            $url .= '/caches';
+            if ($name === '') {
+                return $url;
+            }
+            $url .= '/' . $name . ($time > 0 ? '?t=' . $time : '');
+        } else {
+            $url .= '/';
+            if ($name === '') {
+                return $url;
+            }
+            $url .= '?route=/caches/' . $name . ($time > 0 ? '&t=' . $time : '');
+        }
+
+        return $url;
     }
 
     /**
@@ -81,10 +116,17 @@ class Cache
             return self::$_scripts[$group];
         } else {
             /**
+             * 캐시그룹에 파일이 존재하지 않는 경우 빈 배열을 반환한다.
+             */
+            if (count(self::$_scripts[$group]) == 0) {
+                return [];
+            }
+
+            /**
              * 캐시를 사용할 수 없는 경우 전체 파일을 반환한다.
              */
             if (Configs::debug() == true || self::check() == false) {
-                return self::$_scripts[$group];
+                return self::pathToUrl(self::$_scripts[$group]);
             } else {
                 $refresh = false;
                 $cached_time =
@@ -96,13 +138,16 @@ class Cache
                  * 캐시파일이 수정된지 5분 이상된 경우, 해당 그룹의 파일의 수정시간을 계산하여, 다시 캐싱을 해야하는지 여부를 확인한다.
                  */
                 if ($cached_time < time() - 300) {
-                    foreach (self::$_scripts[$group] as $path) {
-                        if (is_file(Configs::path() . $path) == false) {
+                    foreach (self::$_scripts[$group] as $index => $path) {
+                        if (preg_match('/^' . Format::reg(Configs::cache()) . '/', $path) == false) {
+                            $path = Configs::path() . $path;
+                            self::$_scripts[$group][$index] = $path;
+                        }
+                        if (is_file($path) == false) {
                             continue;
                         }
-                        if (filemtime(Configs::path() . $path) > $cached_time) {
+                        if (filemtime($path) > $cached_time) {
                             $refresh = true;
-                            break;
                         }
                     }
 
@@ -112,11 +157,11 @@ class Cache
                     if ($refresh == true) {
                         $minifier = new \MatthiasMullie\Minify\JS();
                         foreach (self::$_scripts[$group] as $path) {
-                            if (is_file(Configs::path() . $path) == false) {
+                            if (is_file($path) == false) {
                                 continue;
                             }
-                            $minifier->add('/*! @origin ' . $path . ' */');
-                            $minifier->add(Configs::path() . $path);
+                            $minifier->add('/* @origin ' . self::pathToUrl($path) . ' */');
+                            $minifier->add($path);
                         }
                         $source = $minifier->execute();
                         $source = preg_replace('/(\/\*(.*?)\*\/);?/', "\n$1\n", $source);
@@ -127,8 +172,8 @@ class Cache
                             ' *',
                             ' * 자바스크립트 캐시파일',
                             ' *',
-                            ' * @file ' . Configs::cache(false) . '/' . $group . '.js',
-                            ' * @include ' . implode("\n * @include ", self::$_scripts[$group]),
+                            ' * @file ' . self::url($group . '.js'),
+                            ' * @include ' . implode("\n * @include ", self::pathToUrl(self::$_scripts[$group])),
                             ' * @cached ' . date('c', time()),
                             ' */',
                         ];
@@ -139,9 +184,9 @@ class Cache
                         touch(Configs::cache() . '/' . $group . '.js', time());
                     }
 
-                    return Configs::cache(false) . '/' . $group . '.js?t=' . time();
+                    return self::url($group . '.js', time());
                 } else {
-                    return Configs::cache(false) . '/' . $group . '.js?t=' . $cached_time;
+                    return self::url($group . '.js', $cached_time);
                 }
             }
         }
@@ -167,7 +212,7 @@ class Cache
          */
         if ($path !== null) {
             if (preg_match('/\.scss$/', $path) == true) {
-                $path = self::scss($path);
+                $path = self::scss($path, false);
                 if ($path !== null) {
                     self::$_styles[$group][] = $path;
                 }
@@ -178,10 +223,17 @@ class Cache
             return self::$_styles[$group];
         } else {
             /**
+             * 캐시그룹에 파일이 존재하지 않는 경우 빈 배열을 반환한다.
+             */
+            if (count(self::$_styles[$group]) == 0) {
+                return [];
+            }
+
+            /**
              * 캐시를 사용할 수 없는 경우 전체 파일을 반환한다.
              */
             if (Configs::debug() == true || self::check() == false) {
-                return self::$_styles[$group];
+                return self::pathToUrl(self::$_styles[$group]);
             } else {
                 $refresh = false;
                 $cached_time =
@@ -193,13 +245,16 @@ class Cache
                  * 캐시파일이 수정된지 5분 이상된 경우, 해당 그룹의 파일의 수정시간을 계산하여, 다시 캐싱을 해야하는지 여부를 확인한다.
                  */
                 if ($cached_time < time() - 300) {
-                    foreach (self::$_styles[$group] as $path) {
-                        if (is_file(Configs::path() . $path) == false) {
+                    foreach (self::$_styles[$group] as $index => $path) {
+                        if (preg_match('/^' . Format::reg(Configs::cache()) . '/', $path) == false) {
+                            $path = Configs::path() . $path;
+                            self::$_styles[$group][$index] = $path;
+                        }
+                        if (is_file($path) == false) {
                             continue;
                         }
-                        if (filemtime(Configs::path() . $path) > $cached_time) {
+                        if (filemtime($path) > $cached_time) {
                             $refresh = true;
-                            break;
                         }
                     }
 
@@ -209,36 +264,36 @@ class Cache
                     if ($refresh == true) {
                         $minifier = new \MatthiasMullie\Minify\CSS();
                         foreach (self::$_styles[$group] as $path) {
-                            if (is_file(Configs::path() . $path) == false) {
+                            if (is_file($path) == false) {
                                 continue;
                             }
-                            $minifier->add('/*! @origin ' . $path . ' */');
-                            $minifier->add(Configs::path() . $path);
+                            $minifier->add('/* @origin ' . self::pathToUrl($path) . ' */');
+                            $minifier->add($path);
                         }
-                        $source = $minifier->execute(Configs::cache(false) . '/' . $group . '.css');
+                        $source = $minifier->execute(self::url() . $group . '.css');
                         $source = preg_replace('/(\/\*(.*?)\*\/);?/', "\n$1\n", $source);
 
-                        $destyleion = [
+                        $description = [
                             '/**',
                             ' * 이 파일은 자동으로 생성된 캐시파일의 일부입니다.',
                             ' *',
                             ' * 스타일시트 캐시파일',
                             ' *',
-                            ' * @file ' . Configs::cache(false) . '/' . $group . '.css',
-                            ' * @include ' . implode("\n * @include ", self::$_styles[$group]),
+                            ' * @file ' . self::url($group . '.css'),
+                            ' * @include ' . implode("\n * @include ", self::pathToUrl(self::$_styles[$group])),
                             ' * @cached ' . date('c', time()),
                             ' */',
                         ];
 
-                        $content = implode("\n", $destyleion) . "\n" . $source;
+                        $content = implode("\n", $description) . "\n" . $source;
                         file_put_contents(Configs::cache() . '/' . $group . '.css', $content);
                     } else {
                         touch(Configs::cache() . '/' . $group . '.css', time());
                     }
 
-                    return Configs::cache(false) . '/' . $group . '.css?t=' . time();
+                    return self::url($group . '.css', time());
                 } else {
-                    return Configs::cache(false) . '/' . $group . '.css?t=' . $cached_time;
+                    return self::url($group . '.css', $cached_time);
                 }
             }
         }
@@ -248,9 +303,10 @@ class Cache
      * SCSS 파일을 CSS 파일로 컴파일한다.
      *
      * @param string $scss SCSS 파일경로
-     * @param ?string $css CSS 파일경로
+     * @param bool $is_url CSS 파일 URL 반환 여부(false 인 경우 절대경로 반환)
+     * @return ?string $css CSS 파일경로
      */
-    public static function scss(string $path): ?string
+    public static function scss(string $path, bool $is_url = true): ?string
     {
         if (is_file(Configs::path() . $path) == false) {
             return null;
@@ -281,7 +337,7 @@ class Cache
             $compiler->setImportPaths(dirname(Configs::path() . $path));
             $content = $compiler->compileString(file_get_contents(Configs::path() . $path))->getCss();
 
-            $converter = new \MatthiasMullie\PathConverter\Converter($path, Configs::cache(false));
+            $converter = new \MatthiasMullie\PathConverter\Converter($path, self::url());
             $matches = [];
 
             $relativeRegex = '/url\(\s*(?P<quotes>["\'])?(?P<path>.+?)(?(quotes)(?P=quotes))\s*\)/ix';
@@ -307,6 +363,7 @@ class Cache
             }
 
             $content = str_replace($search, $replace, $content);
+            $content = str_replace('@charset "UTF-8";' . "\n", '', $content);
             if (self::check() == true) {
                 file_put_contents(Configs::cache() . '/' . $cached_file . '.css', $content);
             } else {
@@ -315,6 +372,70 @@ class Cache
             }
         }
 
-        return Configs::cache(false) . '/' . $cached_file . '.css';
+        return $is_url == true ? self::url($cached_file . '.css') : Configs::cache() . '/' . $cached_file . '.css';
+    }
+
+    /**
+     * 절대경로를 상대경로로 변경한다.
+     *
+     * @param string|array $origin 경로
+     * @return string|array $path 절대경로가 숨겨진 경로
+     */
+    public static function pathToUrl(string|array $origin): string|array
+    {
+        if (is_array($origin) == true) {
+            foreach ($origin as $index => $path) {
+                $origin[$index] = self::pathToUrl($path);
+            }
+
+            return $origin;
+        } else {
+            if (preg_match('/^' . Format::reg(Configs::cache()) . '/', $origin) == true) {
+                return Cache::url(basename($origin));
+            } elseif (preg_match('/^' . Format::reg(Configs::path()) . '/', $origin) == true) {
+                return preg_replace('/^' . Format::reg(Configs::path()) . '/', Configs::dir(), $origin);
+            }
+            return Configs::dir() . $origin;
+        }
+    }
+
+    /**
+     * 캐시파일 라우팅을 처리한다.
+     *
+     * @param Route $route 현재경로
+     * @param string $name 캐시파일명
+     */
+    public static function doRoute(Route $route, string $name): void
+    {
+        if (preg_match('/\.(js|css)$/', $name, $match) === false) {
+            Header::setCode(404);
+            exit();
+        }
+
+        if (is_file(Configs::cache() . '/' . $name) === false) {
+            Header::setCode(404);
+            exit();
+        }
+
+        session_write_close();
+
+        switch ($match[1]) {
+            case 'js':
+                header('Content-Type: text/javascript; charset=utf-8');
+                break;
+
+            case 'css':
+                header('Content-Type: text/css; charset=utf-8');
+                break;
+        }
+
+        $modified = filemtime(Configs::cache() . '/' . $name);
+
+        header('Expires: ' . gmdate('D, d M Y H:i:s', $modified + 3600) . ' GMT');
+        header('Cache-Control: max-age=3600');
+        header('Pragma: public');
+
+        readfile(Configs::cache() . '/' . $name);
+        exit();
     }
 }
