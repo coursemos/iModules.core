@@ -136,6 +136,28 @@ class Dom {
     }
 
     /**
+     * 현재 DOM 이 부모요소의 몇번째 자식요소인지 가져온다.
+     *
+     * @return {number} index - 인덱스
+     */
+    getIndex(): number {
+        if (this.element == null) {
+            return -1;
+        }
+
+        const children = this.element.parentNode.childNodes ?? [];
+        let index = 0;
+        for (let i = 0, loop = children.length; i < loop; i++) {
+            if (children[i].isEqualNode(this.element) == true) {
+                return index;
+            }
+            if (children[i].nodeType == 1) index++;
+        }
+
+        return -1;
+    }
+
+    /**
      * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
      *
      * @param {string} querySelector - 일치할지 확인할 DOM 쿼리셀럭터
@@ -488,6 +510,17 @@ class Dom {
             console.error('HTMLElement is not HTMLInputElement');
         }
         return this;
+    }
+
+    /**
+     * HTML 엘리먼트가 INPUT, TEXTAREA, SELECT 요소인 경우 값을 가져온다.
+     *
+     * @return {string} value - 값
+     */
+    getValue(): string {
+        if (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) {
+            return this.element.value;
+        }
     }
 
     /**
