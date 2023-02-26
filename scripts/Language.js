@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 22.
+ * @modified 2023. 2. 26.
  */
 class Language {
     static observer;
@@ -151,7 +151,6 @@ class Language {
     static observe() {
         if (Language.observer === undefined) {
             Language.observer = new MutationObserver(() => {
-                console.log('observe!');
                 document.querySelectorAll('span[data-language]').forEach((dom) => {
                     const options = Language.prints.get(dom.getAttribute('data-language'));
                     Language.getText(options.text, options.placeHolder, options.paths, options.codes).then((string) => {
@@ -164,7 +163,6 @@ class Language {
             });
         }
         if (document.querySelector('body') != null && Language.isObserve === false && Language.prints.size > 0) {
-            console.log('observer start');
             Language.isObserve = true;
             Language.observer.observe(document.querySelector('body'), {
                 attributes: false,
@@ -179,7 +177,7 @@ class Language {
      */
     static disconnect() {
         if (Language.isObserve === true && Language.prints.size === 0) {
-            console.log('observer stop');
+            Language.isObserve = false;
             Language.observer.disconnect();
         }
     }
