@@ -429,12 +429,12 @@ class Cache
     public static function doRoute(Route $route, string $name): void
     {
         if (preg_match('/\.(js|css)$/', $name, $match) === false) {
-            Header::setCode(404);
+            Header::code(404);
             exit();
         }
 
         if (is_file(Configs::cache() . '/' . $name) === false) {
-            Header::setCode(404);
+            Header::code(404);
             exit();
         }
 
