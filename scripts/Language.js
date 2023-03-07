@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 26.
+ * @modified 2023. 3. 7.
  */
 class Language {
     static observer;
@@ -143,7 +143,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '">' + uuid + '</span>';
+        return '<span data-language="' + uuid + '"></span>';
     }
     /**
      * 언어팩 출력을 위한 옵저버를 시작한다.
