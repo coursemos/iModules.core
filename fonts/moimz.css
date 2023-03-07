@@ -7,7 +7,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2022. 10. 4.
+ * @modified 2023. 3. 4.
  */
 @font-face {
     font-family: 'moimz';
@@ -52,7 +52,7 @@
 .mi-moimz::before {
     content: '\e800';
 }
-.mi-imodule::before {
+.mi-imodules::before {
     content: '\e801';
 }
 .mi-minitalk::before {
