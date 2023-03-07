@@ -18,7 +18,7 @@ class Header
      *
      * @param int $code HTTP 응답코드
      */
-    public static function setCode(int $code): void
+    public static function code(int $code): void
     {
         if (headers_sent() == true) {
             return;
@@ -42,61 +42,71 @@ class Header
     }
 
     /**
-     * 콘텐츠 타입을 가져온다.
+     * 페이지를 이동한다.
      *
-     * @return string $type
+     * @param string $location 이동할 URL
+     * @param bool $is_permanently 영구적인 이동인지 여부
      */
-    public static function getType(): string
+    public static function location(string $url, bool $is_permanently = false): void
     {
-        $accept = isset($_SERVER['HTTP_ACCEPT']) == true ? $_SERVER['HTTP_ACCEPT'] : '';
-        if (preg_match('/(html|json)/', $accept, $match) == true) {
-            $accept = $match[1];
+        if (headers_sent() == true) {
+        } else {
+            self::code($is_permanently == true ? 308 : 307);
+            header('location: ' . $url);
+            exit();
         }
-
-        if ($accept == 'json' || self::$_type == 'json') {
-            return 'json';
-        }
-
-        return self::$_type;
     }
 
     /**
-     * 콘텐츠 타입을 지정한다.
+     * 콘텐츠 타입을 가져오거나 설정한다.
      *
-     * @param string $type 콘텐츠 타입
-     * @return bool $success 헤더설정여부
+     * @param ?string $type 설정할 콘텐츠 타입 (NULL 인 경우 현재 콘텐츠 타입을 가져온다.)
+     * @return string|bool $type|$success 콘텐츠 타입이 설정되었을 경우 설정성공여부, 또는 현재 콘텐츠 타입
      */
-    public static function setType(string $type): bool
+    public static function type(?string $type = null): string|bool
     {
-        if (headers_sent() == false) {
-            $type = strtolower($type);
-            self::$_type = $type;
-
-            $charset = null;
-            switch ($type) {
-                case 'html':
-                    $mime = 'text/html';
-                    $charset = 'utf-8';
-                    break;
-
-                case 'json':
-                    $mime = 'application/json';
-                    $charset = 'utf-8';
-                    break;
-
-                default:
-                    $mime = $type;
+        if ($type === null) {
+            $accept = isset($_SERVER['HTTP_ACCEPT']) == true ? $_SERVER['HTTP_ACCEPT'] : '';
+            if (preg_match('/(html|json)/', $accept, $match) == true) {
+                $accept = $match[1];
             }
 
-            $header = 'Content-type: ' . $mime;
-            if ($charset !== null) {
-                $header .= '; charset=utf-8';
+            if ($accept == 'json' || self::$_type == 'json') {
+                return 'json';
             }
-            header($header, true);
 
-            return true;
+            return self::$_type;
+        } else {
+            if (headers_sent() == false) {
+                $type = strtolower($type);
+                self::$_type = $type;
+
+                $charset = null;
+                switch ($type) {
+                    case 'html':
+                        $mime = 'text/html';
+                        $charset = 'utf-8';
+                        break;
+
+                    case 'json':
+                        $mime = 'application/json';
+                        $charset = 'utf-8';
+                        break;
+
+                    default:
+                        $mime = $type;
+                }
+
+                $header = 'Content-type: ' . $mime;
+                if ($charset !== null) {
+                    $header .= '; charset=utf-8';
+                }
+                header($header, true);
+
+                return true;
+            }
+
+            return false;
         }
-
-        return false;
     }
 }

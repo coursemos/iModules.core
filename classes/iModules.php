@@ -256,7 +256,7 @@ class iModules
          * 요청된 주소와 경로가 다를 경우, 정상적인 경로로 리다이렉트한다.
          */
         if (Request::url($route->getDomain()->isRewrite() == true ? false : ['route']) != $route->getUrl(true)) {
-            header('location: ' . Request::combine($route->getUrl(true), Request::query()));
+            Header::location(Request::combine($route->getUrl(true), Request::query()));
             exit();
         }
 
@@ -312,7 +312,7 @@ class iModules
          * 요청된 주소와 경로가 다를 경우, 정상적인 경로로 리다이렉트한다.
          */
         if (Request::url($route->getDomain()->isRewrite() == true ? false : ['route']) != $route->getUrl(true)) {
-            header('location: ' . Request::combine($route->getUrl(true), Request::query()));
+            Header::location(Request::combine($route->getUrl(true), Request::query()));
             exit();
         }
 
@@ -320,7 +320,7 @@ class iModules
          * 요청된 주소와 경로가 다를 경우, 정상적인 경로로 리다이렉트한다.
          */
         if (Request::url($route->getDomain()->isRewrite() == true ? false : ['route']) != $route->getUrl(true)) {
-            header('location: ' . Request::combine($route->getUrl(true), Request::query()));
+            Header::location(Request::combine($route->getUrl(true), Request::query()));
             exit();
         }
 

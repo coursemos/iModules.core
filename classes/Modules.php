@@ -354,7 +354,7 @@ class Modules
      */
     public static function doProcess(Route $route, string $name, string $path): void
     {
-        Header::setType('json');
+        Header::type('json');
 
         $language = Request::languages(true);
         $route->setLanguage($language);
