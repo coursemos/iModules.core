@@ -44,7 +44,7 @@ class ErrorHandler
      */
     public static function code(int $code): void
     {
-        Header::setCode($code);
+        Header::code($code);
     }
 
     /**
@@ -115,7 +115,7 @@ class ErrorHandler
             ob_end_clean();
         }
 
-        if (Header::getType() == 'json') {
+        if (Header::type() == 'json') {
             $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
 
             $json = new stdClass();
