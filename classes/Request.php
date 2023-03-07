@@ -95,7 +95,7 @@ class Request
      *
      * @param string $url
      * @param string $queryString
-     * @return $url
+     * @return string $url
      */
     public static function combine(string $url, string $queryString = ''): string
     {
