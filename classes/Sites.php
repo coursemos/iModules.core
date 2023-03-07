@@ -7,12 +7,12 @@
  * @file /classes/Sites.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 3. 7.
  */
 class Sites
 {
     /**
-     * @var Site[] $_sites 전체 사이트 정보
+     * @var Site[][] $_sites 전체 사이트 정보
      */
     private static array $_sites;
 
@@ -34,8 +34,6 @@ class Sites
             foreach ($sites as $site) {
                 self::$_sites[$site->host] ??= [];
                 self::$_sites[$site->host][$site->language] = new Site($site);
-
-                Domains::get($site->host)->addSite(self::$_sites[$site->host][$site->language]);
             }
 
             Cache::store('sites', self::$_sites);
@@ -57,6 +55,29 @@ class Sites
         }
 
         return $site;
+    }
+
+    /**
+     * 전체 사이트정보를 가져온다.
+     *
+     * @return Site[] $sites
+     */
+    public static function all(?string $host = null): array
+    {
+        if (isset(self::$_sites) == false) {
+            self::init();
+        }
+
+        if ($host !== null) {
+            return isset(self::$_sites[$host]) == true ? array_values(self::$_sites[$host]) : [];
+        }
+
+        $sites = [];
+        foreach (self::$_sites as $languages) {
+            $sites = array_merge($sites, array_values($languages));
+        }
+
+        return $sites;
     }
 
     /**
