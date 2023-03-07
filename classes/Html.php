@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 3. 7.
  */
 class Html
 {
@@ -427,13 +427,18 @@ class Html
 
         if (strpos($path, '/') === 0) {
             if (is_file(Configs::dirToPath($path)) === false) {
+                if (Configs::debug() == true) {
+                    $time .= strpos($path, '?') === false ? '?t=' : '&t=';
+                    $time .= time();
+                }
+
                 return $time;
             }
             if (strpos($path, 't=') !== false) {
                 return $time;
             }
             $time .= strpos($path, '?') === false ? '?t=' : '&t=';
-            $time .= filemtime(Configs::dirToPath($path));
+            $time .= Configs::debug() == true ? time() : filemtime(Configs::dirToPath($path));
         }
 
         return $time;
