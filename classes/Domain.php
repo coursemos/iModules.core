@@ -139,22 +139,22 @@ class Domain
     }
 
     /**
-     * 도메인 하위 사이트를 추가한다.
-     *
-     * @param Site $site
-     */
-    public function addSite(Site $site): void
-    {
-        $this->_sites[$site->getLanguage()] = $site;
-    }
-
-    /**
      * 도메인 하위 전체 사이트를 가져온다.
      *
      * @return Site[] $sites
      */
     public function getSites(): array
     {
+        if (isset($this->_sites) == true) {
+            return array_values($this->_sites);
+        }
+
+        $this->_sites = [];
+        $sites = Sites::all($this->_host);
+        foreach ($sites as $site) {
+            $this->_sites[$site->getLanguage()] = $site;
+        }
+
         return array_values($this->_sites);
     }
 
@@ -166,9 +166,9 @@ class Domain
      */
     public function getSite(?string $language = null): Site
     {
-        return isset($this->_sites[$language ?? $this->_language]) == true
-            ? $this->_sites[$language ?? $this->_language]
-            : $this->_sites[$this->_language];
+        $sites = $this->getSites();
+        $language ??= $this->_language;
+        return isset($sites[$language]) == true ? $sites[$language] : $sites[$this->_language];
     }
 
     /**
@@ -178,7 +178,8 @@ class Domain
      */
     public function getLanguages(): array
     {
-        return array_keys($this->_sites);
+        $sites = $this->getSites();
+        return array_keys($sites);
     }
 
     /**
