@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 26.
+ * @modified 2023. 3. 7.
  */
 class Dom {
     element: HTMLElement | null;
@@ -160,12 +160,20 @@ class Dom {
     /**
      * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
      *
-     * @param {string} querySelector - 일치할지 확인할 DOM 쿼리셀럭터
+     * @param {string|Dom} querySelector - 일치할지 확인할 DOM 쿼리셀럭터 또는 DOM 객체
      * @return {boolean} is_equal
      */
-    is(querySelector: string): boolean {
+    is(querySelector: string | Dom): boolean {
         if (this.element == null) {
             return false;
+        }
+
+        if (querySelector instanceof Dom) {
+            if (querySelector.element == null) {
+                return false;
+            }
+
+            return this.element.isEqualNode(querySelector.element);
         }
 
         return this.element.matches(querySelector);
@@ -752,6 +760,19 @@ class Dom {
      */
     isEmpty(): boolean {
         return this.element?.hasChildNodes() === false;
+    }
+
+    /**
+     * HTMP 엘리먼트가 숨겨진 상태인지 확인한다.
+     *
+     * @return {boolean} is_hidden
+     */
+    isHidden(): boolean {
+        if (this.element === null) {
+            return true;
+        }
+
+        return this.element.offsetParent === null;
     }
 
     /**
