@@ -6,18 +6,19 @@
  * @file /scripts/Html.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 3. 16.
  */
 class Html {
     static dataValues: WeakMap<object, any> = new WeakMap();
     static eventListeners: WeakMap<object, any> = new WeakMap();
+    static pointerListeners: Map<number, Dom> = new Map();
 
     /**
      * HTML 객체를 생성한다.
      *
      * @param {string} type - 생성할 Node명
      * @param {Object} attributes - 포함할 attribute
-     * @param {string=''} text - 포함될 텍스트내용
+     * @param {string} text - 포함될 텍스트내용
      * @return {Dom} dom - 생성된 Dom 객체
      */
     static create(type: string, attributes: { [key: string]: string } = {}, text: string = ''): Dom {
@@ -97,9 +98,10 @@ class Html {
      *
      * @param {string} name - 이벤트명
      * @param {EventListener} listener - 이벤트리스너
+     * @param {any} options - 이벤트리스너 옵션
      */
-    static on(name: string, listener: EventListener): void {
-        document.addEventListener(name, listener);
+    static on(name: string, listener: EventListener, options: any = null): void {
+        document.addEventListener(name, listener, options);
     }
 
     /**
@@ -160,4 +162,27 @@ Html.ready(() => {
             $aside.toggleClass('opened');
         });
     }
+
+    /**
+     * 포인터 이벤트를 최초 포인터 이벤트 수신자에게 전달한다.
+     */
+    Html.on('pointermove', (e: PointerEvent) => {
+        if (Html.pointerListeners.has(e.pointerId) == true) {
+            Html.pointerListeners.get(e.pointerId)?.trigger('pointermove', e);
+        }
+    });
+
+    Html.on('pointerup', (e: PointerEvent) => {
+        if (Html.pointerListeners.has(e.pointerId) == true) {
+            Html.pointerListeners.get(e.pointerId)?.trigger('pointerup', e);
+            Html.pointerListeners.delete(e.pointerId);
+        }
+    });
+
+    Html.on('pointercancel', (e: PointerEvent) => {
+        if (Html.pointerListeners.has(e.pointerId) == true) {
+            Html.pointerListeners.get(e.pointerId)?.trigger('pointercancel', e);
+            Html.pointerListeners.delete(e.pointerId);
+        }
+    });
 });
