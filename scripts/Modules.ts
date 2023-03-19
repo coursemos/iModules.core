@@ -6,61 +6,58 @@
  * @file /scripts/Modules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 3. 19.
  */
 interface ModuleConstructor {
-    new (dom?: Dom): Module;
+    new (name: string, $dom?: Dom): Module;
 }
 
 class Modules {
-    static classes: { [key: string]: ModuleConstructor } = {};
-    static domClasses: WeakMap<object, Module> = new WeakMap();
+    static classes: { [key: string]: Module } = {};
+
+    /**
+     * 모듈 관리자 클래스를 가져온다.
+     *
+     * @param {string} name - 모듈명
+     * @return {Module} module - 모듈 클래스
+     */
+    static get(name: string): Module | null {
+        if (Modules.classes[name] === undefined) {
+            const namespaces = name.split('/');
+            if (window['modules'] === undefined) {
+                return null;
+            }
+
+            let namespace: Object | ModuleConstructor = window['modules'];
+            for (const name of namespaces) {
+                if (namespace[name] === undefined) {
+                    return null;
+                }
+                namespace = namespace[name];
+            }
+            const classname = namespaces.pop().replace(/^[a-z]/, (char: string) => char.toUpperCase());
+            if (namespace[classname] === undefined) {
+                return null;
+            }
+
+            if (typeof namespace[classname] == 'function' && namespace[classname].prototype instanceof Module) {
+                Modules[name] = new (namespace[classname] as ModuleConstructor)(name);
+                return Modules[name];
+            }
+
+            return null;
+        }
+
+        return Modules[name];
+    }
 
     /**
      * 페이지에 삽입되어 있는 모든 모듈의 Dom 객체를 초기화한다.
      */
     static init(): void {
-        Html.all('*[data-role=module][data-module]').forEach((dom: Dom) => {
-            Modules.dom(dom)?.init();
+        Html.all('*[data-role=module][data-module]').forEach(($dom: Dom) => {
+            Modules.get($dom.getAttr('data-module'))?.init($dom);
         });
-    }
-
-    /**
-     * 모듈 클래스를 설정한다.
-     *
-     * @param {ModuleConstructor} module - 모듈 클래스 정의
-     */
-    static set(module: ModuleConstructor): void {
-        Modules.classes[module.name] = module;
-    }
-
-    /**
-     * 모듈 클래스를 가져온다.
-     *
-     * @param {string} name - 모듈명
-     * @param {Dom} dom - 모듈의 DOM
-     * @return {?Module} module - 모듈 클래스
-     */
-    static get(name: string, dom?: Dom): Module | null {
-        if (Modules.classes[name] === undefined) {
-            return null;
-        }
-
-        return new Modules.classes[name](dom);
-    }
-
-    /**
-     * 모듈 DOM을 위한 모듈 클래스를 가져온다.
-     *
-     * @param {Dom} dom - 모듈 DOM
-     */
-    static dom(dom: Dom): Module | null {
-        if (Modules.domClasses.has(dom.getEl()) == true) {
-            return Modules.domClasses.get(dom.getEl());
-        }
-
-        Modules.domClasses.set(dom.getEl(), Modules.get(dom.getData('module'), dom));
-        return Modules.domClasses.get(dom.getEl());
     }
 }
 
