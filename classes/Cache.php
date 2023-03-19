@@ -7,7 +7,7 @@
  * @file /classes/Cache.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 3. 19.
  */
 class Cache
 {
@@ -74,6 +74,26 @@ class Cache
             $data = serialize($data);
         }
         return file_put_contents(Configs::cache() . '/' . $name, $data) !== false;
+    }
+
+    /**
+     * 캐시를 제거한다.
+     *
+     * @param string $name 캐시파일명
+     * @param bool $is_raw RAW 데이터 여부
+     * @return bool $success
+     */
+    public static function remove(string $name, bool $is_raw = false): bool
+    {
+        if ($is_raw === false) {
+            $name .= '.cache';
+        }
+
+        if (is_file(Configs::cache() . '/' . $name) == true && is_writable(Configs::cache() . '/' . $name) == true) {
+            return unlink(Configs::cache() . '/' . $name) !== false;
+        }
+
+        return false;
     }
 
     /**
