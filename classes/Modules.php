@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 3. 19.
  */
 class Modules
 {
@@ -257,15 +257,15 @@ class Modules
      *
      * @return array|string $scripts 모듈 자바스크립트
      */
-    public static function script(): array|string
+    public static function scripts(): array|string
     {
         $modules = self::db()
             ->select()
             ->from(self::table('modules'))
             ->get('name');
         foreach ($modules as $name) {
-            if (is_file(Configs::path() . '/modules/' . $name . '/scripts/Module' . ucfirst($name) . '.js') == true) {
-                Cache::script('modules', '/modules/' . $name . '/scripts/Module' . ucfirst($name) . '.js');
+            if (is_file(Configs::path() . '/modules/' . $name . '/scripts/' . ucfirst($name) . '.js') == true) {
+                Cache::script('modules', '/modules/' . $name . '/scripts/' . ucfirst($name) . '.js');
             }
         }
 
@@ -360,13 +360,16 @@ class Modules
         $route->setLanguage($language);
         $method = strtolower(Request::method());
 
-        $body = file_get_contents('php://input');
-        $values = json_decode($body);
+        if ($method == 'post') {
+            $input = new Input(file_get_contents('php://input'), $_SERVER['CONTENT_TYPE']);
+        } else {
+            $input = new Input(null);
+        }
 
         $results = new stdClass();
         if (self::isInstalled($name) == true) {
             $mModule = self::get($name);
-            call_user_func_array([$mModule, 'doProcess'], [&$results, $method, $path, &$values]);
+            call_user_func_array([$mModule, 'doProcess'], [&$results, $method, $path, &$input]);
             if (isset($results->success) == false) {
                 ErrorHandler::print(self::error('NOT_FOUND_MODULE_PROCESS', $name));
             }

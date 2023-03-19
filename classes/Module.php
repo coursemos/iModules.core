@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 3. 19.
  */
 class Module extends Component
 {
@@ -39,9 +39,6 @@ class Module extends Component
     public function __construct(?Route $route = null)
     {
         if (Modules::isInits($this->getName(), true) == false) {
-            if (is_file($this->getPath() . '/scripts/' . ucfirst($this->getName()) . '.js') == true) {
-                Cache::script('modules', $this->getBase() . '/scripts/' . ucfirst($this->getName()) . '.js');
-            }
         }
         $this->_route = $route;
     }
@@ -172,9 +169,9 @@ class Module extends Component
      * @param &object $results 요청처리 결과를 담을 변수
      * @param string $method 요청방법
      * @param string $path 요청주소
-     * @param object $values 데이터
+     * @param Input $input INPUT 데이터
      */
-    public function doProcess(object &$results, string $method, string $path, object &$values = null): void
+    public function doProcess(object &$results, string $method, string $path, Input &$input = null): void
     {
         define('__IM_PROCESS__', true);
 
