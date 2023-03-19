@@ -14,6 +14,41 @@ class Header
     private static string $_type = 'html';
 
     /**
+     * 모든 HTTP 요청 헤더를 가져온다.
+     *
+     * @return array $headers
+     */
+    public static function all(): array
+    {
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (preg_match('/^(HTTP_|CONTENT_)/', $name, $match) == true) {
+                $headers[
+                    str_replace(
+                        ' ',
+                        '-',
+                        ucwords(strtolower(str_replace('_', ' ', preg_replace('/^HTTP_/', '', $name))))
+                    )
+                ] = $value;
+            }
+        }
+        return $headers;
+    }
+
+    /**
+     * HTTP 헤더값을 가져온다.
+     *
+     * @param string $name 가져올 헤더명
+     * @return ?string $value
+     */
+    public static function get(string $name): ?string
+    {
+        $name = str_replace(' ', '-', ucwords(strtolower(preg_replace('/(_|-)/', ' ', $name))));
+        $headers = Header::all();
+        return isset($headers[$name]) == true ? $headers[$name] : null;
+    }
+
+    /**
      * HTTP 응답코드를 설정한다.
      *
      * @param int $code HTTP 응답코드
