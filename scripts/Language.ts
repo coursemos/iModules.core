@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 7.
+ * @modified 2023. 3. 19.
  */
 class Language {
     static observer: MutationObserver;
@@ -193,7 +193,12 @@ class Language {
                 document.querySelectorAll('span[data-language]').forEach((dom) => {
                     const options = Language.prints.get(dom.getAttribute('data-language'));
                     Language.getText(options.text, options.placeHolder, options.paths, options.codes).then((string) => {
-                        dom.replaceWith(typeof string == 'string' ? string : JSON.stringify(string));
+                        const span = document.querySelector(
+                            'span[data-language="' + dom.getAttribute('data-language') + '"]'
+                        );
+                        if (span !== null) {
+                            dom.outerHTML = typeof string == 'string' ? string : JSON.stringify(string);
+                        }
                         Language.prints.delete(dom.getAttribute('data-language'));
                         Language.disconnect();
                     });
