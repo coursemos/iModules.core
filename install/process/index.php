@@ -7,7 +7,7 @@
  * @file /install/process/index.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 10.
+ * @modified 2023. 3. 19.
  */
 define('__IM__', true);
 
@@ -25,13 +25,13 @@ Configs::setPath(realpath('../..'));
 
 $action = Request::get('action');
 if ($action == 'requirements') {
-    Header::setType('json');
+    Header::type('json');
     Configs::exit(Configs::requirements());
 }
 
 if ($action == 'configs') {
     Configs::setPath(realpath('../..'));
-    Header::setType('json');
+    Header::type('json');
 
     $configs = json_decode(file_get_contents('php://input')) ?? null;
     if ($configs == null) {
@@ -68,17 +68,17 @@ if ($action == 'install') {
         $token->lifetime < time() ||
         $token->hash != md5_file(Configs::path() . '/configs/configs.php')
     ) {
-        Header::setType('json');
+        Header::type('json');
         Configs::exit(['success' => false, 'status' => $step == 'configs' ? 'fail' : 'notice']);
     }
 
     if ($step == 'configs') {
-        Header::setType('json');
+        Header::type('json');
         Configs::exit(['success' => true, 'status' => 'success']);
     }
 
     if ($step == 'databases') {
-        Header::setType('json');
+        Header::type('json');
         $db = iModules::db();
 
         $results = new stdClass();
@@ -105,7 +105,7 @@ if ($action == 'install') {
     }
 
     if ($step == 'dependencies') {
-        Header::setType('json');
+        Header::type('json');
 
         $key = Request::get('key');
         $temp = explode('/', $key);
