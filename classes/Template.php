@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 3. 19.
  */
 class Template
 {
@@ -272,6 +272,31 @@ class Template
     }
 
     /**
+     * 템플릿 파일에서 현재 데이터를 유지하며 다른 페이지를 삽입한다.
+     *
+     * @param string $path 삽입할 파일 경로 (아이모듈의 절대경로를 제외한 나머지경로)
+     */
+    function include(string $path): void
+    {
+        if (is_file(Configs::path() . $path) == false) {
+            ErrorHandler::print($this->error('NOT_FOUND_FILE', $path));
+        }
+
+        /**
+         * 삽입할 파일에서 사용할 변수선언
+         */
+        extract($this->getValues());
+
+        if (is_file(Configs::path() . $path) == true) {
+            ob_start();
+            include Configs::path() . $path;
+            $context = ob_get_clean();
+        }
+
+        echo $context;
+    }
+
+    /**
      * 콘텐츠 레이아웃을 가져온다.
      *
      * @param string $file PHP 확장자를 포함하지 않는 레이아웃 파일명
@@ -335,6 +360,13 @@ class Template
                 $error = ErrorHandler::data();
                 $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
                 $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLATE_FILE');
+                $error->suffix = $message;
+                return $error;
+
+            case 'NOT_FOUND_FILE':
+                $error = ErrorHandler::data();
+                $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
+                $error->message = ErrorHandler::getText('NOT_FOUND_FILE');
                 $error->suffix = $message;
                 return $error;
 
