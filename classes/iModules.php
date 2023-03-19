@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 3. 19.
  */
 class iModules
 {
@@ -169,14 +169,14 @@ class iModules
             /**
              * 모듈의 자바스크립트파일을 불러온다.
              */
-            Html::script(Cache::script('modules'), 5);
+            Html::script(Modules::scripts(), 5);
 
             /**
              * 기본 스타일시트 및 폰트를 불러온다.
              */
             Html::font('moimz');
             Cache::style('core', '/styles/common.scss');
-            Html::style(Cache::style('core'));
+            Html::style(Cache::style('core'), 1);
 
             /**
 			 * OG 태그를 설정한다.
