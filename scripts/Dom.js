@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 7.
+ * @modified 2023. 3. 19.
  */
 class Dom {
     element;
@@ -481,12 +481,22 @@ class Dom {
     /**
      * HTML 엘리먼트가 INPUT, TEXTAREA, SELECT 요소인 경우 값을 지정한다.
      *
-     * @param {string} value - 지정할 값
+     * @param {string|boolean} value - 지정할 값
      * @return {Dom} this
      */
     setValue(value) {
         if (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) {
-            this.element.value = value;
+            if (this.element.getAttribute('type') == 'checkbox' || this.element.getAttribute('type') == 'radio') {
+                if (typeof value === 'boolean') {
+                    this.element.checked = value;
+                }
+                else {
+                    this.element.checked = this.element.getAttribute('value') == value;
+                }
+            }
+            else if (typeof value == 'string') {
+                this.element.value = value;
+            }
         }
         else {
             console.error('HTMLElement is not HTMLInputElement');
@@ -575,6 +585,12 @@ class Dom {
         if (this.element == null || child.getEl() == null)
             return false;
         return this.element.contains(child.getEl());
+    }
+    /**
+     * HTML 엘리먼트에 포커스를 지정한다.
+     */
+    focus() {
+        this.element?.focus();
     }
     /**
      * HTML 엘리먼트를 보인다.
@@ -685,13 +701,46 @@ class Dom {
      *
      * @param {string} name - 추가할 이벤트명
      * @param {EventListener} listener - 이벤트리스너
+     * @param {any} options - 이벤트리스너 옵션
      * @return {Dom} this
      */
-    on(name, listener) {
+    on(name, listener, options = null) {
         this.eventListeners[name] ??= [];
         this.eventListeners[name].push(listener);
-        this.element?.addEventListener(name, listener);
-        return this;
+        if (name == 'longpress') {
+            this.element?.addEventListener('pointerdown', (e) => {
+                if (e.pointerType == 'touch') {
+                    this.setData('longpress', {
+                        x: e.clientX,
+                        y: e.clientY,
+                        timeout: setTimeout(() => {
+                            e.stopImmediatePropagation();
+                            e.preventDefault();
+                            e.stopPropagation();
+                            listener(e);
+                        }, 1000),
+                        cancel: (e) => {
+                            const longpress = this.getData('longpress') ?? null;
+                            if (e.type == 'pointermove') {
+                                const diffX = Math.abs(longpress.x - e.clientX);
+                                const diffY = Math.abs(longpress.y - e.clientY);
+                                if (diffX < 10 && diffY < 10) {
+                                    return;
+                                }
+                            }
+                            clearTimeout(longpress.timeout);
+                            Html.pointerListeners.delete(e.pointerId);
+                            this.setData('longpress', null);
+                        },
+                    });
+                    Html.pointerListeners.set(e.pointerId, this);
+                }
+            });
+        }
+        else {
+            this.element?.addEventListener(name, listener, options);
+            return this;
+        }
     }
     /**
      * HTML 엘리먼트에 이벤트를 제거한다.
@@ -703,6 +752,18 @@ class Dom {
     off(name, listener) {
         this.element?.removeEventListener(name, listener);
         return this;
+    }
+    /**
+     * 이벤트를 발생시킨다.
+     *
+     * @param {string} name - 발생시킬 이벤트명
+     * @param {Event} e - 원본 이벤트객체
+     */
+    trigger(name, e = null) {
+        if (name == 'pointermove' || name == 'pointerup' || name == 'pointercancel') {
+            this.getData('longpress')?.cancel(e);
+        }
+        this.element?.dispatchEvent(new Event(name));
     }
     /**
      * HTML 엘리먼트의 모든 하위요소를 제거한다.
