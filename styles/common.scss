@@ -65,3 +65,25 @@ body {
         }
     }
 }
+
+label {
+    cursor: inherit;
+}
+
+input,
+textarea {
+    outline: none;
+    border-radius: 0;
+    user-select: auto;
+    -webkit-user-select: auto;
+    -ms-user-select: auto;
+}
+input[type='search'] {
+    -webkit-appearance: none;
+}
+input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+button {
+    outline: none;
+}
