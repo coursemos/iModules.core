@@ -289,7 +289,12 @@ class Cache
                                 continue;
                             }
                             $minifier->add('/* @origin ' . self::pathToUrl($path) . ' */');
-                            $minifier->add($path);
+
+                            if (preg_match('/\.scss.css$/', $path) == true) {
+                                $minifier->add(file_get_contents($path));
+                            } else {
+                                $minifier->add($path);
+                            }
                         }
                         $source = $minifier->execute(self::url() . $group . '.css');
                         $source = preg_replace('/(\/\*(.*?)\*\/);?/', "\n$1\n", $source);
