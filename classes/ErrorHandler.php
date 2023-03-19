@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 3. 19.
  */
 class ErrorHandler
 {
@@ -34,7 +34,7 @@ class ErrorHandler
      */
     public static function getText(string $text, ?array $placeHolder = null): string
     {
-        return Language::getText('error/' . $text, $placeHolder);
+        return Language::getText('errors/' . $text, $placeHolder);
     }
 
     /**

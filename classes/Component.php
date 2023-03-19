@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 3. 19.
  */
 abstract class Component
 {
@@ -68,7 +68,7 @@ abstract class Component
      */
     public static function getErrorText(string $code, ?array $placeHolder = null): string
     {
-        return self::getText('error/' . $code, $placeHolder);
+        return self::getText('errors/' . $code, $placeHolder);
     }
 
     /**

@@ -1,5 +1,11 @@
 {
-    "error": {
+    "keyword": "검색어",
+    "confirm": "확인",
+    "info": "안내",
+    "actions": {
+        "saved": "성공적으로 저장하였습니다."
+    },
+    "errors": {
         "TITLE": "문제가 발생하였습니다.",
         "DESCRIPTION": "현재 요청을 처리하던 도중 예상치못한 문제가 발생하였습니다.<br>페이지를 새로고침하시거나, 다시 시도해보시기 바랍니다.",
         "DESCRIPTION_FOOTER": "현재 오류에 대해 자동으로 관리자에게 보고되었습니다.",
@@ -21,7 +27,18 @@
         "NOT_FOUND_CONTEXT_METHOD": "현재 모듈(${module})에 getContent() 메소드가 존재하지 않아, 컨텍스트를 출력할 수 없습니다.",
         "NOT_FOUND_PAGE": "페이지를 찾을 수 없습니다.",
         "NOT_FOUND_URL": "해당 주소를 찾을 수 없습니다.",
+        "NOT_FOUND_FILE": "파일을 찾을 수 없습니다.",
         "NOT_FOUND_MODULE": "${module} 모듈이 존재하지 않거나, 설치되어 있지 않습니다.",
-        "REQUIRED_LOGIN": "회원로그인이 필요합니다."
+        "NOT_FOUND_MODULE_PROCESS": "${module} 모듈에서 아래의 URL을 요청을 수행할 수 없습니다.",
+        "NOT_FOUND_MODULE_PROCESS_FILE": "모듈에서 프로세스를 수행할 파일을 찾을 수 없습니다.",
+        "CONNECT_ERROR": "서버와 통신중에 문제가 발생하였습니다.<br>페이지를 새로고침하시거나, 다시 시도해보시기 바랍니다.",
+        "REQUIRED": "필수항목이 누락되었습니다.",
+        "DUPLICATED": "데이터가 중복됩니다.",
+        "REQUIRED_LOGIN": "회원로그인이 필요합니다.",
+        "FORBIDDEN": "권한이 없습니다."
+    },
+    "buttons": {
+        "ok": "확인",
+        "cancel": "취소"
     }
 }
