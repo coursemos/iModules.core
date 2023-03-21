@@ -181,6 +181,26 @@ class Format
     }
 
     /**
+     * byte 단위의 파일크기를 적절한 단위로 변환한다.
+     *
+     * @param int $size byte 단위 크기
+     * @param bool $is_KiB KiB 단위 사용여부
+     * @return string $size 단위를 포함한 파일크기
+     */
+    function size(int $size, bool $is_KiB = false): string
+    {
+        $depthSize = $is_KiB === true ? 1024 : 1000;
+        if ($size / $depthSize / $depthSize / $depthSize > 1) {
+            return sprintf('%0.2f', $size / $depthSize / $depthSize / $depthSize) . ($is_KiB === true ? 'GiB' : 'GB');
+        } elseif ($size / $depthSize / $depthSize > 1) {
+            return sprintf('%0.2f', $size / $depthSize / $depthSize) . ($is_KiB === true ? 'MiB' : 'MB');
+        } elseif ($size / $depthSize > 1) {
+            return sprintf('%0.2f', $size / $depthSize) . ($is_KiB === true ? 'KiB' : 'KB');
+        }
+        return $size . 'B';
+    }
+
+    /**
      * 이메일이 형식에 맞는지 확인한다.
      *
      * @param string $email 이메일
