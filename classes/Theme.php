@@ -32,9 +32,9 @@ class Theme
     private string $_name;
 
     /**
-     * @var object $_name 테마 패키지 정보 (package.json)
+     * @var Package $_name 테마 패키지 정보 (package.json)
      */
-    private object $_package;
+    private Package $_package;
 
     /**
      * @var object $_configs 테마 환경설정
@@ -92,19 +92,7 @@ class Theme
             ErrorHandler::print($this->error('NOT_FOUND_THEME', $this->getPath()));
         }
 
-        $package = $this->getPackage();
-        if (isset($package->configs) == true) {
-            $configs = $theme->configs ?? new stdClass();
-            $configKeys = [];
-            foreach ($package->configs as $configKey => $configValue) {
-                $configKeys[] = $configKey;
-                $configs->$configKey = Configs::getConfigsDefaultValue($configValue, $configs->$configKey ?? null);
-            }
-        } else {
-            $configs = new stdClass();
-        }
-
-        $this->_configs = $configs;
+        $this->_configs = $this->getPackage()->getConfigs($theme->configs ?? null);
     }
 
     /**
@@ -148,8 +136,8 @@ class Theme
          * 테마의 package.json 에 styles 나 scripts 가 설정되어 있다면, 해당 파일을 불러온다.
          */
         $package = $this->getPackage();
-        if (isset($package->styles) == true && is_array($package->styles) == true) {
-            foreach ($package->styles as $style) {
+        if ($package->hasStyle() == true) {
+            foreach ($package->getStyles() as $style) {
                 if (preg_match('/^http(s)?:\/\//', $style) == true) {
                     Html::style($style);
                 } else {
@@ -160,8 +148,8 @@ class Theme
             Html::style(Cache::style($this->getCacheName()));
         }
 
-        if (isset($package->scripts) == true && is_array($package->scripts) == true) {
-            foreach ($package->scripts as $script) {
+        if ($package->hasScript() == true) {
+            foreach ($package->getScripts() as $script) {
                 $script = preg_match('/^http(s)?:\/\//', $style) == true ? $script : $this->getDir() . $script;
                 Html::script($script);
             }
@@ -183,11 +171,24 @@ class Theme
     /**
      * 현재 테마명(테마 폴더명)를 가져온다.
      *
+     * @param bool $is_short 짧은 테마명 여부(최종 폴더명만)
      * @return string $name
      */
-    public function getName(): string
+    public function getName(bool $is_short = true): string
     {
-        return $this->_name ?? 'undefined';
+        return ($is_short == false && $this->_owner !== null ? $this->_owner->getBase() . '/' : '') . $this->_name ??
+            'undefined';
+    }
+
+    /**
+     * 현재 테마 제목을 가져온다.
+     *
+     * @param string $language 언어코드
+     * @return string $title
+     */
+    public function getTitle($language = null): string
+    {
+        return $this->getPackage()->getTitle($language);
     }
 
     /**
@@ -221,19 +222,20 @@ class Theme
     }
 
     /**
-     * 테마의 package.json 정보를 가져온다.
+     * 테마의 패키지정보를 가져온다.
      *
-     * @return object $package package.json 정보
+     * @return Package $package 패키지정보
      */
-    public function getPackage(): object
+    public function getPackage(): Package
     {
         if ($this->_isLoaded() === false) {
             return null;
         }
+
         if (isset($this->_package) == true) {
             return $this->_package;
         }
-        $this->_package = json_decode(file_get_contents($this->getPath() . '/package.json'));
+        $this->_package = new Package($this->getBase() . '/package.json');
         return $this->_package;
     }
 

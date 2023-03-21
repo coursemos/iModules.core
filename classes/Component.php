@@ -7,14 +7,14 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 3. 21.
  */
 abstract class Component
 {
     /**
-     * @var object $_package 컴포넌트 패키지정보
+     * @var Package $_package 컴포넌트 패키지정보
      */
-    private static object $_package;
+    private static Package $_package;
 
     /**
      * 컴포넌트 설정을 초기화한다.
@@ -74,19 +74,15 @@ abstract class Component
     /**
      * 컴포넌트명의 패키지 정보를 가져온다.
      *
-     * @return object $package
+     * @return Package $package
      */
-    public static function getPackage(): object
+    public static function getPackage(): Package
     {
         if (isset(self::$_package) == true) {
             return self::$_package;
         }
 
-        if (is_file(self::getPath() . '/package.json') == true) {
-            self::$_package = json_decode(file_get_contents(self::getPath() . '/package.json'));
-        } else {
-            self::$_package = null;
-        }
+        self::$_package = new Package(self::getBase() . '/package.json');
 
         return self::$_package;
     }
@@ -111,8 +107,7 @@ abstract class Component
      */
     public static function getTitle($language = null): string
     {
-        $language ??= \Router::getLanguage();
-        return self::getPackage()->title->$language ?? self::getPackage()->title->{self::getPackage()->language};
+        return self::getPackage()->getTitle($language);
     }
 
     /**

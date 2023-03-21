@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 3. 21.
  */
 class Module extends Component
 {
@@ -122,21 +122,7 @@ class Module extends Component
         if (isset(self::$_configs) == false) {
             $installed = Modules::getInstalled($this->getName());
             $configs = $installed?->configs ?? new stdClass();
-            $package = $this->getPackage();
-
-            $configKeys = [];
-            foreach ($package->configs as $configKey => $configValue) {
-                $configKeys[] = $configKey;
-                $configs->$configKey = Configs::getConfigsDefaultValue($configValue, $configs->$configKey ?? null);
-            }
-
-            foreach ($configs as $configKey => $configValue) {
-                if (in_array($configKey, $configKeys) == false) {
-                    unset($configs->$configKey);
-                }
-            }
-
-            self::$_configs = $configs;
+            self::$_configs = $this->getPackage()->getConfigs($configs);
         }
 
         if ($key == null) {
@@ -223,8 +209,7 @@ class Module extends Component
     {
         $db = self::db();
         $db->displayError(false);
-        $package = self::getPackage();
-        $databases = $package->databases ?? [];
+        $databases = self::getPackage()->getDatabases();
         foreach ($databases as $table => $schema) {
             if ($db->compare(self::table($table), $schema) == false) {
                 $success = $db->create(self::table($table), $schema);

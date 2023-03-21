@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 3. 21.
  */
 class Configs
 {
@@ -142,46 +142,6 @@ class Configs
     public static function cache(): string
     {
         return self::get('cache') ?? self::attachment() . '/cache';
-    }
-
-    /**
-     * package.json 의 configs 설정의 기본값을 가져온다.
-     *
-     * @param object $config 기본설정값
-     * @param mixed $value 현재설정값
-     * @return mixed $defaultValue
-     */
-    public static function getConfigsDefaultValue(object $config, mixed $value = null): mixed
-    {
-        switch ($config->type) {
-            case 'theme':
-            case 'template':
-                if (
-                    $value == null ||
-                    is_object($value) == false ||
-                    isset($value->name) == false ||
-                    isset($value->configs) == false
-                ) {
-                    $defaultValue = new stdClass();
-                    $defaultValue->name = $value?->name ?? $config->default;
-                    $defaultValue->configs = $value?->configs ?? null;
-                    return $defaultValue;
-                } else {
-                    return $value;
-                }
-                break;
-
-            case 'color':
-                if ($value == null || preg_match('/^#[:alnum:]{6}$/', $value) == false) {
-                    return $config->default;
-                } else {
-                    return $value;
-                }
-                break;
-
-            default:
-                return $value != null ? $value : $config->default;
-        }
     }
 
     /**
