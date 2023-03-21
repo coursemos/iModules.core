@@ -105,9 +105,10 @@ class Package
      */
     public function getConfigs(object $values = null): object
     {
-        $configs = $this->_package?->configs ?? new stdClass();
+        $package = $this->_package?->configs ?? new stdClass();
+        $configs = new stdClass();
         $keys = [];
-        foreach ($configs as $key => $config) {
+        foreach ($package as $key => $config) {
             $keys[] = $key;
             $value = $values?->$key ?? null;
 
@@ -133,12 +134,6 @@ class Package
             $configs->$key = $value;
         }
 
-        foreach ($configs as $key => $value) {
-            if (in_array($key, $keys) == false) {
-                unset($configs->$key);
-            }
-        }
-
         return $configs;
     }
 
@@ -153,13 +148,13 @@ class Package
     {
         $language ??= Router::getLanguage();
 
-        $configs = $this->_package?->configs ?? new stdClass();
+        $package = $this->_package?->configs ?? new stdClass();
+        $values = $this->getConfigs($values);
         $fields = [];
-        foreach ($configs as $name => $config) {
+        foreach ($package as $name => $config) {
             $field = new stdClass();
             $field->name = $name;
             $field->label = $config->label?->$language ?? ($config->label?->{$this->_package?->language} ?? $name);
-            $field->default = $config->default ?? null;
             $field->type = $config->type ?? 'text';
             $field->options = [];
             foreach ($config->options ?? [] as $value => $display) {
