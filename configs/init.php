@@ -7,7 +7,7 @@
  * @file /configs/init.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 1. 26.
  */
 if (is_file('./configs/configs.php') == false) {
     header('location: ./install');
@@ -61,6 +61,7 @@ ErrorHandler::init();
  * 사이트 헤더 설정
  * 기본적인 HTTP보안설정 및 언어셋을 선언한다.
  */
+Header::type('html');
 header('X-UA-Compatible: IE=Edge');
 header('X-XSS-Protection: 1');
 header('Expires: 0');
