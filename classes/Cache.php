@@ -73,7 +73,7 @@ class Cache
             $name .= '.cache';
             $data = serialize($data);
         }
-        return file_put_contents(Configs::cache() . '/' . $name, $data) !== false;
+        return File::write(Configs::cache() . '/' . $name, $data);
     }
 
     /**
@@ -89,11 +89,7 @@ class Cache
             $name .= '.cache';
         }
 
-        if (is_file(Configs::cache() . '/' . $name) == true && is_writable(Configs::cache() . '/' . $name) == true) {
-            return unlink(Configs::cache() . '/' . $name) !== false;
-        }
-
-        return false;
+        return File::remove($name);
     }
 
     /**
