@@ -12,11 +12,6 @@
 abstract class Component
 {
     /**
-     * @var Package $_package 컴포넌트 패키지정보
-     */
-    private static Package $_package;
-
-    /**
      * 컴포넌트 설정을 초기화한다.
      */
     abstract public function init(): void;
@@ -78,13 +73,7 @@ abstract class Component
      */
     public static function getPackage(): Package
     {
-        if (isset(self::$_package) == true) {
-            return self::$_package;
-        }
-
-        self::$_package = new Package(self::getBase() . '/package.json');
-
-        return self::$_package;
+        return new Package(self::getBase() . '/package.json');
     }
 
     /**
@@ -100,6 +89,20 @@ abstract class Component
     }
 
     /**
+     * 컴포넌트아이콘을 가져온다.
+     *
+     * @return string $icon
+     */
+    public static function getIcon(): string
+    {
+        $icon = self::getPackage()->getIcon() ?? 'xi xi-box';
+        if (preg_match('/\.(gif|png|svg)$/', $icon) == true) {
+            return '<i class="icon" style="background-image:url(' . self::getDir() . '/' . $icon . ');"></i>';
+        }
+        return '<i class="icon ' . $icon . '"></i>';
+    }
+
+    /**
      * 컴포넌트제목을 가져온다.
      *
      * @param string $language 언어코드
@@ -108,6 +111,16 @@ abstract class Component
     public static function getTitle($language = null): string
     {
         return self::getPackage()->getTitle($language);
+    }
+
+    /**
+     * 컴포넌트버전을 가져온다.
+     *
+     * @return string $version
+     */
+    public function getVersion(): string
+    {
+        return self::getPackage()->getVersion();
     }
 
     /**
