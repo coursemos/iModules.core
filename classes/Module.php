@@ -54,6 +54,110 @@ class Module extends Component
     }
 
     /**
+     * 모듈 설치정보를 가져온다.
+     *
+     * @return ?object $installed 모듈설치정보
+     */
+    public function getInstalled(): ?object
+    {
+        return Modules::getInstalled($this->getName());
+    }
+
+    /**
+     * 모듈이 설치되어 있는지 확인한다.
+     *
+     * @return bool $is_installed 설치여부
+     */
+    public function isInstalled(): bool
+    {
+        return $this->getInstalled() !== null;
+    }
+
+    /**
+     * 모듈이 전역모듈인지 확인한다.
+     *
+     * @return bool $is_global 전역여부
+     */
+    public function isGlobal(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_global;
+        } else {
+            return $this->getPackage()->get('global') ?? false;
+        }
+    }
+
+    /**
+     * 모듈이 관리자기능을 가지고 있는지 확인한다.
+     *
+     * @return bool $is_admin 관리자여부
+     */
+    public function isAdmin(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_admin;
+        } else {
+            return $this->getPackage()->get('admin') ?? false;
+        }
+    }
+
+    /**
+     * 모듈이 컨텍스트를 가지고 있는지 확인한다.
+     *
+     * @return bool $is_context 컨텍스트여부
+     */
+    public function isContext(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_context;
+        } else {
+            return $this->getPackage()->get('context') ?? false;
+        }
+    }
+
+    /**
+     * 모듈이 사이트테마를 가지고 있는지 확인한다.
+     *
+     * @return bool $is_theme 사이트테마여부
+     */
+    public function isTheme(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_theme;
+        } else {
+            return $this->getPackage()->get('theme') ?? false;
+        }
+    }
+
+    /**
+     * 모듈이 위젯을 가지고 있는지 확인한다.
+     *
+     * @return bool $is_widget 위젯여부
+     */
+    public function isWidget(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_widget;
+        } else {
+            return $this->getPackage()->get('widget') ?? false;
+        }
+    }
+
+    /**
+     * 모듈이 자동화작업을 가지고 있는지 확인한다.
+     *
+     * @return bool $is_cron 자동화작업여부
+     */
+    public function isCron(): bool
+    {
+        if ($this->isInstalled() == true) {
+            return $this->getInstalled()->is_cron;
+        } else {
+            return $this->getPackage()->get('cron') ?? false;
+        }
+    }
+
+    /**
      * 모듈이 시작된 경로를 기준으로 특정위치의 경로를 가져온다.
      *
      * @param int $position 경로를 가져올 위치 (NULL 일 경우 전체 경로를 가져온다.)
