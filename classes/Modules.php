@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 3. 27.
  */
 class Modules
 {
@@ -22,7 +22,7 @@ class Modules
     private static array $_inits = [];
 
     /**
-     * @var object[] $_packages 모듈 패키지 정보
+     * @var Package[] $_packages 모듈 패키지 정보
      */
     private static array $_packages = [];
 
@@ -32,14 +32,9 @@ class Modules
     private static array $_installeds = [];
 
     /**
-     * @var object[] $_modules 설치된 모듈목록
+     * @var Module[] $_modules 설치된 모듈클래스
      */
     private static array $_modules = [];
-
-    /**
-     * @var Module[] $_classes 모듈 클래스
-     */
-    private static array $_classes = [];
 
     /**
      * 모듈 클래스를 초기화한다.
@@ -53,38 +48,29 @@ class Modules
         /**
          * 설치된 모듈을 초기화한다.
          */
-        $globals = [];
-        foreach (
-            self::db()
-                ->select()
-                ->from(self::table('modules'))
-                ->get()
-            as $module
-        ) {
-            $module->is_admin = $module->is_admin == 'TRUE';
-            $module->is_global = $module->is_global == 'TRUE';
-            $module->is_context = $module->is_context == 'TRUE';
-            $module->is_widget = $module->is_widget == 'TRUE';
-            $module->is_theme = $module->is_theme == 'TRUE';
-            $module->is_cron = $module->is_cron == 'TRUE';
-            $module->configs = json_decode($module->configs);
-            $module->events = json_decode($module->events);
-
-            self::$_modules[$module->name] = $module;
-
-            /**
-             * 모듈이 전역모듈일 경우
-             */
-            if ($module->is_global == true) {
-                $globals[] = $module->name;
+        if (Cache::has('modules') === true) {
+            self::$_modules = Cache::get('modules');
+        } else {
+            foreach (
+                self::db()
+                    ->select()
+                    ->from(self::table('modules'))
+                    ->get('name')
+                as $name
+            ) {
+                self::$_modules[$name] = self::get($name);
             }
+
+            Cache::store('modules', self::$_modules);
         }
 
         /**
          * 전역모듈을 초기화한다.
          */
-        foreach ($globals as $global) {
-            self::get($global)->init();
+        foreach (self::$_modules as $module) {
+            if ($module->isGlobal() === true) {
+                $module->init();
+            }
         }
 
         /**
@@ -133,11 +119,37 @@ class Modules
     /**
      * 전체모듈을 가져온다.
      *
-     * @return object[] $modules
+     * @param bool $is_installed 설치된 모듈만 가져올지 여부
+     * @return Module[] $modules
      */
-    public static function all(): array
+    public static function all(bool $is_installed = true): array
     {
-        return array_values(self::$_modules);
+        if ($is_installed === true) {
+            return array_values(self::$_modules);
+        } else {
+            return self::explorer();
+        }
+    }
+
+    /**
+     * 모듈폴더에 존재하는 모든 모듈을 가져온다.
+     *
+     * @return array $modules
+     */
+    private static function explorer(string $path = null): array
+    {
+        $modules = [];
+        $path ??= Configs::path() . '/modules';
+        $names = File::getDirectoryItems($path, 'directory', false);
+        foreach ($names as $name) {
+            if (is_file($name . '/package.json') == true) {
+                array_push($modules, self::get(str_replace(Configs::path() . '/modules/', '', $name)));
+            } else {
+                array_push($modules, ...self::explorer($name));
+            }
+        }
+
+        return $modules;
     }
 
     /**
@@ -149,21 +161,17 @@ class Modules
      */
     public static function get(string $name, ?Route $route = null): Module
     {
-        if (self::isInstalled($name) === false) {
-            ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
-        }
-
-        if ($route === null && isset(self::$_classes[$name]) == true) {
-            return self::$_classes[$name];
+        if ($route === null && isset(self::$_modules[$name]) == true) {
+            return self::$_modules[$name];
         }
 
         $classPaths = explode('/', $name);
         $className = ucfirst(end($classPaths));
         $className = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
-        $class = new $className($route);
-        if ($route === null) {
-            self::$_classes[$name] = $class;
+        if (class_exists($className) == false) {
+            ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
         }
+        $class = new $className($route);
 
         return $class;
     }
@@ -172,33 +180,15 @@ class Modules
      * 모듈 패키지정보를 가져온다.
      *
      * @param string $name 모듈명
-     * @return object $package
+     * @return Package $package
      */
-    public static function getPackage(string $name): ?object
+    public static function getPackage(string $name): Package
     {
         if (isset(self::$_packages[$name]) == true) {
             return self::$_packages[$name];
         }
 
-        /**
-         * 모듈 폴더가 존재하는지 확인한다.
-         */
-        if (is_dir(Configs::path() . '/modules/' . $name) == false) {
-            self::$_packages[$name] = null;
-            return null;
-        }
-
-        /**
-         * 패키지파일이 존재하는지 확인한다.
-         */
-        if (is_file(Configs::path() . '/modules/' . $name . '/package.json') == false) {
-            self::$_packages[$name] = null;
-            return null;
-        }
-
-        self::$_packages[$name] = json_decode(
-            file_get_contents(Configs::path() . '/modules/' . $name . '/package.json')
-        );
+        self::$_packages[$name] = new Package('/modules/' . $name . '/package.json');
 
         return self::$_packages[$name];
     }
@@ -233,10 +223,27 @@ class Modules
             return null;
         }
 
+        $installed = self::db()
+            ->select()
+            ->from(self::table('modules'))
+            ->where('name', $name)
+            ->getOne();
+
+        if ($installed !== null) {
+            $installed->is_admin = $installed->is_admin == 'TRUE';
+            $installed->is_global = $installed->is_global == 'TRUE';
+            $installed->is_context = $installed->is_context == 'TRUE';
+            $installed->is_widget = $installed->is_widget == 'TRUE';
+            $installed->is_theme = $installed->is_theme == 'TRUE';
+            $installed->is_cron = $installed->is_cron == 'TRUE';
+            $installed->configs = json_decode($installed->configs);
+            $installed->events = json_decode($installed->events);
+        }
+
         /**
          * 모듈이 설치정보를 가져온다.
          */
-        self::$_installeds[$name] = self::$_modules[$name] ?? null;
+        self::$_installeds[$name] = $installed;
 
         return self::$_installeds[$name];
     }
@@ -259,13 +266,10 @@ class Modules
      */
     public static function scripts(): array|string
     {
-        $modules = self::db()
-            ->select()
-            ->from(self::table('modules'))
-            ->get('name');
-        foreach ($modules as $name) {
-            if (is_file(Configs::path() . '/modules/' . $name . '/scripts/' . ucfirst($name) . '.js') == true) {
-                Cache::script('modules', '/modules/' . $name . '/scripts/' . ucfirst($name) . '.js');
+        foreach (self::all() as $module) {
+            $filename = basename($module->getName());
+            if (is_file($module->getPath() . '/scripts/' . ucfirst($filename) . '.js') == true) {
+                Cache::script('modules', $module->getBase() . '/scripts/' . ucfirst($filename) . '.js');
             }
         }
 
@@ -287,7 +291,7 @@ class Modules
         $installable->dependencies = [];
 
         $package = self::getPackage($name);
-        if ($package == null) {
+        if ($package->exists() == false) {
             return $installable;
         }
 
