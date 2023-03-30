@@ -53,6 +53,8 @@ class Theme
      */
     public function __construct(object $theme)
     {
+        $this->_pathname = $theme->name;
+
         /**
          * 테마명이 경로를 포함할 경우, 해당 경로에서 테마를 정의하고,
          * 그렇지 않을 경우 기본 경로에서 테마를 정의한다.
@@ -171,13 +173,21 @@ class Theme
     /**
      * 현재 테마명(테마 폴더명)를 가져온다.
      *
-     * @param bool $is_short 짧은 테마명 여부(최종 폴더명만)
      * @return string $name
      */
-    public function getName(bool $is_short = true): string
+    public function getName(): string
     {
-        return ($is_short == false && $this->_owner !== null ? $this->_owner->getBase() . '/' : '') . $this->_name ??
-            'undefined';
+        return $this->_name ?? 'undefined';
+    }
+
+    /**
+     * 현재 테마의 단축경로명을 가져온다.
+     *
+     * @return string $pathname
+     */
+    public function getPathName(): string
+    {
+        return $this->_pathname ?? 'undefined';
     }
 
     /**
@@ -189,6 +199,17 @@ class Theme
     public function getTitle($language = null): string
     {
         return $this->getPackage()->getTitle($language);
+    }
+
+    /**
+     * 테마 스크린샷을 가져온다.
+     *
+     * @return string $url
+     */
+    public function getScreenshot(): ?string
+    {
+        // @todo 실제 스크린샷을 가져오도록 수정
+        return null;
     }
 
     /**

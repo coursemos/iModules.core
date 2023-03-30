@@ -37,6 +37,11 @@ class Template
     private string $_name;
 
     /**
+     * @var string $_pathname 단축경로를 포함한 템플릿명
+     */
+    private string $_pathname;
+
+    /**
      * @var Package $_name 템플릿 패키지 정보 (package.json)
      */
     private Package $_package;
@@ -60,6 +65,7 @@ class Template
     public function __construct(Component $parent, object $template)
     {
         $this->_parent = $parent;
+        $this->_pathname = $template->name;
 
         /**
          * 템플릿명이 경로를 포함할 경우, 해당 경로에서 템플릿을 정의하고,
@@ -166,17 +172,25 @@ class Template
     /**
      * 현재 템플릿명(템플릿 폴더명)를 가져온다.
      *
-     * @param bool $is_short 짧은 테마명 여부(최종 폴더명만)
      * @return string $name
      */
-    public function getName(bool $is_short = true): string
+    public function getName(): string
     {
-        return ($is_short == false && $this->_owner !== null ? $this->_owner->getBase() . '/' : '') . $this->_name ??
-            'undefined';
+        return $this->_name ?? 'undefined';
     }
 
     /**
-     * 현재 테마 제목을 가져온다.
+     * 현재 템플릿의 단축경로명을 가져온다.
+     *
+     * @return string $pathname
+     */
+    public function getPathName(): string
+    {
+        return $this->_pathname ?? 'undefined';
+    }
+
+    /**
+     * 현재 템플릿 제목을 가져온다.
      *
      * @param string $language 언어코드
      * @return string $title
@@ -184,6 +198,17 @@ class Template
     public function getTitle($language = null): string
     {
         return $this->getPackage()->getTitle($language);
+    }
+
+    /**
+     * 템플릿 스크린샷을 가져온다.
+     *
+     * @return string $url
+     */
+    public function getScreenshot(): ?string
+    {
+        // @todo 실제 스크린샷을 가져오도록 수정
+        return null;
     }
 
     /**
