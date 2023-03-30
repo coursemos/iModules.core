@@ -158,6 +158,16 @@ class Module extends Component
     }
 
     /**
+     * 모듈이 환경설정을 가지고 있는지 확인한다.
+     *
+     * @return bool $is_configs 환경설정여부
+     */
+    public function isConfigs(): bool
+    {
+        return count($this->getPackage()->getConfigsFields()) > 0;
+    }
+
+    /**
      * 모듈이 시작된 경로를 기준으로 특정위치의 경로를 가져온다.
      *
      * @param int $position 경로를 가져올 위치 (NULL 일 경우 전체 경로를 가져온다.)
