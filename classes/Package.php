@@ -149,7 +149,9 @@ class Package
 
         if ($email !== null) {
             $email =
-                '&lt;' . ($is_link == true ? '<a href="mailto:' . $email . '">' . $email . '</a>' : $email) . '&gt;';
+                '<small>&lt;' .
+                ($is_link == true ? '<a href="mailto:' . $email . '">' . $email . '</a>' : $email) .
+                '&gt;</small>';
         } else {
             $email = '';
         }
@@ -252,34 +254,53 @@ class Package
     {
         $package = $this->_package?->configs ?? new stdClass();
         $configs = new stdClass();
-        $keys = [];
-        foreach ($package as $key => $config) {
-            $keys[] = $key;
-            $value = $values?->$key ?? null;
+        foreach ($package as $name => $field) {
+            $field->type ??= 'text';
 
-            switch ($config->type ?? '') {
-                case 'theme':
-                case 'template':
-                    $temp = $value;
-                    $value = new stdClass();
-                    $value->name = $temp->name ?? ($config->default ?? 'default');
-                    $value->configs = $temp->configs ?? null;
-                    break;
-
-                case 'color':
-                    if ($value === null || preg_match('/^#[:alnum:]{6}$/', $value) == false) {
-                        $value = $config->default ?? null;
-                    }
-                    break;
-
-                default:
-                    $value ??= $config->default ?? null;
+            if ($field->type == 'fieldset') {
+                foreach ($field->items ?? [] as $childName => $childField) {
+                    $configs->$childName = $this->getConfigsValue($childName, $childField, $values);
+                }
+            } else {
+                $configs->$name = $this->getConfigsValue($name, $field, $values);
             }
-
-            $configs->$key = $value;
         }
 
         return $configs;
+    }
+
+    /**
+     * 패키지의 환경설정 필드값을 가져온다.
+     *
+     * @param string $name 필드명
+     * @param object $field 필드설정
+     * @param object $values 설정된 값
+     * @return mixed $value 기본값을 포함된 설정된 값
+     */
+    private function getConfigsValue(string $name, object $field, object $values = null): mixed
+    {
+        $value = $values?->$name ?? null;
+
+        switch ($field->type) {
+            case 'theme':
+            case 'template':
+                $temp = $value;
+                $value = new stdClass();
+                $value->name = $temp->name ?? ($field->default ?? 'default');
+                $value->configs = $temp->configs ?? null;
+                break;
+
+            case 'color':
+                if ($value === null || preg_match('/^#[:alnum:]{6}$/', $value) == false) {
+                    $value = $field->default ?? null;
+                }
+                break;
+
+            default:
+                $value ??= $field->default ?? null;
+        }
+
+        return $value;
     }
 
     /**
@@ -289,30 +310,53 @@ class Package
      * @param string $language 언어코드
      * @return object[] $fields
      */
-    public function getConfigFields(object $values = null, string $language = null): array
+    public function getConfigsFields(object $values = null, string $language = null): array
     {
         $language ??= Router::getLanguage();
 
         $package = $this->_package?->configs ?? new stdClass();
         $values = $this->getConfigs($values);
         $fields = [];
-        foreach ($package as $name => $config) {
-            $field = new stdClass();
-            $field->name = $name;
-            $field->label = $config->label?->$language ?? ($config->label?->{$this->getLanguage()} ?? $name);
-            $field->type = $config->type ?? 'text';
+        foreach ($package as $name => $field) {
+            $fields[] = $this->getConfigsField($name, $field, $values);
+        }
+
+        return $fields;
+    }
+
+    private function getConfigsField(string $name, object $configs, object $values = null): object
+    {
+        $language ??= Router::getLanguage();
+        $field = new stdClass();
+        $field->name = $name;
+        $field->label = $configs->label?->$language ?? ($configs->label?->{$this->getLanguage()} ?? $name);
+        $field->type = $configs->type ?? 'text';
+
+        if (in_array($field->type, ['check', 'radio', 'select']) == true) {
             $field->options = [];
-            foreach ($config->options ?? [] as $value => $display) {
+            foreach ($configs->options ?? [] as $value => $display) {
                 $option = new stdClass();
                 $option->display = $display->$language ?? ($display->{$this->getLanguage()} ?? $value);
                 $option->value = $value;
                 $field->options[] = $option;
             }
-            $field->value = $values->$name ?? null;
-
-            $fields[] = $field;
         }
 
-        return $fields;
+        if ($field->type == 'template') {
+            $field->target = new stdClass();
+            $field->target->type = $configs->target?->type ?? '';
+            $field->target->name = $configs->target?->name ?? '';
+        }
+
+        if ($field->type == 'fieldset') {
+            $field->items = [];
+            foreach ($configs->items ?? [] as $childName => $childConfigs) {
+                $field->items[] = $this->getConfigsField($childName, $childConfigs, $values);
+            }
+        } else {
+            $field->value = $values->$name ?? null;
+        }
+
+        return $field;
     }
 }
