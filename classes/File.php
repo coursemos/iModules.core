@@ -21,8 +21,14 @@ class File
      */
     public static function write(string $path, mixed $data = '', bool $is_append = false): bool
     {
-        if (is_writable($path) == false) {
-            return false;
+        if (is_file($path) == true) {
+            if (is_writable($path) == false) {
+                return false;
+            }
+        } else {
+            if (is_writable(dirname($path)) == false) {
+                return false;
+            }
         }
 
         if ($is_append == true) {
@@ -32,6 +38,28 @@ class File
         }
 
         return $result !== false;
+    }
+
+    /**
+     * 파일 데이터를 읽는다.
+     *
+     * @param string $path 파일경로
+     * @return mixed $data 파일데이터
+     */
+    public static function read(string $path): mixed
+    {
+        return file_get_contents($path);
+    }
+
+    /**
+     * 파일 해시값을 구한다.
+     *
+     * @param string $path 파일경로
+     * @return string|bool $hash 파일해시
+     */
+    public static function hash(string $path): string|bool
+    {
+        return md5_file($path);
     }
 
     /**
