@@ -80,11 +80,7 @@ class Module extends Component
      */
     public function isGlobal(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_global;
-        } else {
-            return $this->getPackage()->get('global') ?? false;
-        }
+        return $this->getPackage()->get('global') ?? false;
     }
 
     /**
@@ -94,11 +90,7 @@ class Module extends Component
      */
     public function isAdmin(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_admin;
-        } else {
-            return $this->getPackage()->get('admin') ?? false;
-        }
+        return $this->getPackage()->get('admin') ?? false;
     }
 
     /**
@@ -108,11 +100,7 @@ class Module extends Component
      */
     public function isContext(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_context;
-        } else {
-            return $this->getPackage()->get('context') ?? false;
-        }
+        return $this->getPackage()->get('context') ?? false;
     }
 
     /**
@@ -122,11 +110,7 @@ class Module extends Component
      */
     public function isTheme(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_theme;
-        } else {
-            return $this->getPackage()->get('theme') ?? false;
-        }
+        return $this->getPackage()->get('theme') ?? false;
     }
 
     /**
@@ -136,11 +120,7 @@ class Module extends Component
      */
     public function isWidget(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_widget;
-        } else {
-            return $this->getPackage()->get('widget') ?? false;
-        }
+        return $this->getPackage()->get('widget') ?? false;
     }
 
     /**
@@ -150,11 +130,7 @@ class Module extends Component
      */
     public function isCron(): bool
     {
-        if ($this->isInstalled() == true) {
-            return $this->getInstalled()->is_cron;
-        } else {
-            return $this->getPackage()->get('cron') ?? false;
-        }
+        return $this->getPackage()->get('cron') ?? false;
     }
 
     /**
