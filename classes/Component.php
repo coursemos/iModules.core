@@ -89,6 +89,17 @@ abstract class Component
     }
 
     /**
+     * 컴포넌트 클래스명을 가져온다.
+     *
+     * @return string $className
+     */
+    public static function getClassName(): string
+    {
+        $temp = explode('/', self::getName());
+        return ucfirst(end($temp));
+    }
+
+    /**
      * 컴포넌트아이콘을 가져온다.
      *
      * @return string $icon
