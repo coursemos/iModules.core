@@ -35,7 +35,7 @@ class Language
         self::$_texts[$path] ??= [];
         if (is_file(self::getPath($path) . '/' . $code . '.json') == true) {
             self::$_texts[$path][$code] = json_decode(
-                file_get_contents(self::getPath($path) . '/' . $code . '.json'),
+                File::read(self::getPath($path) . '/' . $code . '.json'),
                 JSON_OBJECT_AS_ARRAY
             );
 
