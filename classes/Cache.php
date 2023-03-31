@@ -73,6 +73,7 @@ class Cache
             $name .= '.cache';
             $data = serialize($data);
         }
+
         return File::write(Configs::cache() . '/' . $name, $data);
     }
 
@@ -100,7 +101,7 @@ class Cache
      */
     public static function get(string $name): mixed
     {
-        $data = file_get_contents(Configs::cache() . '/' . $name . '.cache');
+        $data = File::read(Configs::cache() . '/' . $name . '.cache');
         return $data === false ? null : unserialize($data);
     }
 
@@ -216,7 +217,7 @@ class Cache
                         ];
 
                         $content = implode("\n", $description) . "\n" . $source;
-                        file_put_contents(Configs::cache() . '/' . $group . '.js', $content);
+                        File::write(Configs::cache() . '/' . $group . '.js', $content);
                     } else {
                         touch(Configs::cache() . '/' . $group . '.js', time());
                     }
@@ -307,7 +308,7 @@ class Cache
                             $minifier->add('/* @origin ' . self::pathToUrl($path) . ' */');
 
                             if (preg_match('/\.scss.css$/', $path) == true) {
-                                $minifier->add(file_get_contents($path));
+                                $minifier->add(File::read($path));
                             } else {
                                 $minifier->add($path);
                             }
@@ -328,7 +329,7 @@ class Cache
                         ];
 
                         $content = implode("\n", $description) . "\n" . $source;
-                        file_put_contents(Configs::cache() . '/' . $group . '.css', $content);
+                        File::write(Configs::cache() . '/' . $group . '.css', $content);
                     } else {
                         touch(Configs::cache() . '/' . $group . '.css', time());
                     }
@@ -377,7 +378,7 @@ class Cache
         if ($is_convert == true) {
             $compiler = new \ScssPhp\ScssPhp\Compiler();
             $compiler->setImportPaths(dirname(Configs::path() . $path));
-            $content = $compiler->compileString(file_get_contents(Configs::path() . $path))->getCss();
+            $content = $compiler->compileString(File::read(Configs::path() . $path))->getCss();
 
             $converter = new \MatthiasMullie\PathConverter\Converter($path, self::url());
             $matches = [];
@@ -407,7 +408,7 @@ class Cache
             $content = str_replace($search, $replace, $content);
             $content = str_replace('@charset "UTF-8";' . "\n", '', $content);
             if (self::check() == true) {
-                file_put_contents(Configs::cache() . '/' . $cached_file . '.css', $content);
+                File::write(Configs::cache() . '/' . $cached_file . '.css', $content);
             } else {
                 Html::head('style', [], 100, $content);
                 return null;

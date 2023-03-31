@@ -40,8 +40,8 @@ class Package
     {
         if (isset(self::$_packages[$path]) == false) {
             if (is_file(Configs::path() . $path) == true) {
-                self::$_packages[$path] = json_decode(file_get_contents(Configs::path() . $path));
-                self::$_hashes[$path] = md5_file(Configs::path() . $path);
+                self::$_packages[$path] = json_decode(File::read(Configs::path() . $path));
+                self::$_hashes[$path] = File::hash(Configs::path() . $path);
             } else {
                 self::$_packages[$path] = null;
                 self::$_hashes[$path] = null;

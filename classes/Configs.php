@@ -53,22 +53,16 @@ class Configs
     /**
      * 패키지정보를 가져온다.
      *
-     * @return object $package
+     * @return Package $package
      */
-    public static function package(): object
+    public static function package(): Package
     {
-        if (empty(self::$_package) == true) {
-            if (is_file(self::path() . '/package.json') == true) {
-                self::$_package = json_decode(file_get_contents(self::path() . '/package.json'));
-                if (self::$_package === null) {
-                    ErrorHandler::print('PACKAGE_FILE_ERROR');
-                }
-            } else {
-                ErrorHandler::print('NOT_FOUND_PACKAGE_FILE');
-            }
+        $package = new Package('/package.json');
+        if ($package->exists() == false) {
+            ErrorHandler::print('PACKAGE_FILE_ERROR');
         }
 
-        return self::$_package;
+        return $package;
     }
 
     /**
