@@ -301,16 +301,25 @@ class Modules
             return $installable;
         }
 
-        $installable->exists = $package->version;
+        $installable->exists = $package->getVersion();
 
         if ($check_dependency == true) {
-            $dependencies = $package->dependencies ?? [];
+            $dependencies = $package->getDependencies();
             foreach ($dependencies as $name => $version) {
-                $installed = self::getInstalled($name);
-                if ($installed == null || version_compare($installed->version, $version, '<=') == false) {
-                    $installable->dependencies[$name] = new stdClass();
-                    $installable->dependencies[$name]->current = $installed?->version ?? '0.0.0';
-                    $installable->dependencies[$name]->requirement = $version;
+                if ($name == 'core') {
+                    $core = new Package('/package.json');
+                    if (version_compare($core->getVersion(), $version, '<') == true) {
+                        $installable->dependencies[$name] = new stdClass();
+                        $installable->dependencies[$name]->current = $core->getVersion() ?? '0.0.0';
+                        $installable->dependencies[$name]->requirement = $version;
+                    }
+                } else {
+                    $installed = self::getInstalled($name);
+                    if ($installed == null || version_compare($installed->version, $version, '<') == true) {
+                        $installable->dependencies[$name] = new stdClass();
+                        $installable->dependencies[$name]->current = $installed?->version ?? '0.0.0';
+                        $installable->dependencies[$name]->requirement = $version;
+                    }
                 }
             }
 
@@ -327,24 +336,62 @@ class Modules
      * 모듈을 설치한다.
      *
      * @param string $name 설치한 모듈명
+     * @param object $configs 환경설정
      * @param bool $check_dependency 요구사항 확인여부
      * @return bool $success 설치성공여부
      */
-    public static function install(string $name, bool $check_dependency = true): bool
+    public static function install(string $name, object $configs = null, bool $check_dependency = true): bool
     {
         $installable = self::installable($name, $check_dependency);
         if ($installable->success = false) {
             return false;
         }
 
-        $classPaths = explode('/', $name);
-        $className = ucfirst(end($classPaths));
-        $class = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
+        $module = self::get($name);
+        if ($module === null) {
+            return false;
+        }
 
+        $package = $module->getPackage();
         $installed = self::getInstalled($name);
         $previous = $installed?->version ?? null;
 
-        $success = $class::install($previous);
+        $configs = $package->getConfigs($configs);
+        $success = $module->install($previous, $configs);
+
+        // @todo 용량 갱신
+        $databases = $installed?->databases ?? 0;
+        $attachments = $installed?->attachments ?? 0;
+        $sort =
+            $installed?->sort ??
+            self::db()
+                ->select()
+                ->from(self::table('modules'))
+                ->count();
+
+        if ($success == true) {
+            self::db()
+                ->replace(self::table('modules'), [
+                    'name' => $name,
+                    'version' => $package->getVersion(),
+                    'hash' => $package->getHash(),
+                    'databases' => $databases,
+                    'attachments' => $attachments,
+                    'is_admin' => $module->isAdmin() == true ? 'TRUE' : 'FALSE',
+                    'is_global' => $module->isGlobal() == true ? 'TRUE' : 'FALSE',
+                    'is_context' => $module->isContext() == true ? 'TRUE' : 'FALSE',
+                    'is_widget' => $module->isWidget() == true ? 'TRUE' : 'FALSE',
+                    'is_theme' => $module->isTheme() == true ? 'TRUE' : 'FALSE',
+                    'is_cron' => $module->isCron() == true ? 'TRUE' : 'FALSE',
+                    'configs' => json_encode(
+                        $configs,
+                        JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                    ),
+                    'events' => 'null',
+                    'sort' => $sort,
+                ])
+                ->execute();
+        }
 
         return $success;
     }
@@ -359,7 +406,7 @@ class Modules
     public static function doProcess(Route $route, string $name, string $path): void
     {
         Header::type('json');
-
+        sleep(5);
         $language = Request::languages(true);
         $route->setLanguage($language);
         $method = strtolower(Request::method());

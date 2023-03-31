@@ -316,17 +316,18 @@ class Module extends Component
      * 모듈을 설치할때 데이터 마이그레이션 등이 필요한 경우 해당 함수를 각 모듈클래스에 재정의하여
      * 현재 설치되어 있는 버전에 따라 데이터 마이그레이션을 수행하고 신규버전 데이터베이스를 구성할 수 있다.
      *
-     * @param string $version 현재 설치되어 있는 버전 (NULL인 경우 신규설치)
+     * @param string $previous 이전설치버전 (NULL 인 경우 신규설치)
+     * @param object $configs 모듈설정
      * @return bool $success 설치성공여부
      */
-    public static function install(string $version = null): bool
+    public function install(string $previous = null, object $configs = null): bool
     {
-        $db = self::db();
+        $db = $this->db();
         $db->displayError(false);
-        $databases = self::getPackage()->getDatabases();
+        $databases = $this->getPackage()->getDatabases();
         foreach ($databases as $table => $schema) {
-            if ($db->compare(self::table($table), $schema) == false) {
-                $success = $db->create(self::table($table), $schema);
+            if ($db->compare($this->table($table), $schema) == false) {
+                $success = $db->create($this->table($table), $schema);
                 if ($success !== true) {
                     return false;
                 }

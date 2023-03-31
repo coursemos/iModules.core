@@ -239,9 +239,19 @@ class Package
      *
      * @return array $databases
      */
-    public function getDatabases(): array
+    public function getDatabases(): object
     {
-        return $this->_package?->databases ?? [];
+        return $this->_package?->databases ?? new stdClass();
+    }
+
+    /**
+     * 모듈 설치조건을 가져온다.
+     *
+     * @return array $dependencies
+     */
+    public function getDependencies(): object
+    {
+        return $this->_package?->dependencies ?? new stdClass();
     }
 
     /**
@@ -296,6 +306,15 @@ class Package
                 }
                 break;
 
+            case 'number':
+                if ($value === null || is_numeric($value) == false) {
+                    $value = null;
+                } else {
+                    $value = intval($value, 10);
+                }
+                $value ??= intval($field->default, 10) ?? null;
+                break;
+
             default:
                 $value ??= $field->default ?? null;
         }
@@ -324,6 +343,14 @@ class Package
         return $fields;
     }
 
+    /**
+     * 환경설정필드를 가져온다.
+     *
+     * @param string $name 필드명
+     * @param object $configs 필드설정
+     * @param object $values 현재 설정된 값
+     * @return object $field
+     */
     private function getConfigsField(string $name, object $configs, object $values = null): object
     {
         $language ??= Router::getLanguage();
