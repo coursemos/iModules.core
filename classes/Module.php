@@ -54,6 +54,39 @@ class Module extends Component
     }
 
     /**
+     * 패키지의 모듈 속성을 가져온다.
+     *
+     * @return string[] $properties
+     */
+    public function getPackageProperties(): array
+    {
+        $properties = [];
+        if ($this->isGlobal() == true) {
+            $properties[] = 'GLOBAL';
+        }
+        if ($this->isAdmin() == true) {
+            $properties[] = 'ADMIN';
+        }
+        if ($this->isContext() == true) {
+            $properties[] = 'CONTEXT';
+        }
+        if ($this->isWidget() == true) {
+            $properties[] = 'WIDGET';
+        }
+        if ($this->isTheme() == true) {
+            $properties[] = 'THEME';
+        }
+        if ($this->isCron() == true) {
+            $properties[] = 'CRON';
+        }
+        if ($this->isConfigs() == true) {
+            $properties[] = 'CONFIGS';
+        }
+
+        return $properties;
+    }
+
+    /**
      * 모듈 설치정보를 가져온다.
      *
      * @return ?object $installed 모듈설치정보
