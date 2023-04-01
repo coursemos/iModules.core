@@ -301,7 +301,7 @@ class Package
                 break;
 
             case 'color':
-                if ($value === null || preg_match('/^#[:alnum:]{6}$/', $value) == false) {
+                if ($value === null || preg_match('/^#[[:alnum:]]{6}$/', $value) == false) {
                     $value = $field->default ?? null;
                 }
                 break;
