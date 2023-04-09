@@ -277,6 +277,26 @@ class Modules
     }
 
     /**
+     * 설치된 모든 모듈의 스타일시트 파일을 가져온다.
+     *
+     * @return array|string $styles 모듈 스타일시트
+     */
+    public static function styles(): array|string
+    {
+        foreach (self::all() as $module) {
+            $filename = basename($module->getName());
+            if (is_file($module->getPath() . '/styles/' . ucfirst($filename) . '.scss') == true) {
+                Cache::style('modules', $module->getBase() . '/styles/' . ucfirst($filename) . '.scss');
+            }
+            if (is_file($module->getPath() . '/styles/' . ucfirst($filename) . '.css') == true) {
+                Cache::style('modules', $module->getBase() . '/styles/' . ucfirst($filename) . '.css');
+            }
+        }
+
+        return Cache::style('modules');
+    }
+
+    /**
      * 모듈이 설치가능한지 확인한다.
      *
      * @param string $name 설치가능여부를 확인할 모듈명
