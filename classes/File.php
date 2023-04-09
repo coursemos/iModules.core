@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 20.
+ * @modified 2023. 4. 10.
  */
 class File
 {
@@ -156,5 +156,22 @@ class File
             $size += filesize($file);
         }
         return $size;
+    }
+
+    /**
+     * 파일을 특정 변수와 함께 인클루드한다.
+     *
+     * @param string $__path 파일경로
+     * @param array $values 인클루드하는 파일에서 사용할 변수
+     */
+    public static function include(string $__path, array $values = []): void
+    {
+        if (is_file($__path) == true) {
+            /**
+             * 삽입할 파일에서 사용할 변수선언
+             */
+            extract($values);
+            include $__path;
+        }
     }
 }
