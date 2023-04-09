@@ -235,13 +235,29 @@ class Format
     }
 
     /**
+     * 랜덤문자열을 가져온다.
+     *
+     * @param int $length 랜덤문자열 길이
+     * @return string $random
+     */
+    public static function random(int $length = 6): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.
      *
      * @param int $size byte 단위 크기
      * @param bool $is_KiB KiB 단위 사용여부
      * @return string $size 단위를 포함한 파일크기
      */
-    function size(int $size, bool $is_KiB = false): string
     public static function size(int $size, bool $is_KiB = false): string
     {
         $depthSize = $is_KiB === true ? 1024 : 1000;
