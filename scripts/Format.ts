@@ -3,10 +3,10 @@
  *
  * 데이터의 형식을 관리하는 클래스를 정의한다.
  *
- * @file /scripts/Html.ts
+ * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 16.
+ * @modified 2023. 4. 10.
  */
 class Format {
     /**
@@ -30,5 +30,15 @@ class Format {
             return (size / depthSize).toFixed(2) + (is_KiB === true ? 'KiB' : 'KB');
         }
         return size + 'B';
+    }
+
+    /**
+     * 유니코드 문자열을 정규화한다.
+     *
+     * @param {string} string - 대상문자열
+     * @return {string} string - NFC 정규화 문자열
+     */
+    static normalizer(string: string): string {
+        return string.normalize('NFC');
     }
 }
