@@ -6,9 +6,44 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 4. 10.
  */
 class iModules {
+    static language: string;
+
+    /**
+     * 현재 언어코드를 가져온다.
+     *
+     * @return {string} language
+     */
+    static getLanguage(): string {
+        iModules.language ??= Html.get('html').getAttr('lang');
+        return iModules.language;
+    }
+
+    /**
+     * 기본 URL 경로를 가져온다.
+     *
+     * @return {string} baseUrl
+     */
+    static getBase(): string {
+        return Html.get('body').getAttr('data-base');
+    }
+
+    /**
+     * 프로세스 URL 경로를 가져온다.
+     *
+     * @param {'module'|'plugin'|'widget'} type - 컴포넌트 타입
+     * @param {string} name - 컴포넌트명
+     * @param {string} path - 실행경로
+     * @return {string} processUrl
+     */
+    static getProcessUrl(type: string, name: string, path: string): string {
+        const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
+        const route = '/' + type + '/' + name + '/process/' + path;
+        return iModules.getBase() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+    }
+
     /**
      * 모바일 디바이스인지 확인한다.
      *
