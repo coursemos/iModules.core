@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 27.
+ * @modified 2023. 4. 10.
  */
 class Modules
 {
@@ -426,7 +426,6 @@ class Modules
     public static function doProcess(Route $route, string $name, string $path): void
     {
         Header::type('json');
-        sleep(5);
         $language = Request::languages(true);
         $route->setLanguage($language);
         $method = strtolower(Request::method());
@@ -437,10 +436,14 @@ class Modules
             $input = new Input(null);
         }
 
-        $results = new stdClass();
+        $paths = explode('/', $path);
+
+        $process = array_shift($paths);
+        $path = implode('/', $paths);
+
         if (self::isInstalled($name) == true) {
             $mModule = self::get($name);
-            call_user_func_array([$mModule, 'doProcess'], [&$results, $method, $path, &$input]);
+            $results = call_user_func_array([$mModule, 'doProcess'], [$method, $process, $path, $input]);
             if (isset($results->success) == false) {
                 ErrorHandler::print(self::error('NOT_FOUND_MODULE_PROCESS', $name));
             }
