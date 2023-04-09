@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 4. 10.
  */
 class iModules
 {
@@ -115,6 +115,44 @@ class iModules
     }
 
     /**
+     * 공통 리스소를 불러온다.
+     */
+    public static function resources(): void
+    {
+        /**
+         * 공통적으로 사용하는 자바스크립트를 불러온다.
+         */
+        Cache::script('common', '/scripts/Html.js');
+        Cache::script('common', '/scripts/Dom.js');
+        Cache::script('common', '/scripts/DomList.js');
+        Html::script(Cache::script('common'), 1);
+
+        Cache::script('core', '/scripts/iModules.js');
+        Cache::script('core', '/scripts/Ajax.js');
+        Cache::script('core', '/scripts/Modules.js');
+        Cache::script('core', '/scripts/Module.js');
+        Cache::script('core', '/scripts/Format.js');
+        Cache::script('core', '/scripts/Language.js');
+        Html::script(Cache::script('core'), 1);
+
+        /**
+         * 모듈의 자바스크립트파일을 불러온다.
+         */
+        Html::script(Modules::scripts(), 5);
+
+        /**
+         * 기본 스타일시트 및 폰트를 불러온다.
+         */
+        Html::font('moimz');
+        Cache::style('core', '/styles/common.scss');
+        Html::style(Cache::style('core'), 1);
+
+        /**
+         * 모듈의 스타일시트파일을 불러온다.
+         */
+        Html::style(Modules::styles(), 5);
+    }
+    /**
      * 권한문자열을 파싱하여 권한이 있는지 여부를 확인한다.
      *
      * @param string $permission 권한문자열
@@ -152,32 +190,9 @@ class iModules
             Html::canonical($route->getUrl(true, true), false);
 
             /**
-             * 기본 자바스크립트파일을 불러온다.
-             * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
+             * 아이모듈 페이지에서 공통적으로 사용하는 리소스를 불러온다.
              */
-            Cache::script('common', '/scripts/Html.js');
-            Cache::script('common', '/scripts/Dom.js');
-            Cache::script('common', '/scripts/DomList.js');
-            Html::script(Cache::script('common'), 1);
-
-            Cache::script('core', '/scripts/Modules.js');
-            Cache::script('core', '/scripts/Module.js');
-            Cache::script('core', '/scripts/iModules.js');
-            Cache::script('core', '/scripts/Format.js');
-            Cache::script('core', '/scripts/Language.js');
-            Html::script(Cache::script('core'), 1);
-
-            /**
-             * 모듈의 자바스크립트파일을 불러온다.
-             */
-            Html::script(Modules::scripts(), 5);
-
-            /**
-             * 기본 스타일시트 및 폰트를 불러온다.
-             */
-            Html::font('moimz');
-            Cache::style('core', '/styles/common.scss');
-            Html::style(Cache::style('core'), 1);
+            iModules::resources();
 
             /**
 			 * OG 태그를 설정한다.
