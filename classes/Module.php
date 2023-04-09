@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 21.
+ * @modified 2023. 4. 10.
  */
 class Module extends Component
 {
@@ -275,25 +275,33 @@ class Module extends Component
     /**
      * 모듈 프로세스 라우팅을 처리한다.
      *
-     * @param &object $results 요청처리 결과를 담을 변수
      * @param string $method 요청방법
-     * @param string $path 요청주소
+     * @param string $process 요청명
+     * @param string $path 요청경로
      * @param Input $input INPUT 데이터
      */
-    public function doProcess(object &$results, string $method, string $path, Input &$input = null): void
+    public function doProcess(string $method, string $process, string $path, Input $input = null): object
     {
         define('__IM_PROCESS__', true);
 
-        if (is_file($this->getPath() . '/process/' . $path . '.' . $method . '.php') == true) {
-            require_once $this->getPath() . '/process/' . $path . '.' . $method . '.php';
+        $results = new stdClass();
+        if (is_file($this->getPath() . '/process/' . $process . '.' . $method . '.php') == true) {
+            File::include($this->getPath() . '/process/' . $process . '.' . $method . '.php', [
+                'me' => $this,
+                'results' => $results,
+                'path' => $path,
+                'input' => $input,
+            ]);
         } else {
             ErrorHandler::print(
                 $this->error(
                     'NOT_FOUND_MODULE_PROCESS_FILE',
-                    $this->getPath() . '/process/' . $path . '.' . $method . '.php'
+                    $this->getPath() . '/process/' . $process . '.' . $method . '.php'
                 )
             );
         }
+
+        return $results;
     }
 
     /**
