@@ -7,7 +7,7 @@
  * @file /classes/Input.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 18.
+ * @modified 2023. 4. 10.
  */
 class Input
 {
@@ -24,7 +24,7 @@ class Input
         $this->input = $input;
 
         if (strpos(strtolower($type), 'json') !== false) {
-            $this->values = json_decode($this->input);
+            $this->values = $this->normalizer(json_decode($this->input));
         } else {
             $this->values = null;
         }
@@ -41,6 +41,16 @@ class Input
     }
 
     /**
+     * BODY RAW 데이터를 가져온다.
+     *
+     * @return mixed $body
+     */
+    public function body(): mixed
+    {
+        return $this->input;
+    }
+
+    /**
      * JSON 데이터를 가지고 온다.
      *
      * @param string $key - 데이터를 가지고 올 키값
@@ -54,5 +64,26 @@ class Input
             $errors[$key] = Language::getText('errors/REQUIRED');
         }
         return $value;
+    }
+
+    /**
+     * 유니코드 문자열을 정규화한다.
+     *
+     * @param string $string
+     * @return string $string
+     */
+    private function normalizer(mixed $data): mixed
+    {
+        if (is_string($data) == true) {
+            return Format::normalizer($data);
+        } elseif (is_iterable($data) == true) {
+            foreach ($data as &$item) {
+                $item = $this->normalizer($item);
+            }
+
+            return $data;
+        } else {
+            return $data;
+        }
     }
 }

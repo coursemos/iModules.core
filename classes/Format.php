@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 4. 10.
  */
 class Format
 {
@@ -93,7 +93,9 @@ class Format
                 break;
         }
 
-        return trim($str);
+        return trim(self::normalizer($str));
+    }
+
     }
 
     /**
@@ -105,6 +107,22 @@ class Format
     public static function reg(string $string): string
     {
         return preg_quote($string, '/');
+    }
+
+    /**
+     * 유니코드 문자열을 정규화한다.
+     *
+     * @param string $string 대상문자열
+     * @return string $string NFC 정규화 문자열
+     */
+    public static function normalizer(string $string): string
+    {
+        if (Normalizer::isNormalized($string) == true) {
+            return $string;
+        }
+
+        $normalized = Normalizer::normalize($string);
+        return $normalized === false ? $string : $normalized;
     }
 
     /**
@@ -188,6 +206,7 @@ class Format
      * @return string $size 단위를 포함한 파일크기
      */
     function size(int $size, bool $is_KiB = false): string
+    public static function size(int $size, bool $is_KiB = false): string
     {
         $depthSize = $is_KiB === true ? 1024 : 1000;
         if ($size / $depthSize / $depthSize / $depthSize > 1) {

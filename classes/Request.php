@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 4. 10.
  */
 class Request
 {
@@ -123,10 +123,10 @@ class Request
         }
 
         if (is_string($value) == true) {
-            $value = trim($value);
+            $value = trim(Format::normalizer($value));
         } else {
             foreach ($value as &$var) {
-                $var = trim($var);
+                $var = trim(Format::normalizer($var));
             }
         }
 
@@ -151,10 +151,10 @@ class Request
         }
 
         if (is_string($value) == true) {
-            $value = trim($value);
+            $value = trim(Format::normalizer($value));
         } else {
             foreach ($value as &$var) {
-                $var = trim($var);
+                $var = trim(Format::normalizer($var));
             }
         }
 
@@ -179,10 +179,10 @@ class Request
         }
 
         if (is_string($value) == true) {
-            $value = trim($value);
+            $value = trim(Format::normalizer($value));
         } else {
             foreach ($value as &$var) {
-                $var = trim($var);
+                $var = trim(Format::normalizer($var));
             }
         }
 
@@ -210,6 +210,8 @@ class Request
             }
             return null;
         }
+
+        $_FILES[$name]['name'] = Format::normalizer($_FILES[$name]['name']);
 
         return $_FILES[$name];
     }
