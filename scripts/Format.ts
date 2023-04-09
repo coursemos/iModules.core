@@ -33,6 +33,44 @@ class Format {
     }
 
     /**
+     * 부분문자열을 위치에 따라 가져온다.
+     *
+     * @param {string} string - 문자열
+     * @param {number|[number, number]} length - 부분문자열 길이 (양수:앞, 음수:뒤, [앞, 뒤])
+     * @return {string} substring - 부분문자열
+     */
+    static substring(string: string, length: number | [number, number]): string {
+        string = string.trim();
+
+        if (typeof length == 'number') {
+            if (length < 0) {
+                length = [0, length * -1];
+            } else {
+                length = [length, 0];
+            }
+        }
+
+        if (
+            Array.isArray(length) == false ||
+            length.length != 2 ||
+            typeof length[0] != 'number' ||
+            typeof length[1] != 'number'
+        ) {
+            return string;
+        }
+
+        const origin = string.length;
+        if (origin <= length[0] + length[1]) {
+            return string;
+        }
+
+        let substring = string.substring(0, length[0]).trim() + '…';
+        substring += string.substring(origin - length[1], origin).trim();
+
+        return substring;
+    }
+
+    /**
      * 유니코드 문자열을 정규화한다.
      *
      * @param {string} string - 대상문자열
