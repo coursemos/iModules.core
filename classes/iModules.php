@@ -152,6 +152,27 @@ class iModules
          */
         Html::style(Modules::styles(), 5);
     }
+
+    /**
+     * 프로세스 URL 을 가져온다.
+     *
+     * @param string $type 프로세스를 실행할 컴포넌트종류 (module, plugin, widget)
+     * @param string $name 컴포넌트명
+     * @param string $path 프로세스 경로
+     * @return string $url
+     */
+    public static function getProcessUrl(string $type, string $name, string $path): string
+    {
+        $domain = Domains::get();
+
+        $route = '/' . $type . '/' . $name . '/process/' . $path;
+        if ($domain->isRewrite() == true) {
+            return Configs::dir() . $route;
+        } else {
+            return Configs::dir() . '?route=' . $route;
+        }
+    }
+
     /**
      * 권한문자열을 파싱하여 권한이 있는지 여부를 확인한다.
      *

@@ -6,7 +6,7 @@
  * @file /scripts/Module.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 4. 10.
  */
 class Module {
     name;
@@ -27,5 +27,14 @@ class Module {
     init($dom) {
         this.$dom = $dom;
         // @todo 해당 DOM 의 UI 이벤트 처리
+    }
+    /**
+     * 프로세스 URL 경로를 가져온다.
+     *
+     * @param {string} path - 실행경로
+     * @return {string} processUrl
+     */
+    getProcessUrl(path) {
+        return iModules.getProcessUrl('module', this.name, path);
     }
 }

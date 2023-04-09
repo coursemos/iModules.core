@@ -207,6 +207,17 @@ class Module extends Component
     }
 
     /**
+     * 프로세스 URL 을 가져온다.
+     *
+     * @param string $path 프로세스 경로
+     * @return string $url
+     */
+    public function getProcessUrl(string $path): string
+    {
+        return iModules::getProcessUrl('module', $this->getName(), $path);
+    }
+
+    /**
      * 모듈의 컨텍스트 템플릿을 설정한다.
      *
      * @param object $template 템플릿설정
