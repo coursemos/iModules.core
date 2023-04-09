@@ -96,6 +96,42 @@ class Format
         return trim(self::normalizer($str));
     }
 
+    /**
+     * 부분문자열을 위치에 따라 가져온다.
+     *
+     * @param string $string 문자열
+     * @param int|array $length 부분문자열 길이 (양수:앞, 음수:뒤, [앞, 뒤)
+     * @return string $substring 부분문자열
+     */
+    public static function substring(string $string, int|array $length): string
+    {
+        if (is_int($length) == true) {
+            if ($length < 0) {
+                $length = [0, $length * -1];
+            } else {
+                $length = [$length, 0];
+            }
+        }
+
+        if (
+            is_array($length) == false ||
+            count($length) != 2 ||
+            is_int($length[0]) == false ||
+            is_int($length[1]) == false
+        ) {
+            return $string;
+        }
+
+        $string = trim($string);
+        $origin = mb_strlen($string, 'utf-8');
+        if ($origin <= $length[0] + $length[1]) {
+            return $string;
+        }
+
+        $substring = trim(mb_substr($string, 0, $length[0], 'utf-8')) . '…';
+        $substring .= trim(mb_substr($string, $origin - $length[1], $length[1], 'utf-8'));
+
+        return $substring;
     }
 
     /**
