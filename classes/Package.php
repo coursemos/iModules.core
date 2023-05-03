@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 21.
+ * @modified 2023. 5. 3.
  */
 class Package
 {
@@ -70,6 +70,16 @@ class Package
     public function getHash(): string
     {
         return $this->_hash;
+    }
+
+    /**
+     * 패키지 고유아이디를 가져온다.
+     *
+     * @return string $id
+     */
+    public function getId(): string
+    {
+        return $this->get('id');
     }
 
     /**
@@ -245,9 +255,19 @@ class Package
     }
 
     /**
+     * 설치요구사항을 가져온다.
+     *
+     * @return object $requirements
+     */
+    public function getRequirements(): object
+    {
+        return $this->_package?->requirements ?? new stdClass();
+    }
+
+    /**
      * 모듈 설치조건을 가져온다.
      *
-     * @return array $dependencies
+     * @return object $dependencies
      */
     public function getDependencies(): object
     {
@@ -370,9 +390,9 @@ class Package
         }
 
         if ($field->type == 'template') {
-            $field->target = new stdClass();
-            $field->target->type = $configs->target?->type ?? '';
-            $field->target->name = $configs->target?->name ?? '';
+            $field->component = new stdClass();
+            $field->component->type = $configs->component?->type ?? '';
+            $field->component->name = $configs->component?->name ?? '';
         }
 
         if ($field->type == 'fieldset') {
