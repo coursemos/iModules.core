@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 3.
  */
 class Modules
 {
@@ -358,9 +358,9 @@ class Modules
      * @param string $name 설치한 모듈명
      * @param object $configs 환경설정
      * @param bool $check_dependency 요구사항 확인여부
-     * @return bool $success 설치성공여부
+     * @return bool|string $success 설치성공여부
      */
-    public static function install(string $name, object $configs = null, bool $check_dependency = true): bool
+    public static function install(string $name, object $configs = null, bool $check_dependency = true): bool|string
     {
         $installable = self::installable($name, $check_dependency);
         if ($installable->success = false) {
@@ -379,17 +379,17 @@ class Modules
         $configs = $package->getConfigs($configs);
         $success = $module->install($previous, $configs);
 
-        // @todo 용량 갱신
-        $databases = $installed?->databases ?? 0;
-        $attachments = $installed?->attachments ?? 0;
-        $sort =
-            $installed?->sort ??
-            self::db()
-                ->select()
-                ->from(self::table('modules'))
-                ->count();
+        if ($success === true) {
+            // @todo 용량 갱신
+            $databases = $installed?->databases ?? 0;
+            $attachments = $installed?->attachments ?? 0;
+            $sort =
+                $installed?->sort ??
+                self::db()
+                    ->select()
+                    ->from(self::table('modules'))
+                    ->count();
 
-        if ($success == true) {
             self::db()
                 ->replace(self::table('modules'), [
                     'name' => $name,

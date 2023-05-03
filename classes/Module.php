@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 3.
  */
 class Module extends Component
 {
@@ -346,9 +346,9 @@ class Module extends Component
      *
      * @param string $previous 이전설치버전 (NULL 인 경우 신규설치)
      * @param object $configs 모듈설정
-     * @return bool $success 설치성공여부
+     * @return bool|string $success 설치성공여부
      */
-    public function install(string $previous = null, object $configs = null): bool
+    public function install(string $previous = null, object $configs = null): bool|string
     {
         $db = $this->db();
         $db->displayError(false);
@@ -357,7 +357,10 @@ class Module extends Component
             if ($db->compare($this->table($table), $schema) == false) {
                 $success = $db->create($this->table($table), $schema);
                 if ($success !== true) {
-                    return false;
+                    return $this->getErrorText('DATABASE_TABLE_CREATE_ERROR', [
+                        'table' => $this->table($table),
+                        'message' => $success,
+                    ]);
                 }
             }
         }
