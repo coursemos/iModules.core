@@ -79,4 +79,76 @@ class Format {
     static normalizer(string: string): string {
         return string.normalize('NFC');
     }
+
+    /**
+     * 두개의 형식 및 데이터가 동일한지 비교한다.
+     *
+     * @param {any} left
+     * @param {any} right
+     * @returns {boolean} is_equal - 동일한지 여부
+     */
+    static isEqual(left: any, right: any): boolean {
+        if (left === null || right === null) {
+            return left === right;
+        }
+
+        if (typeof left !== typeof right) {
+            return false;
+        }
+
+        if (Array.isArray(left) == true || Array.isArray(right) == true) {
+            if (Array.isArray(left) != Array.isArray(right)) {
+                return false;
+            }
+
+            if (left.length != right.length) {
+                return false;
+            }
+
+            for (const v of left) {
+                if (['number', 'boolean', 'string'].includes(typeof v) == true) {
+                    if (right.includes(v) === false) {
+                        return false;
+                    }
+                } else {
+                    for (const c of right) {
+                        if (Format.isEqual(v, c) == true) {
+                            break;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (typeof left === 'object' || typeof right === 'object') {
+            if (typeof left != typeof right) {
+                return false;
+            }
+
+            const leftKeys = Object.keys(left);
+            const rightKeys = Object.keys(right);
+
+            if (leftKeys.length != rightKeys.length) {
+                return false;
+            }
+
+            for (const k of leftKeys) {
+                if (rightKeys.includes(k) === false) {
+                    return false;
+                }
+
+                if (Format.isEqual(left[k], right[k]) == false) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return left === right;
+    }
 }
