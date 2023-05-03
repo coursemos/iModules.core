@@ -7,7 +7,7 @@
  * @file /install/process/index.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 3.
  */
 define('__IM__', true);
 
@@ -85,7 +85,7 @@ if ($action == 'install') {
         $results->success = false;
         $results->status = 'fail';
         $results->errors = [];
-        foreach (Configs::package()->databases as $table => $schema) {
+        foreach (Configs::package()->getDatabases() as $table => $schema) {
             if ($db->compare(iModules::table($table), $schema, true) == false) {
                 $success = $db->create(iModules::table($table), $schema);
                 if ($success !== true) {
@@ -129,7 +129,7 @@ if ($action == 'install') {
                 Configs::exit($results);
             }
 
-            $success = Modules::install($name, false);
+            $success = Modules::install($name, null, false);
             $results->success = $success;
         }
 

@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 21.
+ * @modified 2023. 5. 3.
  */
 class Configs
 {
@@ -156,7 +156,7 @@ class Configs
         $results->latest->latest = $package->version;
 
         if (function_exists('curl_init') == true) {
-            $apiUrl = 'https://api.moimz.com/tools/' . $package->id . '/latest/' . $package->version;
+            $apiUrl = 'https://api.moimz.com/tools/' . $package->getId() . '/latest/' . $package->getVersion();
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $apiUrl);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -172,7 +172,7 @@ class Configs
         $results->configs = new stdClass();
         $results->configs->status = is_file(self::path() . '/configs/configs.php') == false ? 'success' : 'notice';
 
-        foreach ($package->requirements as $key => $value) {
+        foreach ($package->getRequirements() as $key => $value) {
             $check = new stdClass();
             $check->status = 'fail';
             $check->requirement = $value;
