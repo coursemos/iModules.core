@@ -8,7 +8,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 3.
  */
 class mysql extends DatabaseInterface
 {
@@ -26,6 +26,7 @@ class mysql extends DatabaseInterface
 
     private ?string $_query = null;
     private ?string $_lastQuery = null;
+    private ?string $_lastError = null;
 
     /**
      * 쿼리빌더 내부변수
@@ -857,20 +858,49 @@ class mysql extends DatabaseInterface
     }
 
     /**
+     * 검색조건 오류를 검사한다.
+     *
+     * @param string $prop 조건절
+     * @param mixed $value 조건값
+     * @param string $operator 조건
+     * @return bool $success
+     */
+    private function _checkWhere(string $prop, mixed $value, ?string $operator): bool
+    {
+        $operator ??= '';
+        $operator = strtolower($operator);
+
+        if (is_array($value) === true) {
+            if (substr_count($prop, '?') != count($value) && in_array($operator, ['not in', 'in']) == false) {
+                $this->_error(\Language::getText('errors/databases/array_value'));
+                return false;
+            }
+        }
+
+        if (in_array($operator, ['not in', 'in']) == true && is_array($value) == false) {
+            $this->_error(\Language::getText('errors/databases/in_operator'));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * WHERE 절을 정의한다. (AND조건)
      *
      * @param string $whereProp WHERE 조건절 (컬럼명 또는 WHERE 조건문)
      * @param mixed $whereValue 검색할 조건값 (컬럼데이터 또는 WHERE 조건문에 바인딩할 값의 배열)
-     * @param ?string $operator 조건 (=, IN, NOT IN, LIKE 등)
+     * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
-    public function where(string $whereProp, $whereValue = null, ?string $operator = null): DatabaseInterface
+    public function where(string $whereProp, mixed $whereValue = null, ?string $operator = null): DatabaseInterface
     {
-        if ($operator) {
-            $whereValue = [$operator => $whereValue];
+        if ($this->_checkWhere($whereProp, $whereValue, $operator) == true) {
+            if ($operator) {
+                $whereValue = [$operator => $whereValue];
+            }
+            $this->_where[] = ['AND', $whereValue, $whereProp];
         }
-        $this->_where[] = ['AND', $whereValue, $whereProp];
-
         return $this;
     }
 
@@ -879,15 +909,17 @@ class mysql extends DatabaseInterface
      *
      * @param string $whereProp WHERE 조건절 (컬럼명 또는 WHERE 조건문)
      * @param mixed $whereValue 검색할 조건값 (컬럼데이터 또는 WHERE 조건문에 바인딩할 값의 배열)
-     * @param ?string $operator 조건 (=, IN, NOT IN, LIKE 등)
+     * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
     public function orWhere(string $whereProp, $whereValue = null, ?string $operator = null): DatabaseInterface
     {
-        if ($operator) {
-            $whereValue = [$operator => $whereValue];
+        if ($this->_checkWhere($whereProp, $whereValue, $operator) == true) {
+            if ($operator) {
+                $whereValue = [$operator => $whereValue];
+            }
+            $this->_where[] = ['OR', $whereValue, $whereProp];
         }
-        $this->_where[] = ['OR', $whereValue, $whereProp];
 
         return $this;
     }
@@ -897,15 +929,17 @@ class mysql extends DatabaseInterface
      *
      * @param string $havingProp HAVING 조건절 (컬럼명 또는 WHERE 조건문)
      * @param mixed $havingValue 검색할 조건값 (컬럼데이터 또는 WHERE 조건문에 바인딩할 값의 배열)
-     * @param ?string $operator 조건 (=, IN, NOT IN, LIKE 등)
+     * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
     public function having($havingProp, $havingValue = null, ?string $operator = null): DatabaseInterface
     {
-        if ($operator) {
-            $havingValue = [$operator => $havingValue];
+        if ($this->_checkWhere($havingProp, $havingProp, $operator) == true) {
+            if ($operator) {
+                $havingValue = [$operator => $havingValue];
+            }
+            $this->_having[] = ['AND', $havingValue, $havingProp];
         }
-        $this->_having[] = ['AND', $havingValue, $havingProp];
 
         return $this;
     }
@@ -915,15 +949,17 @@ class mysql extends DatabaseInterface
      *
      * @param string $havingProp HAVING 조건절 (컬럼명 또는 WHERE 조건문)
      * @param mixed $havingValue 검색할 조건값 (컬럼데이터 또는 WHERE 조건문에 바인딩할 값의 배열)
-     * @param ?string $operator 조건 (=, IN, NOT IN, LIKE 등)
+     * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
     public function orHaving(string $havingProp, $havingValue = null, ?string $operator = null): DatabaseInterface
     {
-        if ($operator) {
-            $havingValue = [$operator => $havingValue];
+        if ($this->_checkWhere($havingProp, $havingProp, $operator) == true) {
+            if ($operator) {
+                $havingValue = [$operator => $havingValue];
+            }
+            $this->_having[] = ['OR', $havingValue, $havingProp];
         }
-        $this->_having[] = ['OR', $havingValue, $havingProp];
 
         return $this;
     }
@@ -931,20 +967,25 @@ class mysql extends DatabaseInterface
     /**
      * JOIN 절을 정의한다. (AND조건)
      *
-     * @param string $joinTable JOIN 할 prefix 가 포함되지 않은 테이블명
+     * @param string $joinTable JOIN 할 테이블명
+     * @param string $joinAlias JOIN 할 테이블별칭
      * @param string $joinCondition JOIN 조건
      * @param string $joinType 조인형태 (LEFT, RIGHT, OUTER, INNER, LEFT OUTER, RIGHT OUTER)
      * @return DatabaseInterface $this
      */
-    public function join(string $joinTable, string $joinCondition, string $joinType = ''): DatabaseInterface
-    {
+    public function join(
+        string $joinTable,
+        string $joinAlias,
+        string $joinCondition,
+        string $joinType = ''
+    ): DatabaseInterface {
         $allowedTypes = ['LEFT', 'RIGHT', 'OUTER', 'INNER', 'LEFT OUTER', 'RIGHT OUTER'];
         $joinType = strtoupper(trim($joinType));
         if ($joinType && in_array($joinType, $allowedTypes) == false) {
             $this->_error('Wrong JOIN type: ' . $joinType);
         }
 
-        $this->_join[] = [$joinType, $joinTable, $joinCondition];
+        $this->_join[] = [$joinType, $joinAlias, $joinTable, $joinCondition];
 
         return $this;
     }
@@ -1160,7 +1201,7 @@ class mysql extends DatabaseInterface
      */
     public function getLastError(): ?string
     {
-        return $this->_mysqli->error ? $this->_mysqli->error : null;
+        return $this->_lastError ?? ($this->_mysqli->error ? $this->_mysqli->error : null);
     }
 
     /**
@@ -1231,8 +1272,7 @@ class mysql extends DatabaseInterface
                 break;
         }
 
-        //		$this->_buildTableData();
-        //		$this->_buildJoin();
+        $this->_buildJoin();
         //		if (empty($this->_tableDatas) == false) $this->_buildTableData($this->_tableDatas);
         $this->_buildWhere();
         //		$this->_buildGroupBy();
@@ -1345,6 +1385,22 @@ class mysql extends DatabaseInterface
         $this->_query = rtrim($this->_query, ',');
         if ($this->_startQuery !== 'UPDATE') {
             $this->_query .= ')';
+        }
+    }
+
+    /**
+     * JOIN 절을 생성한다.
+     */
+    private function _buildJoin(): void
+    {
+        if (empty($this->_join) == true) {
+            return;
+        }
+
+        foreach ($this->_join as $data) {
+            list($joinType, $joinAlias, $joinTable, $joinCondition) = $data;
+            $joinStr = $joinTable . ' ' . $joinAlias;
+            $this->_query .= ' ' . $joinType . ' JOIN ' . $joinStr . ' ON ' . $joinCondition;
         }
     }
 
@@ -1549,6 +1605,7 @@ class mysql extends DatabaseInterface
 
         $stmt = $this->_mysqli->prepare($this->_query);
         if (!$stmt) {
+            $this->_lastError = $this->_mysqli->error;
             $this->_error($this->_mysqli->error);
             return $results;
         }
@@ -1565,11 +1622,13 @@ class mysql extends DatabaseInterface
 
         $success = $stmt->execute();
         if ($success === false) {
+            $this->_lastError = $stmt->error;
             $this->_error($stmt->error);
             return $results;
         }
 
         $stmt->store_result();
+
         $results->success = $stmt->sqlstate === '00000';
         $results->affected_rows = $stmt->affected_rows;
         $results->insert_id = $stmt->insert_id;
@@ -1586,6 +1645,10 @@ class mysql extends DatabaseInterface
         }
 
         $stmt->free_result();
+
+        if ($results->success == true) {
+            $this->_lastError = null;
+        }
 
         return $results;
     }

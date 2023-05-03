@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 3.
  */
 abstract class DatabaseInterface
 {
@@ -286,12 +286,18 @@ abstract class DatabaseInterface
     /**
      * JOIN 절을 정의한다. (AND조건)
      *
-     * @param string $joinTable JOIN 할 prefix 가 포함되지 않은 테이블명
+     * @param string $joinTable JOIN 할 테이블명
+     * @param string $joinAlias JOIN 할 테이블별칭
      * @param string $joinCondition JOIN 조건
      * @param string $joinType 조인형태 (LEFT, RIGHT, OUTER, INNER, LEFT OUTER, RIGHT OUTER)
      * @return DatabaseInterface $this
      */
-    abstract public function join(string $joinTable, string $joinCondition, string $joinType = ''): DatabaseInterface;
+    abstract public function join(
+        string $joinTable,
+        string $joinAlias,
+        string $joinCondition,
+        string $joinType = ''
+    ): DatabaseInterface;
 
     /**
      * ORDER 절을 정의한다.
