@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 3.
  */
 class File
 {
@@ -55,11 +55,12 @@ class File
      * 파일 해시값을 구한다.
      *
      * @param string $path 파일경로
-     * @return string|bool $hash 파일해시
+     * @return string $hash 파일해시
      */
-    public static function hash(string $path): string|bool
+    public static function hash(string $path): string
     {
-        return md5_file($path);
+        $content = md5_file($path);
+        return sha1(filesize($path) . '\0' . $content);
     }
 
     /**
