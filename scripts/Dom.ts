@@ -748,7 +748,7 @@ class Dom {
 
         if (name == 'longpress') {
             this.element?.addEventListener('pointerdown', (e: PointerEvent) => {
-                if (e.pointerType == 'touch') {
+                if (e.pointerType == 'touch' || e.pointerType == 'pen') {
                     this.setData('longpress', {
                         x: e.clientX,
                         y: e.clientY,
