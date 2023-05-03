@@ -19,6 +19,7 @@
         "PHP_ERROR": "PHP 처리중 에러가 발생하였습니다.",
         "DATABASE_ERROR": "데이터베이스 에러가 발생하였습니다.",
         "DATABASE_CONNECT_ERROR": "데이터베이스에 접속할 수 없습니다.",
+        "DATABASE_TABLE_CREATE_ERROR": "데이터베이스에 ${table} 테이블 생성에 실패하였습니다.<br>${message}",
         "DEPENDENCY_ERROR_CORE": "아이모듈 코어 버전 ${requirement} 이상이 필요합니다. (현재버전 : ${current})",
         "DEPENDENCY_ERROR_MODULE": "${name} 모듈 버전 ${requirement} 이상이 필요합니다. (현재버전 : ${current})",
         "SITE_ERROR": "사이트에 접속할 수 없습니다.",
