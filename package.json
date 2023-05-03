@@ -91,21 +91,34 @@
                     "type": "json",
                     "comment": "테마설정"
                 },
-                "image": {
-                    "type": "int",
-                    "comment": "대표이미지"
-                },
                 "logo": {
-                    "type": "json",
+                    "type": "char",
+                    "length": 36,
+                    "is_null": true,
                     "comment": "로고이미지"
                 },
+                "logos": {
+                    "type": "json",
+                    "is_null": true,
+                    "comment": "템플릿 로고이미지"
+                },
                 "emblem": {
-                    "type": "int",
+                    "type": "char",
+                    "length": 36,
+                    "is_null": true,
                     "comment": "엠블럼이미지"
                 },
                 "favicon": {
-                    "type": "int",
+                    "type": "char",
+                    "length": 36,
+                    "is_null": true,
                     "comment": "패비콘이미지"
+                },
+                "image": {
+                    "type": "char",
+                    "length": 36,
+                    "is_null": true,
+                    "comment": "대표이미지"
                 },
                 "header": {
                     "type": "json",
@@ -233,7 +246,7 @@
                 },
                 "hash": {
                     "type": "char",
-                    "length": 32,
+                    "length": 40,
                     "comment": "패키지고유값"
                 },
                 "databases": {
