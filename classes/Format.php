@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 3.
  */
 class Format
 {
@@ -290,7 +290,7 @@ class Format
      */
     public static function checkPassword(string $password): bool
     {
-        $pattern = self::string('!@#$%^&*()+=-[];,./{}|:<>?~', 'reg');
+        $pattern = self::reg('!@#$%^&*()+=-[];,./{}|:<>?~');
         return preg_match('/^[A-Za-z\d' . $pattern . ']{6,}$/', $password) === 1;
     }
 }
