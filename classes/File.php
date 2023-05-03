@@ -83,6 +83,28 @@ class File
     }
 
     /**
+     * 디렉토리를 생성한다.
+     *
+     * @param string $path 생성할 경로
+     * @return bool $success
+     */
+    public static function createDirectory($path): bool
+    {
+        $paths = explode('/', $path);
+        $current = '';
+        foreach ($paths as $name) {
+            $current .= '/' . $name;
+            if (is_dir($current) == false) {
+                if (mkdir($current) == false) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * 디렉토리 구성요소를 가져온다.
      *
      * @param string $path 경로
