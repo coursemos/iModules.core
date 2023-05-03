@@ -13,18 +13,22 @@ class Ajax {
      * GET 방식으로 데이터를 가져온다.
      *
      * @param {string} url - 요청주소
-     * @param {Ajax.Params} params - 요청할 데이터
-     * @param {number} retry - 재시도횟수
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean|number} is_retry - 재시도여부
      * @return {Promise<Ajax.Results>} results - 요청결과
      */
-    static async get(url, params = {}, retry = 0) {
-        const queryString = new URLSearchParams(params).toString();
-        if (queryString.length > 0) {
-            if (url.indexOf('?') === -1)
-                url += '?' + queryString;
-            else
-                url += '&' + queryString;
+    static async get(url, params = {}, is_retry = true) {
+        const requestUrl = new URL(url, location.origin);
+        for (const name in params) {
+            if (params[name] === null) {
+                requestUrl.searchParams.delete(name);
+            }
+            else {
+                requestUrl.searchParams.append(name, params[name]);
+            }
         }
+        url = requestUrl.toString();
+        let retry = (is_retry === false ? 10 : is_retry);
         try {
             const response = (await fetch(url, {
                 method: 'GET',
@@ -36,7 +40,7 @@ class Ajax {
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch((error) => {
-                if (retry < 3) {
+                if (retry <= 3) {
                     return Ajax.get(url, params, ++retry);
                 }
                 else {
@@ -52,7 +56,7 @@ class Ajax {
             return results;
         }
         catch (e) {
-            if (retry < 3) {
+            if (retry <= 3) {
                 return Ajax.get(url, params, ++retry);
             }
             else {
@@ -68,10 +72,22 @@ class Ajax {
      *
      * @param {string} url - 요청주소
      * @param {Ajax.Data} data - 전송할 데이터
-     * @param {number} retry - 재시도횟수
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean|number} is_retry - 재시도여부
      * @return {Promise<Ajax.Results>} results - 요청결과
      */
-    static async post(url, data = {}, retry = 0) {
+    static async post(url, data = {}, params = {}, is_retry = true) {
+        const requestUrl = new URL(url, location.origin);
+        for (const name in params) {
+            if (params[name] === null) {
+                requestUrl.searchParams.delete(name);
+            }
+            else {
+                requestUrl.searchParams.append(name, params[name]);
+            }
+        }
+        url = requestUrl.toString();
+        let retry = (is_retry === false ? 10 : is_retry);
         try {
             const response = (await fetch(url, {
                 method: 'POST',
@@ -84,8 +100,8 @@ class Ajax {
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch((error) => {
-                if (retry < 3) {
-                    return Ajax.post(url, data, ++retry);
+                if (retry <= 3) {
+                    return Ajax.post(url, data, params, ++retry);
                 }
                 else {
                     // @todo 에러메시지
@@ -100,8 +116,8 @@ class Ajax {
             return results;
         }
         catch (e) {
-            if (retry < 3) {
-                return Ajax.post(url, data, ++retry);
+            if (retry <= 3) {
+                return Ajax.post(url, data, params, ++retry);
             }
             else {
                 // @todo 에러메시지
