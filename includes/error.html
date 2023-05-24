@@ -7,13 +7,16 @@
  * @file /includes/error.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 6. 6.
+ * @modified 2023. 5. 24.
  *
  * @var ErrorData $error
  */
 if (defined('__IM__') == false) {
     exit();
-} ?>
+}
+
+Html::font('SUIT');
+?>
 <main data-type="error" data-mode="<?php echo $error->debugMode === true ? 'debug' : 'normal'; ?>">
     <section data-role="message">
         <h4><?php echo $error->title; ?></h4>

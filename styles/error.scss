@@ -6,7 +6,7 @@
  * @file /styles/error.scss
  * @author Arzz <arzz@arzz.com> 
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 24.
  */
 @import 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap';
 
@@ -21,7 +21,7 @@ body {
 
 body[data-type='error'] {
     background: #eeeef5;
-    font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
+    font-family: SUIT, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
         'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 
     * {
