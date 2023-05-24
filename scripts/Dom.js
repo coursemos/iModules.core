@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 24.
  */
 class Dom {
     element;
@@ -512,6 +512,40 @@ class Dom {
         if (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) {
             return this.element.value;
         }
+    }
+    /**
+     * HTML 엘리먼트가 RADIO, CHECKBOX 인 경우 선택여부를 가져온다.
+     *
+     * @return {boolean} checked
+     */
+    isChecked() {
+        if (this.element instanceof HTMLInputElement) {
+            if (this.element.getAttribute('type') == 'checkbox' || this.element.getAttribute('type') == 'radio') {
+                return this.element.checked;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    /**
+     * HTML 엘리먼트가 INPUT, TEXTAREA, SELECT 요소인 경우 값을 초기화한다.
+     *
+     * @return {Dom} this
+     */
+    reset() {
+        if (this.element instanceof HTMLInputElement) {
+            if (this.element.getAttribute('type') == 'checkbox' || this.element.getAttribute('type') == 'radio') {
+                this.element.checked = this.element.getAttribute('checked') ? true : false;
+            }
+            else {
+                this.element.value = this.element.getAttribute('value') ? this.element.getAttribute('value') : null;
+            }
+        }
+        else if (this.element instanceof HTMLTextAreaElement) {
+            this.element.value = this.element.innerHTML ? this.element.innerHTML : null;
+        }
+        return this;
     }
     /**
      * HTML 엘리먼트의 제일 처음에 Dom 을 추가한다.
