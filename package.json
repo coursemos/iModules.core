@@ -97,11 +97,6 @@
                     "is_null": true,
                     "comment": "로고이미지"
                 },
-                "logos": {
-                    "type": "json",
-                    "is_null": true,
-                    "comment": "템플릿 로고이미지"
-                },
                 "emblem": {
                     "type": "char",
                     "length": 36,
@@ -122,10 +117,12 @@
                 },
                 "header": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "상단내용"
                 },
                 "footer": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "하단내용"
                 }
             },
@@ -152,8 +149,8 @@
                     "comment": "경로"
                 },
                 "icon": {
-                    "type": "varchar",
-                    "length": 50,
+                    "type": "json",
+                    "is_null": true,
                     "comment": "아이콘"
                 },
                 "title": {
@@ -161,45 +158,53 @@
                     "length": 50,
                     "comment": "제목"
                 },
+                "description": {
+                    "type": "text",
+                    "comment": "설명"
+                },
+                "image": {
+                    "type": "char",
+                    "length": 26,
+                    "is_null": true,
+                    "comment": "대표이미지"
+                },
                 "type": {
                     "type": "enum",
                     "length": "'CHILD','PAGE','DASHBOARD','MODULE','HTML','LINK','EMPTY'",
                     "default": "EMPTY",
                     "comment": "종류"
                 },
-                "image": {
-                    "type": "int",
-                    "comment": "대표이미지"
-                },
-                "description": {
-                    "type": "text",
-                    "comment": "설명"
-                },
                 "target": {
                     "type": "varchar",
                     "length": 50,
+                    "is_null": true,
                     "comment": "대상"
                 },
                 "context": {
                     "type": "varchar",
-                    "length": 50,
+                    "length": 100,
+                    "is_null": true,
                     "comment": "컨텍스트"
                 },
                 "context_configs": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "컨텍스트설정"
                 },
                 "layout": {
                     "type": "varchar",
                     "length": 20,
+                    "is_null": true,
                     "comment": "레이아웃"
                 },
                 "header": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "상단내용"
                 },
                 "footer": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "하단내용"
                 },
                 "permission": {

@@ -7,7 +7,7 @@
  * @file /classes/Site.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 24.
  */
 class Site
 {
@@ -44,7 +44,7 @@ class Site
     /**
      * @var \modules\attachment\dto\File[] $_logo 사이트 로고객체
      */
-    private array $_logo = [];
+    private \modules\attachment\dto\File $_logo;
 
     /**
      * @var \modules\attachment\dto\File $_favicon 사이트 Favicon
@@ -57,9 +57,14 @@ class Site
     private \modules\attachment\dto\File $_emblem;
 
     /**
-     * @var \modules\attachment\dto\File $_image 사이트 대표이미지
+     * @var object $_header 사이트 헤더설정
      */
-    private \modules\attachment\dto\File $_image;
+    private object $_header;
+
+    /**
+     * @var ?object $_footer 사이트 푸터설정
+     */
+    private object $_footer;
 
     /**
      * @var Context $_index 사이트인덱스
@@ -83,6 +88,8 @@ class Site
         $this->_language = $site->language;
         $this->_title = $site->title;
         $this->_description = $site->description;
+        $this->_header = json_decode($site->header ?? '');
+        $this->_footer = json_decode($site->footer ?? '');
     }
 
     /**
@@ -153,38 +160,30 @@ class Site
     /**
      * 사이트 로고이미지를 가져온다.
      *
-     * @param string $type 로고타입 (default, dark, footer)
-     * @return \modules\attachment\dto\File
+     * @return \modules\attachment\dto\File $logo
      */
-    public function getLogo(string $type): \modules\attachment\dto\File
+    public function getLogo(): \modules\attachment\dto\File
     {
-        if (isset($this->_logo) == true && isset($this->_logo[$type]) == true) {
-            return $this->_logo[$type];
+        if (isset($this->_logo) == true) {
+            return $this->_logo;
         }
-
-        /**
-         * @var int[] $logo 로고파일 정보
-         */
-        $logo = json_decode($this->_site->logo, true);
 
         /**
          * @var modules\attachment\Module $attachment
          */
         $attachment = Modules::get('attachment');
-
-        if (isset($logo[$type]) == false || $attachment->hasFile($logo[$type]) == false) {
-            $this->_logo[$type] = $attachment->getRawFile('/images/logo.default.png');
-        } else {
-            $this->_logo[$type] = $attachment->getFile($logo[$type]);
+        if ($this->_site->logo !== null) {
+            $logo = $attachment->getAttachment($this->_site->logo);
         }
+        $this->_logo = $logo ?? $attachment->getRawFile(Configs::path() . '/images/logo.png');
 
-        return $this->_logo[$type];
+        return $this->_logo;
     }
 
     /**
      * 사이트 대표이미지를 가져온다.
      *
-     * @return \modules\attachment\dto\File
+     * @return \modules\attachment\dto\File $favicon
      */
     public function getFavicon(): \modules\attachment\dto\File
     {
@@ -196,11 +195,10 @@ class Site
          * @var modules\attachment\Module $attachment
          */
         $attachment = Modules::get('attachment');
-        if ($this->_site->favicon == 0 || $attachment->hasFile($this->_site->favicon) == false) {
-            $this->_favicon = $attachment->getRawFile('/images/favicon.ico');
-        } else {
-            $this->_favicon = $attachment->getFile($this->_site->favicon);
+        if ($this->_site->favicon !== null) {
+            $favicon = $attachment->getAttachment($this->_site->favicon);
         }
+        $this->_favicon = $favicon ?? $attachment->getRawFile(Configs::path() . '/images/favicon.ico');
 
         return $this->_favicon;
     }
@@ -208,7 +206,7 @@ class Site
     /**
      * 사이트 대표이미지를 가져온다.
      *
-     * @return \modules\attachment\dto\File
+     * @return \modules\attachment\dto\File $emblem
      */
     public function getEmblem(): \modules\attachment\dto\File
     {
@@ -220,11 +218,10 @@ class Site
          * @var modules\attachment\Module $attachment
          */
         $attachment = Modules::get('attachment');
-        if ($this->_site->emblem == 0 || $attachment->hasFile($this->_site->emblem) == false) {
-            $this->_emblem = $attachment->getRawFile('/images/emblem.png');
-        } else {
-            $this->_emblem = $attachment->getFile($this->_site->emblem);
+        if ($this->_site->emblem !== null) {
+            $emblem = $attachment->getAttachment($this->_site->emblem);
         }
+        $this->_emblem = $emblem ?? $attachment->getRawFile(Configs::path() . '/images/emblem.png');
 
         return $this->_emblem;
     }
@@ -232,7 +229,7 @@ class Site
     /**
      * 사이트 대표이미지를 가져온다.
      *
-     * @return \modules\attachment\dto\File
+     * @return \modules\attachment\dto\File $image
      */
     public function getImage(): \modules\attachment\dto\File
     {
@@ -244,11 +241,10 @@ class Site
          * @var modules\attachment\Module $attachment
          */
         $attachment = Modules::get('attachment');
-        if ($this->_site->image == 0 || $attachment->hasFile($this->_site->image) == false) {
-            $this->_image = $attachment->getRawFile('/images/default.jpg');
-        } else {
-            $this->_image = $attachment->getFile($this->_site->image);
+        if ($this->_site->image !== null) {
+            $image = $attachment->getAttachment($this->_site->image);
         }
+        $this->_image = $image ?? $attachment->getRawFile(Configs::path() . '/images/image.png');
 
         return $this->_image;
     }
@@ -301,14 +297,35 @@ class Site
         }
 
         $contexts = Contexts::all($this);
-        foreach ($contexts as $context) {
-            if ($context->getPath() == '/') {
-                $this->_index = $context;
-                return $context;
-            }
+        if (isset($contexts['/']) == false) {
+            iModules::db()
+                ->insert(iModules::table('contexts'), [
+                    'host' => $this->_host,
+                    'language' => $this->_language,
+                    'path' => '/',
+                    'icon' => '',
+                    'title' => 'INDEX',
+                    'type' => 'EMPTY',
+                    'description' => '',
+                    'target' => '',
+                    'context' => '',
+                    'context_configs' => '{}',
+                    'layout' => 'index',
+                    'header' => null,
+                    'footer' => null,
+                    'permission' => 'true',
+                    'is_sitemap' => 'FALSE',
+                    'is_footer_menu' => 'FALSE',
+                    'sort' => 0,
+                ])
+                ->execute();
+
+            Cache::remove('contexts');
+            Contexts::init();
+            $contexts = Contexts::all($this);
         }
 
-        // @todo 오류추가
+        return $contexts['/'];
     }
 
     /**

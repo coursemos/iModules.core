@@ -7,7 +7,7 @@
  * @file /classes/Contexts.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 5. 24.
  */
 class Contexts
 {
@@ -32,6 +32,7 @@ class Contexts
         if (Cache::has('contexts') === true) {
             self::$_contexts = Cache::get('contexts');
         } else {
+            self::$_contexts = [];
             $contexts = iModules::db()
                 ->select()
                 ->from(iModules::table('contexts'))

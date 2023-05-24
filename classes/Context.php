@@ -7,7 +7,7 @@
  * @file /classes/Context.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 24.
  */
 class Context
 {
@@ -27,9 +27,9 @@ class Context
     private string $_path;
 
     /**
-     * @var string $_icon 컨텍스트 아이콘
+     * @var ?string $_icon 컨텍스트 아이콘
      */
-    private string $_icon;
+    private ?string $_icon;
 
     /**
      * @var string $_icon 컨텍스트 제목
@@ -37,9 +37,9 @@ class Context
     private string $_title;
 
     /**
-     * @var string $_icon 컨텍스트 대표이미지
+     * @var ?string $_icon 컨텍스트 대표이미지
      */
-    private string $_image;
+    private ?string $_image;
 
     /**
      * @var string $_icon 컨텍스트 설명
@@ -52,14 +52,14 @@ class Context
     private string $_type;
 
     /**
-     * @var string $_target 컨텍스트 대상
+     * @var ?string $_target 컨텍스트 대상
      */
-    private string $_target;
+    private ?string $_target;
 
     /**
      * @var string $_context 컨텍스트 코드
      */
-    private string $_context;
+    private ?string $_context;
 
     /**
      * @var ?object $_context_configs 컨텍스트 설정
@@ -69,7 +69,7 @@ class Context
     /**
      * @var string $_layout 컨텍스트를 표현할 사이트 테마의 레이아웃명
      */
-    private string $_layout;
+    private ?string $_layout;
 
     /**
      * @var ?object $_header 컨텍스트 헤더설정
@@ -102,6 +102,11 @@ class Context
     private bool $_is_footer_menu;
 
     /**
+     * @var int $_sort 순서
+     */
+    private int $_sort;
+
+    /**
      * @var Context[] $_children 자식 컨텍스트
      */
     private array $_children;
@@ -123,14 +128,15 @@ class Context
         $this->_type = $context->type;
         $this->_target = $context->target;
         $this->_context = $context->context;
-        $this->_context_configs = json_decode($context->context_configs);
+        $this->_context_configs = json_decode($context->context_configs ?? '');
         $this->_layout = $context->layout;
-        $this->_header = json_decode($context->header);
-        $this->_footer = json_decode($context->footer);
+        $this->_header = json_decode($context->header ?? '');
+        $this->_footer = json_decode($context->footer ?? '');
         $this->_permission = $context->permission;
         $this->_is_routing = $context->is_routing == 'TRUE';
         $this->_is_sitemap = $context->is_sitemap == 'TRUE';
         $this->_is_footer_menu = $context->is_footer_menu == 'TRUE';
+        $this->_sort = $context->sort;
     }
 
     /**
@@ -164,24 +170,24 @@ class Context
     }
 
     /**
-     * 컨텍스트 경로트리를 배열로 가져온다.
+     * 컨텍스트 경로를 배열로 가져온다.
      *
      * @return string[] $tree
      */
-    public function getTree(): array
+    public function getPathArray(): array
     {
         return explode('/', preg_replace('/^\//', '', $this->_path));
     }
 
     /**
-     * 컨텍스트 경로트리에서 특정 뎁스의 경로를 가져온다.
+     * 컨텍스트 경로배열에서 특정 인덱스의 경로명을 가져온다.
      *
-     * @param int $depth 경로뎁스
+     * @param int $index 인덱스
      * @return string $path
      */
-    public function getTreeAt(int $depth): string
+    public function getPathAt(int $index): string
     {
-        return $this->getTree()[$depth] ?? '';
+        return $this->getPathArray()[$index] ?? '';
     }
 
     /**
@@ -237,9 +243,9 @@ class Context
     /**
      * 컨텍스트 대상을 가져온다.
      *
-     * @return string $target
+     * @return ?string $target
      */
-    public function getTarget(): string
+    public function getTarget(): ?string
     {
         return $this->_target;
     }
@@ -247,9 +253,9 @@ class Context
     /**
      * 컨텍스트 코드를 가져온다.
      *
-     * @return string $context
+     * @return ?string $context
      */
-    public function getContext(): string
+    public function getContext(): ?string
     {
         return $this->_context;
     }
@@ -269,23 +275,33 @@ class Context
      *
      * @return string $layout
      */
-    public function getLayout(): string
+    public function getLayout(): ?string
     {
         return $this->_layout;
     }
 
     /**
-	 * 컨텍스트 기본 경로를 배열로 가져온다.
-	 *
-	 * @return array $routes
-	 *
-	public function getRoutes():array {
-		$routes = preg_replace('/^\/?(.*?)(\/)?$/','\1',$this->_route);
-		$routes = strlen($routes) > 0 ? explode('/',$routes) : [];
-		
-		return $routes;
-	}
-	*/
+     * 컨텍스트 순서를 가져온다.
+     *
+     * @return int $sort
+     */
+    public function getSort(): int
+    {
+        return $this->_sort;
+    }
+
+    /**
+     * 컨텍스트 기본 경로를 배열로 가져온다.
+     *
+     * @return array $routes
+     *
+    public function getRoutes():array {
+        $routes = preg_replace('/^\/?(.*?)(\/)?$/','\1',$this->_route);
+        $routes = strlen($routes) > 0 ? explode('/',$routes) : [];
+        
+        return $routes;
+    }
+    */
 
     /**
      * 컨텍스트가 특정 컨텍스트와 일치하는지 확인한다.
@@ -352,10 +368,30 @@ class Context
     {
         $content = '';
         switch ($this->_type) {
+            case 'CHILD':
+                $children = $this->getChildren();
+                if (count($children) == 0) {
+                    return ErrorHandler::print('NOT_FOUND_PAGE');
+                }
+
+                Header::location($children[0]->getUrl());
+                break;
+
             case 'PAGE':
-                $content = $this->getSite()
-                    ->getTheme()
-                    ->getPage($this->_context);
+                if (
+                    $this->getSite()
+                        ->getTheme()
+                        ->getPathName() == $this->_target
+                ) {
+                    $theme = $this->getSite()->getTheme();
+                    $theme->assign('site', $this->getSite());
+                    $theme->assign('theme', $this->getSite()->getTheme());
+                    $theme->assign('context', $this);
+                    $theme->assign('route', $route);
+                    $content = $theme->getPage($this->_context);
+                } else {
+                    $content = '';
+                }
                 break;
 
             case 'MODULE':
@@ -426,6 +462,69 @@ class Context
     }
 
     /**
+     * 현재 컨텍스트를 포함한 모든 자식 컨텍스트를 배열로 가져온다.
+     *
+     * @return Context[] $tree
+     */
+    public function getTree(): array
+    {
+        $tree = [$this];
+        $children = $this->getChildren(false);
+        foreach ($children as $child) {
+            $tree = array_merge($tree, $child->getTree());
+        }
+
+        return $tree;
+    }
+
+    /**
+     * 최상위 부모부터 직전 부모까지 전체 부모를 가져온다.
+     *
+     * @return Context[] $parents
+     */
+    public function getParents(): array
+    {
+        if ($this->_path == '/') {
+            return [];
+        }
+
+        $paths = explode('/', $this->_path);
+        array_pop($paths);
+
+        $parents = [];
+        while (count($paths) > 0) {
+            $parent = '/' . array_shift($paths);
+            $route = Router::get($parent);
+            $parents[] = Contexts::get($route);
+        }
+
+        return $parents;
+    }
+
+    /**
+     * 특정 순서의 부모 컨텍스트를 가져온다.
+     *
+     * @param int $index 가져올 부모컨텍스트 순서
+     * @return ?Context $parent 부모 컨텍스트
+     */
+    public function getParentAt(int $index): ?Context
+    {
+        $parents = $this->getParents();
+        return isset($parents[$index]) == true ? $parents[$index] : null;
+    }
+
+    /**
+     * 직전 부모 컨텍스트를 가져온다.
+     *
+     * @return ?Context $parent 부모 컨텍스트
+     */
+    public function getParent(): ?Context
+    {
+        $parents = $this->getParents();
+        return count($parents) > 0 ? end($parents) : null;
+    }
+
+    /**
      * 자식 컨텍스트를 가져온다.
      *
      * @param bool $is_sitemap 사이트맵에 포함된 자식 컨텍스트만 가져올지 여부
@@ -438,7 +537,7 @@ class Context
         }
 
         $this->_children = [];
-        $path = str_replace('/', '\\/', $this->getPath());
+        $path = $this->getPath() == '/' ? '' : str_replace('/', '\\/', $this->getPath());
         $contexts = Contexts::all($this->getSite());
         foreach ($contexts as $context) {
             if (preg_match('/^' . $path . '\/[^\/]+$/', $context->getPath()) == true) {
