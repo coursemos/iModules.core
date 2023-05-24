@@ -7,12 +7,13 @@
  * @file /classes/Cache.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 24.
  */
 class Cache
 {
     private static array $_scripts = [];
     private static array $_styles = [];
+    private static $_used = true;
 
     /**
      * 캐시 클래스를 초기화한다.
@@ -26,13 +27,33 @@ class Cache
     }
 
     /**
+     * 캐시사용여부를 설정한다.
+     *
+     * @param bool $used
+     */
+    public static function use(bool $used): void
+    {
+        self::$_used = $used;
+    }
+
+    /**
+     * 캐시쓰기 여부를 확인한다.
+     *
+     * @param bool $available
+     */
+    public static function writable(): bool
+    {
+        return is_dir(Configs::cache()) == true && is_writable(Configs::cache());
+    }
+
+    /**
      * 캐시사용가능 여부를 확인한다.
      *
      * @param bool $available
      */
     public static function check(): bool
     {
-        return is_dir(Configs::cache()) == true && is_writable(Configs::cache());
+        return self::$_used == true && self::writable();
     }
 
     /**
@@ -90,7 +111,7 @@ class Cache
             $name .= '.cache';
         }
 
-        return File::remove($name);
+        return File::remove(Configs::cache() . '/' . $name);
     }
 
     /**
@@ -355,10 +376,10 @@ class Cache
             return null;
         }
 
-        $is_convert = Configs::debug() == true || self::check() == false;
+        $is_convert = Configs::debug() == true || self::writable() == false;
         $cached_file = preg_replace('/^\./', '', str_replace('/', '.', $path));
 
-        if ($is_convert == false && self::check() == true) {
+        if ($is_convert == false && self::writable() == true) {
             $cached_time =
                 is_file(Configs::cache() . '/' . $cached_file . '.css') === true
                     ? filemtime(Configs::cache() . '/' . $cached_file . '.css')
@@ -407,7 +428,7 @@ class Cache
 
             $content = str_replace($search, $replace, $content);
             $content = str_replace('@charset "UTF-8";' . "\n", '', $content);
-            if (self::check() == true) {
+            if (self::writable() == true) {
                 File::write(Configs::cache() . '/' . $cached_file . '.css', $content);
             } else {
                 Html::head('style', [], 100, $content);
