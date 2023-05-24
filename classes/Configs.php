@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 5. 24.
  */
 class Configs
 {
@@ -20,11 +20,6 @@ class Configs
      * @var object $_configs 설치 환경설정 정보
      */
     private static object $_configs;
-
-    /**
-     * @var object $_configs package.json 정보
-     */
-    private static object $_package;
 
     /**
      * 환경설정을 초기화한다.
@@ -472,6 +467,6 @@ class Configs
      */
     public static function exit(object|array $message): void
     {
-        exit(json_encode($message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        exit(Format::toJson($message));
     }
 }
