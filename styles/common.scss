@@ -6,14 +6,14 @@
  * @file /styles/common.scss
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 10. 31.
+ * @modified 2023. 5. 24.
  */
 :root {
-    --main-background-color: #fff;
-    --main-color: #222;
-    --main-active-color: red;
-    --main-hover-color: #000;
-    --main-disabled-color: #000;
+    --main-background-default: #fff;
+    --main-color-default: #222;
+    --main-color-active: red;
+    --main-color-hover: #000;
+    --main-color-disabled: #000;
 }
 
 * {
@@ -27,8 +27,10 @@ html {
 }
 
 body {
+    box-sizing: border-box;
+
     background: var(--main-background-color);
-    color: rgb(from var(--main-active-color) r g b / 80%);
+    color: var(--main-color-default); // rgb(from var(--main-color-default) r g b / 80%);
 
     > div[data-role='disabled'] {
         position: fixed;
