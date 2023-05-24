@@ -7,7 +7,7 @@
  * @file /classes/Domains.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 5. 24.
  */
 class Domains
 {
@@ -27,6 +27,7 @@ class Domains
         if (Cache::has('domains') === true) {
             self::$_domains = Cache::get('domains');
         } else {
+            self::$_domains = [];
             $domains = iModules::db()
                 ->select()
                 ->from(iModules::table('domains'))

@@ -7,7 +7,7 @@
  * @file /classes/Sites.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 7.
+ * @modified 2023. 5. 24.
  */
 class Sites
 {
@@ -27,6 +27,7 @@ class Sites
         if (Cache::has('sites') === true) {
             self::$_sites = Cache::get('sites');
         } else {
+            self::$_sites = [];
             $sites = iModules::db()
                 ->select()
                 ->from(iModules::table('sites'))
