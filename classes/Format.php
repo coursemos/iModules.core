@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 5. 24.
  */
 class Format
 {
@@ -292,5 +292,16 @@ class Format
     {
         $pattern = self::reg('!@#$%^&*()+=-[];,./{}|:<>?~');
         return preg_match('/^[A-Za-z\d' . $pattern . ']{6,}$/', $password) === 1;
+    }
+
+    /**
+     * JSON 으로 변경한다.
+     *
+     * @param mixed $data 변경할 데이터
+     * @return string $json
+     */
+    public static function toJson(mixed $data): string
+    {
+        return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 }
