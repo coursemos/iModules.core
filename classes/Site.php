@@ -59,12 +59,12 @@ class Site
     /**
      * @var object $_header 사이트 헤더설정
      */
-    private object $_header;
+    private ?object $_header;
 
     /**
      * @var ?object $_footer 사이트 푸터설정
      */
-    private object $_footer;
+    private ?object $_footer;
 
     /**
      * @var Context $_index 사이트인덱스
