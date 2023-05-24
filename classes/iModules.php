@@ -3,12 +3,12 @@
  * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
  *
  * 아이모듈 코어 클래스로 모든 사이트 레이아웃 및 모듈, 위젯, 플러그인 클래스는 아이모듈 코어 클래스를 통해 호출된다.
- * 이 클래스는 index.php 파일에 의해 선언되며 아이모듈과 관련된 모든 PHP파일에서 $IM 변수로 접근할 수 있다.
+ * 이 클래스의 모든 메소드는 static 으로 iModules::[method]() 방식으로 호출할 수 있다.
  *
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 23.
  */
 class iModules
 {
@@ -154,6 +154,49 @@ class iModules
     }
 
     /**
+     * 기본 META 태그를 설정한다.
+     */
+    public static function metas(): void
+    {
+        /**
+         * OG 태그를 설정한다.
+         *
+        $this->head('meta',array('property'=>'og:url','content'=>$this->getCanonical()));
+        $this->head('meta',array('property'=>'og:type','content'=>'website'));
+        $this->head('meta',array('property'=>'og:title','content'=>$this->getViewTitle()));
+        $this->head('meta',array('property'=>'og:description','content'=>preg_replace('/(\r|\n)/',' ',$this->getViewDescription())));
+        $viewImage = $this->getViewImage(true,true);
+        if (is_object($viewImage) == true) {
+            $this->head('meta',array('property'=>'og:image','content'=>$this->getViewImage(true)));
+            $this->head('meta',array('property'=>'og:image:width','content'=>$viewImage->width));
+            $this->head('meta',array('property'=>'og:image:height','content'=>$viewImage->height));
+        } elseif ($viewImage != null) {
+            $this->head('meta',array('property'=>'og:image','content'=>$viewImage));
+        }
+        $this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
+        */
+
+        /**
+         * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
+         *
+        if ($this->getSiteEmblem() !== null) {
+            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'57x57','href'=>$this->getSiteEmblem(true)));
+            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'114x114','href'=>$this->getSiteEmblem(true)));
+            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'72x72','href'=>$this->getSiteEmblem(true)));
+            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'144x144','href'=>$this->getSiteEmblem(true)));
+        }
+        */
+
+        /**
+         * 사이트 Favicon 태그를 정의한다.
+         *
+        if ($this->getSiteFavicon() !== null) {
+            $this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
+        }
+        */
+    }
+
+    /**
      * 프로세스 URL 을 가져온다.
      *
      * @param string $type 프로세스를 실행할 컴포넌트종류 (module, plugin, widget)
@@ -200,7 +243,7 @@ class iModules
             /**
              * Content-Type 을 지정한다.
              */
-            header('Content-type: text/html; charset=utf-8');
+            Header::type('html');
 
             /**
              * 사이트명 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
@@ -216,42 +259,14 @@ class iModules
             iModules::resources();
 
             /**
-			 * OG 태그를 설정한다.
-			 *
-			$this->head('meta',array('property'=>'og:url','content'=>$this->getCanonical()));
-			$this->head('meta',array('property'=>'og:type','content'=>'website'));
-			$this->head('meta',array('property'=>'og:title','content'=>$this->getViewTitle()));
-			$this->head('meta',array('property'=>'og:description','content'=>preg_replace('/(\r|\n)/',' ',$this->getViewDescription())));
-			$viewImage = $this->getViewImage(true,true);
-			if (is_object($viewImage) == true) {
-				$this->head('meta',array('property'=>'og:image','content'=>$this->getViewImage(true)));
-				$this->head('meta',array('property'=>'og:image:width','content'=>$viewImage->width));
-				$this->head('meta',array('property'=>'og:image:height','content'=>$viewImage->height));
-			} elseif ($viewImage != null) {
-				$this->head('meta',array('property'=>'og:image','content'=>$viewImage));
-			}
-			$this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
-			*/
-
-            /**
-			 * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
-			 *
-			if ($this->getSiteEmblem() !== null) {
-				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'57x57','href'=>$this->getSiteEmblem(true)));
-				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'114x114','href'=>$this->getSiteEmblem(true)));
-				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'72x72','href'=>$this->getSiteEmblem(true)));
-				$this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'144x144','href'=>$this->getSiteEmblem(true)));
-			}
-			*/
-
-            /**
-			 * 사이트 Favicon 태그를 정의한다.
-			 *
-			if ($this->getSiteFavicon() !== null) {
-				$this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
-			}
-			*/
+             * 메타데이터를 설정한다.
+             */
+            iModules::metas();
         } else {
+            /**
+             * Content-Type 을 지정한다.
+             */
+            Header::type('json');
         }
     }
 
@@ -308,13 +323,12 @@ class iModules
         $content = $route->getContent();
 
         /**
-         * 사이트 테마에 콘텐츠를 포함하여 가져온다.
+         * 사이트의 레이아웃에 콘텐츠를 포함하여 가져온다.
          */
-        $layout = $route->getSite()->getTheme();
-        $layout->assign('site', $context->getSite());
-        $layout->assign('context', $context);
-        $layout->assign('content', $content);
-        $layout = $layout->getLayout($context->getLayout());
+        $theme = $route->getSite()->getTheme();
+        $theme->assign('site', $context->getSite());
+        $theme->assign('context', $context);
+        $layout = $theme->getLayout($context->getLayout(), $content);
 
         /**
          * 컨텍스트 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
