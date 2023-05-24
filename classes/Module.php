@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 5. 24.
  */
 class Module extends Component
 {
@@ -330,7 +330,9 @@ class Module extends Component
                 $error = ErrorHandler::data();
                 $error->message = ErrorHandler::getText($code, ['module' => $this->getName()]);
                 $error->suffix =
-                    '$context : ' . $message . ($details === null ? '' : '<br>$configs : ' . json_encode($details));
+                    '$context : ' .
+                    $message .
+                    ($details === null ? '' : '<br>$configs : ' . '<pre>' . Format::toJson($details) . '</pre>');
                 $error->debugModeOnly = true;
                 return $error;
 
