@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 5. 24.
  */
 class Modules
 {
@@ -157,7 +157,7 @@ class Modules
      *
      * @param string $name 모듈명
      * @param ?Route $route 모듈 컨텍스트가 시작된 경로
-     * @return Module $class 모듈클래스 (모듈이 설치되어 있지 않은 경우 NULL 을 반환한다.)
+     * @return Module $class 모듈클래스
      */
     public static function get(string $name, ?Route $route = null): Module
     {
@@ -403,10 +403,7 @@ class Modules
                     'is_widget' => $module->isWidget() == true ? 'TRUE' : 'FALSE',
                     'is_theme' => $module->isTheme() == true ? 'TRUE' : 'FALSE',
                     'is_cron' => $module->isCron() == true ? 'TRUE' : 'FALSE',
-                    'configs' => json_encode(
-                        $configs,
-                        JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-                    ),
+                    'configs' => Format::toJson($configs),
                     'events' => 'null',
                     'sort' => $sort,
                 ])
@@ -437,7 +434,6 @@ class Modules
         }
 
         $paths = explode('/', $path);
-
         $process = array_shift($paths);
         $path = implode('/', $paths);
 
@@ -451,7 +447,7 @@ class Modules
             ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
         }
 
-        exit(json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        exit(Format::toJson($results));
     }
 
     /**
