@@ -7,7 +7,7 @@
  * @file /classes/Route.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 24.
  */
 class Route
 {
@@ -219,6 +219,37 @@ class Route
                 },
                 $url
             );
+        }
+
+        return $url;
+    }
+
+    /**
+     * 현재 URL 경로에서 서브경로가 변경된 URL 경로를 가져온다.
+     *
+     * @param string $subPath 변경할 하위 경로
+     * @param string[] $queryString 추가할 쿼리스트링
+     * @param bool $is_domain 도메인 포함 여부 (기본값 : false)
+     * @return string $subUrl
+     */
+    public function getSubUrl(string $subPath, array $queryString = [], bool $is_domain = false): string
+    {
+        $url = $this->getUrl(false, $is_domain);
+        if (strlen($subPath) > 0) {
+            if (substr($subPath, 0, 1) != '/') {
+                $subPath = '/' . $subPath;
+            }
+        }
+
+        $url .= $subPath;
+        if (count($queryString) > 0) {
+            if ($this->getDomain()->isRewrite() == true) {
+                $url .= '?';
+            } else {
+                $url .= '&';
+            }
+
+            $url .= http_build_query($queryString);
         }
 
         return $url;
