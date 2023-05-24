@@ -7,7 +7,7 @@
  * @file /classes/Router.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 24.
  */
 class Router
 {
@@ -90,11 +90,12 @@ class Router
     /**
      * 현재 경로에 해당하는 객체를 가져온다.
      *
+     * @param string $path 가져올경로 (NULL 인 경우 현재경로)
      * @return Route $route
      */
-    public static function get(): Route
+    public static function get(string $path = null): Route
     {
-        $route = self::has();
+        $route = self::has($path);
         if ($route === null) {
             ErrorHandler::print(self::error('NOT_FOUND_URL'));
         }
@@ -105,10 +106,12 @@ class Router
     /**
      * 경로가 존재한다면 경로 객체를 반환한다.
      *
+     * @param string $path 가져올경로 (NULL 인 경우 현재경로)
      * @return Route $route
      */
-    public static function has(): ?Route
+    public static function has(string $path = null): ?Route
     {
+        $match = $path ?? self::getPath();
         $paths = array_keys(self::$_routes);
         foreach ($paths as $path) {
             $matcher = str_replace('/', '\/', $path);
@@ -116,8 +119,8 @@ class Router
             $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
 
             if (
-                preg_match('/^' . $matcher . '$/', self::getPath(), $matches) == true ||
-                preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . self::getPath(), $matches) == true
+                preg_match('/^' . $matcher . '$/', $match, $matches) == true ||
+                preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true
             ) {
                 return self::$_routes[$path];
             }
