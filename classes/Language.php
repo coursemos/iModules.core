@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 23.
+ * @modified 2023. 5. 24.
  */
 class Language
 {
@@ -99,7 +99,7 @@ class Language
     ): string|array {
         $paths ??= ['/'];
         $codes ??= array_unique([Router::has()?->getLanguage() ?? Request::languages(true), ...Request::languages()]);
-        $keys = explode('/', $text);
+        $keys = explode('.', $text);
         $string = null;
         foreach ($paths as $path) {
             foreach ($codes as $code) {

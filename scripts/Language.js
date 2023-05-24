@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 24.
  */
 class Language {
     static observer;
@@ -107,7 +107,7 @@ class Language {
     static async getText(text, placeHolder = null, paths = null, codes = null) {
         paths ??= ['/'];
         codes ??= [Html.get('html').getAttr('lang')];
-        const keys = text.split('/');
+        const keys = text.split('.');
         let string = null;
         for (const path of paths) {
             for (const code of codes) {
@@ -143,7 +143,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '"></span>';
+        return '<span data-language="' + uuid + '">' + text + '</span>';
     }
     /**
      * 언어팩 출력을 위한 옵저버를 시작한다.
@@ -153,16 +153,19 @@ class Language {
             Language.observer = new MutationObserver(() => {
                 document.querySelectorAll('span[data-language]').forEach((dom) => {
                     const options = Language.prints.get(dom.getAttribute('data-language'));
+                    if (options === undefined) {
+                        return;
+                    }
                     Language.getText(options.text, options.placeHolder, options.paths, options.codes).then((string) => {
                         const span = document.querySelector('span[data-language="' + dom.getAttribute('data-language') + '"]');
                         if (span !== null) {
                             dom.outerHTML = typeof string == 'string' ? string : JSON.stringify(string);
                         }
-                        Language.prints.delete(dom.getAttribute('data-language'));
-                        Language.disconnect();
+                        //Language.prints.delete(dom.getAttribute('data-language'));
+                        //Language.disconnect();
                     });
                 });
-                Language.disconnect();
+                //Language.disconnect();
             });
         }
         if (document.querySelector('body') != null && Language.isObserve === false && Language.prints.size > 0) {
@@ -173,15 +176,6 @@ class Language {
                 characterData: false,
                 subtree: true,
             });
-        }
-    }
-    /**
-     * 옵저버를 중지한다.
-     */
-    static disconnect() {
-        if (Language.isObserve === true && Language.prints.size === 0) {
-            Language.isObserve = false;
-            Language.observer.disconnect();
         }
     }
 }
