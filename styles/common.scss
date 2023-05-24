@@ -66,6 +66,11 @@ body {
             line-height: 1.6;
         }
     }
+
+    > main[data-role='layout'] {
+        container-name: layout;
+        container-type: inline-size;
+    }
 }
 
 label {
