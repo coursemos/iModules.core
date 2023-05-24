@@ -94,3 +94,15 @@ input[type='search']::-webkit-search-decoration {
 button {
     outline: none;
 }
+
+@media print {
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+@page {
+    zoom: 0.8;
+    margin: 0;
+}
