@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 24.
  */
 class Theme
 {
@@ -49,10 +49,16 @@ class Theme
     /**
      * 테마 클래스를 선언한다.
      *
-     * @param object $theme 테마정보
+     * @param object|string $theme 테마정보
      */
-    public function __construct(object $theme)
+    public function __construct(object|string $theme)
     {
+        if (is_string($theme) == true) {
+            $name = $theme;
+            $theme = new stdClass();
+            $theme->name = $name;
+            $theme->configs = null;
+        }
         $this->_pathname = $theme->name;
 
         /**
@@ -302,6 +308,26 @@ class Theme
     function getValues(): array
     {
         $values = $this->_values;
+
+        /**
+         * 필수변수가 정의되어 있지 않은 경우, 해당 변수를 설정한다.
+         */
+        if (isset($values['site']) == false) {
+            $values['site'] = Sites::get();
+        }
+
+        if (isset($values['theme']) == false) {
+            $values['theme'] = &$this;
+        }
+
+        if (isset($values['context']) == false) {
+            $values['context'] = Sites::get()->getIndex();
+        }
+
+        if (isset($values['route']) == false) {
+            $values['route'] = Router::get();
+        }
+
         $values['owner'] = &$this->_owner;
         $values['theme'] = &$this;
 
@@ -336,18 +362,25 @@ class Theme
     /**
      * 콘텐츠 레이아웃을 가져온다.
      *
-     * @param string $file PHP 확장자를 포함하지 않는 레이아웃 파일명
-     * @param string $header(옵션) 컨텍스트 HTML 상단에 포함할 헤더 HTML
-     * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸더 HTML
+     * @param string $name 레이아웃명
+     * @param string $content 레이아웃에 포함될 콘텐츠
+     * @param string $header 콘텐츠에 추가할 헤더
+     * @param string $footer 콘텐츠에 추가할 푸터
      * @return string $html 컨텍스트 HTML
      */
-    function getLayout(string $file, string $header = '', string $footer = ''): string
+    function getLayout(string $name = 'NONE', string $content = '', string $header = '', string $footer = ''): string
     {
         /**
-         * 테마폴더에 파일이 없다면 에러메세지를 출력한다.
+         * 테마폴더에 레이아웃이 없다면 에러메세지를 출력한다.
          */
-        if (is_file($this->getPath() . '/' . $file . '.html') == false) {
-            return ErrorHandler::get($this->error('NOT_FOUND_THEME_LAYOUT', $this->getPath() . '/' . $file . '.html'));
+        if ($name != 'NONE' && is_file($this->getPath() . '/layouts/' . $name . '.html') == false) {
+            return ErrorHandler::get(
+                $this->error('NOT_FOUND_THEME_LAYOUT', $this->getPath() . '/layouts/' . $name . '.html')
+            );
+        }
+
+        if (is_file($this->getPath() . '/index.html') == false) {
+            return ErrorHandler::get($this->error('NOT_FOUND_THEME_INDEX', $this->getPath() . '/index.html'));
         }
 
         $this->init();
@@ -357,15 +390,27 @@ class Theme
          */
 
         /**
-         * 테마파일에서 사용할 변수선언
+         * 레이아웃에서 사용할 변수선언
          */
         extract($this->getValues());
 
-        if (is_file($this->getPath() . '/' . $file . '.html') == true) {
+        if ($name == 'NONE') {
+            $layout = Html::tag('<main data-role="layout" data-name="NONE">', $content, '</main>');
+        } else {
             ob_start();
-            include $this->getPath() . '/' . $file . '.html';
-            $context = ob_get_clean();
+            include $this->getPath() . '/layouts/' . $name . '.html';
+            $layout = trim(ob_get_clean());
         }
+
+        if (preg_match('/^<main.*?data-role=\"layout\".*?>.*<\/main>$/', str_replace("\n", '', $layout)) == false) {
+            return ErrorHandler::get(
+                $this->error('INVALID_THEME_LAYOUT', $this->getPath() . '/layouts/' . $name . '.html')
+            );
+        }
+
+        ob_start();
+        include $this->getPath() . '/index.html';
+        $context = ob_get_clean();
 
         /**
          * @todo 이벤트를 발생시킨다.
@@ -448,6 +493,7 @@ class Theme
             case 'NOT_FOUND_THEME_LAYOUT':
             case 'NOT_FOUND_THEME_PAGE':
             case 'NOT_FOUND_FILE':
+            case 'INVALID_THEME_LAYOUT':
                 $error = ErrorHandler::data();
                 $error->prefix = ErrorHandler::getText('THEME_ERROR');
                 $error->message = ErrorHandler::getText($code);
