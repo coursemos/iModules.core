@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 5. 24.
  */
 class Package
 {
@@ -85,12 +85,35 @@ class Package
     /**
      * 패키지파일의 정보를 가져온다.
      *
-     * @param string $key
+     * @param string $path 가져올 정보 경로
      * @return mixed $value
      */
-    public function get(string $key): mixed
+    public function get(string $path): mixed
     {
-        return $this->_package?->$key ?? null;
+        $paths = explode('.', $path);
+        $value = $this->_package;
+        foreach ($paths as $path) {
+            $value = $value?->$path ?? null;
+        }
+        return $value;
+    }
+
+    /**
+     * 패키지파일의 정보에서 특정 언어코드에 해당하는 정보를 가져온다.
+     *
+     * @param string $path 가져올 정보 경로
+     * @param string $language 가져올 언어코드
+     * @return mixed $value
+     */
+    public function getByLanguage(string $path, string $language = null): mixed
+    {
+        $values = $this->get($path);
+        if (is_object($values) === false) {
+            return $values;
+        }
+
+        $language ??= Router::getLanguage();
+        return $values?->$language ?? ($values->{$this->getLanguage()} ?? null);
     }
 
     /**
@@ -115,8 +138,7 @@ class Package
      */
     public function getTitle($language = null): string
     {
-        $language ??= Router::getLanguage();
-        return $this->_package?->title?->$language ?? $this->_package?->title?->{$this->getLanguage()};
+        return $this->getByLanguage('title', $language) ?? 'NONAME';
     }
 
     /**
@@ -127,8 +149,7 @@ class Package
      */
     public function getDescription($language = null): string
     {
-        $language ??= Router::getLanguage();
-        return $this->_package?->description?->$language ?? $this->_package?->description?->{$this->getLanguage()};
+        return $this->getByLanguage('description', $language) ?? '';
     }
 
     /**
