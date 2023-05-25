@@ -77,15 +77,34 @@ abstract class Component
     }
 
     /**
+     * 컴포넌트 클래스를 호출한 클래스명을 정제하여 가져온다.
+     *
+     * @param bool $namespace_only 네임스페이스만 가져올지 여부
+     * @return string $className
+     */
+    public static function getCalledName(bool $namespace_only = false): string
+    {
+        $called = str_replace('\\', '/', get_called_class());
+        if (strpos($called, '/') !== 0) {
+            $called = '/' . $called;
+        }
+
+        if ($namespace_only == true) {
+            $called = preg_replace('/\/[^\/]+$/', '', $called);
+        }
+
+        return $called;
+    }
+
+    /**
      * 컴포넌트명을 가져온다.
      *
-     * @return string $module
+     * @return string $name
      */
     public static function getName(): string
     {
-        $className = str_replace('\\', '/', get_called_class());
-        $namespace = preg_replace('/\/[^\/]+$/', '', $className);
-        return preg_replace('/^\/?' . self::getType() . 's\//', '', $namespace);
+        $namespace = self::getCalledName(true);
+        return explode('/' . self::getType() . 's/', $namespace)[1];
     }
 
     /**
@@ -129,9 +148,32 @@ abstract class Component
      *
      * @return string $version
      */
-    public function getVersion(): string
+    public static function getVersion(): string
     {
         return self::getPackage()->getVersion();
+    }
+
+    /**
+     * 모듈에 의하여 위젯 또는 플러그인 클래스가 호출된 경우, 해당 부모모듈 클래스를 가져온다.
+     *
+     * @return ?Module $parentModule
+     */
+    public static function getParentModule(): ?Module
+    {
+        if (in_array(self::getType(), ['widget', 'plugin']) == true) {
+            $className = self::getCalledName();
+            if (preg_match('/^\/modules/', $className) == true) {
+                $className = preg_replace('/^\/modules\//', '', $className);
+                $temp = explode('/' . self::getType() . 's/', $className);
+                $parentName = $temp[0];
+
+                return Modules::get($parentName);
+            }
+
+            return null;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -141,7 +183,11 @@ abstract class Component
      */
     public static function getBase(): string
     {
-        return '/' . self::getType() . 's/' . self::getName();
+        if (self::getType() == 'module') {
+            return '/' . self::getType() . 's/' . self::getName();
+        } else {
+            return (self::getParentModule()?->getBase() ?? '') . '/' . self::getType() . 's/' . self::getName();
+        }
     }
 
     /**
@@ -167,18 +213,15 @@ abstract class Component
     /**
      * 컴포넌트 종류를 가져온다.
      *
-     * @return string $type 컴포넌트 종류(module, plugin, widget)
+     * @return string $type 컴포넌트 종류(module, plugin, widget, component)
      */
     public static function getType(): string
     {
-        /**
-         * 컴포넌트 종류를 가져온다.
-         */
-        $regExp = '/^(module|plugin|widget)s\\\/';
-        if (preg_match($regExp, get_called_class(), $match) == true) {
-            return $match[1];
-        } else {
-            return null;
+        $component = get_parent_class(get_called_class());
+        if (in_array($component, ['Module', 'Widget', 'Plugin']) == true) {
+            return strtolower($component);
         }
+
+        return 'component';
     }
 }
