@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 25.
  */
 class Theme
 {
@@ -394,15 +394,16 @@ class Theme
          */
         extract($this->getValues());
 
+        $content = Html::element('div', ['data-role' => 'content'], $content);
         if ($name == 'NONE') {
-            $layout = Html::tag('<main data-role="layout" data-name="NONE">', $content, '</main>');
+            $main = Html::element('main', ['data-role' => 'layout', 'data-layout' => 'NONE'], $content);
         } else {
             ob_start();
             include $this->getPath() . '/layouts/' . $name . '.html';
-            $layout = trim(ob_get_clean());
+            $main = trim(ob_get_clean());
         }
 
-        if (preg_match('/^<main.*?data-role=\"layout\".*?>.*<\/main>$/', str_replace("\n", '', $layout)) == false) {
+        if (preg_match('/^<main.*?data-role=\"layout\".*?>.*<\/main>$/', str_replace("\n", '', $main)) == false) {
             return ErrorHandler::get(
                 $this->error('INVALID_THEME_LAYOUT', $this->getPath() . '/layouts/' . $name . '.html')
             );
@@ -410,12 +411,12 @@ class Theme
 
         ob_start();
         include $this->getPath() . '/index.html';
-        $context = ob_get_clean();
+        $layout = ob_get_clean();
 
         /**
          * @todo 이벤트를 발생시킨다.
          */
-        $html = Html::tag($header, $context, $footer);
+        $html = Html::tag($header, $layout, $footer);
 
         return $html;
     }
