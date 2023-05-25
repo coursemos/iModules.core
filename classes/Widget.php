@@ -7,22 +7,79 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 5. 25.
  */
 class Widget extends Component
 {
     /**
      * @var bool $_init 위젯 클래스가 초기화되었는지 여부
      */
-    private static bool $_init = false;
+    private bool $_init = false;
 
     /**
-     * 모듈 설정을 초기화한다.
+     * @var Template $_template 템플릿
+     */
+    private Template $_template;
+
+    /**
+     * 위젯 설정을 초기화한다.
      */
     public function init(): void
     {
-        if (self::$_init == false) {
-            self::$_init = true;
+        if ($this->_init == false) {
+            $this->_init = true;
         }
+    }
+
+    /**
+     * 템플릿을 설정한다.
+     *
+     * @param string $name 템플릿명
+     * @param array $configs 템플릿설정
+     */
+    public function setTemplate(string $name, array $configs = []): void
+    {
+        $template = (object) ['name' => $name, 'configs' => (object) $configs];
+        $this->_template = new Template($this, $template);
+    }
+
+    /**
+     * 템플릿을 가져온다.
+     *
+     * @return Template $template
+     */
+    public function getTemplate(): Template
+    {
+        if (isset($this->_template) == true) {
+            return $this->_template;
+        }
+
+        $this->_template = new Template($this, (object) ['name' => 'default', 'configs' => null]);
+        return $this->_template;
+    }
+
+    /**
+     * 위젯 레이아웃을 가져온다.
+     *
+     * @return string $layout
+     */
+    public function getLayout(): string
+    {
+        $template = $this->getTemplate();
+        return Html::element(
+            'div',
+            [
+                'data-role' => 'widget',
+                'data-name' => $this->getName(),
+                'data-template' => $template->getName(),
+                'data-module' => $this->getParentModule()?->getName() ?? 'core',
+            ],
+            $template->getLayout('index')
+        );
+    }
+
+    public function doLayout(): void
+    {
+        echo $this->getLayout();
     }
 }
