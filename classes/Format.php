@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 27.
  */
 class Format
 {
@@ -269,6 +269,69 @@ class Format
             return sprintf('%0.2f', $size / $depthSize) . ($is_KiB === true ? 'KiB' : 'KB');
         }
         return $size . 'B';
+    }
+
+    /**
+     * 키코드값을 가져온다.
+     *
+     * @param string $str 변환할 텍스트
+     * @return string $keycode 키코드
+     */
+    public static function keycode($str): string
+    {
+        $chos = explode(',', 'ㄱ,ㄲ,ㄴ,ㄷ,ㄸ,ㄹ,ㅁ,ㅂ,ㅃ,ㅅ,ㅆ,ㅇ,ㅈ,ㅉ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ');
+        $jungs = explode(',', 'ㅏ,ㅐ,ㅑ,ㅒ,ㅓ,ㅔ,ㅕ,ㅖ,ㅗ,ㅘ,ㅙ,ㅚ,ㅛ,ㅜ,ㅝ,ㅞ,ㅟ,ㅠ,ㅡ,ㅢ,ㅣ');
+        $jongs = explode(',', ',ㄱ,ㄲ,ㄳ,ㄴ,ㄵ,ㄶ,ㄷ,ㄹ,ㄺ,ㄻ,ㄼ,ㄽ,ㄾ,ㄿ,ㅀ,ㅁ,ㅂ,ㅄ,ㅅ,ㅆ,ㅇ,ㅈ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ');
+        $unicode = [];
+        $values = [];
+        $index = 1;
+
+        for ($i = 0, $loop = strlen($str); $i < $loop; $i++) {
+            $code = ord($str[$i]);
+
+            if ($code < 128) {
+                $unicode[] = $code;
+            } else {
+                if (count($values) == 0) {
+                    $index = $code < 224 ? 2 : 3;
+                }
+                $values[] = $code;
+                if (count($values) == $index) {
+                    $number =
+                        $index == 3
+                            ? ($values[0] % 16) * 4096 + ($values[1] % 64) * 64 + ($values[2] % 64)
+                            : ($values[0] % 32) * 64 + ($values[1] % 64);
+                    $unicode[] = $number;
+                    $values = [];
+                    $index = 1;
+                }
+            }
+        }
+
+        $keycode = '';
+        foreach ($unicode as $code) {
+            if ($code >= 44032 && $code <= 55203) {
+                $temp = $code - 44032;
+                $cho = intval($temp / 21 / 28, 10);
+                $jung = intval(($temp % (21 * 28)) / 28, 10);
+                $jong = intval($temp % 28, 10);
+
+                $keycode .= $chos[$cho] . $jungs[$jung] . $jongs[$jong];
+            } else {
+                if ($code < 128) {
+                    $keycode .= chr($code);
+                } elseif ($code < 2048) {
+                    $keycode .= chr(192 + ($code - ($code % 64)) / 64);
+                    $keycode .= chr(128 + ($code % 64));
+                } else {
+                    $keycode .= chr(224 + ($code - ($code % 4096)) / 4096);
+                    $keycode .= chr(128 + (($code % 4096) - ($code % 64)) / 64);
+                    $keycode .= chr(128 + ($code % 64));
+                }
+            }
+        }
+
+        return str_replace(' ', '', $keycode);
     }
 
     /**

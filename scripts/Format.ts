@@ -33,6 +33,73 @@ class Format {
     }
 
     /**
+     * 키코드값을 가져온다.
+     *
+     * @param {string} str - 변환할 텍스트
+     * @return {string} keycode - 키코드
+     */
+    static keycode(str: string): string {
+        str = Format.normalizer(str);
+        const chos = 'ㄱ,ㄲ,ㄴ,ㄷ,ㄸ,ㄹ,ㅁ,ㅂ,ㅃ,ㅅ,ㅆ,ㅇ,ㅈ,ㅉ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ'.split(',');
+        const jungs = 'ㅏ,ㅐ,ㅑ,ㅒ,ㅓ,ㅔ,ㅕ,ㅖ,ㅗ,ㅘ,ㅙ,ㅚ,ㅛ,ㅜ,ㅝ,ㅞ,ㅟ,ㅠ,ㅡ,ㅢ,ㅣ'.split(',');
+        const jongs = ',ㄱ,ㄲ,ㄳ,ㄴ,ㄵ,ㄶ,ㄷ,ㄹ,ㄺ,ㄻ,ㄼ,ㄽ,ㄾ,ㄿ,ㅀ,ㅁ,ㅂ,ㅄ,ㅅ,ㅆ,ㅇ,ㅈ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ'.split(',');
+
+        let unicode: number[] = [];
+        let values: number[] = [];
+        let index = 0;
+
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        for (const code of encoder.encode(str)) {
+            if (code < 128) {
+                unicode.push(code);
+            } else {
+                if (values.length == 0) {
+                    index = code < 224 ? 2 : 3;
+                }
+                values.push(code);
+                if (values.length == index) {
+                    const number =
+                        index == 3
+                            ? (values[0] % 16) * 4096 + (values[1] % 64) * 64 + (values[2] % 64)
+                            : (values[0] % 32) * 64 + (values[1] % 64);
+                    unicode.push(number);
+                    values = [];
+                    index = 1;
+                }
+            }
+        }
+
+        let keycode = '';
+        for (const code of unicode) {
+            if (code >= 44032 && code <= 55203) {
+                const temp = code - 44032;
+                const cho = Math.floor(temp / 21 / 28);
+                const jung = Math.floor((temp % (21 * 28)) / 28);
+                const jong = Math.floor(temp % 28);
+
+                keycode += chos[cho] + jungs[jung] + jongs[jong];
+            } else {
+                if (code < 128) {
+                    keycode += decoder.decode(new Uint8Array([code]));
+                } else if (code < 2048) {
+                    keycode += decoder.decode(new Uint8Array([192 + (code - (code % 64)) / 64, 128 + (code % 64)]));
+                } else {
+                    keycode += decoder.decode(
+                        new Uint8Array([
+                            224 + (code - (code % 4096)) / 4096,
+                            128 + ((code % 4096) - (code % 64)) / 64,
+                            128 + (code % 64),
+                        ])
+                    );
+                }
+            }
+        }
+
+        return keycode.replace(/ /g, '');
+    }
+
+    /**
      * 부분문자열을 위치에 따라 가져온다.
      *
      * @param {string} string - 문자열
