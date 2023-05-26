@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 5. 26.
  */
 class Format {
     /**
@@ -100,12 +100,16 @@ class Format {
                     }
                 }
                 else {
+                    let matched = false;
                     for (const c of right) {
                         if (Format.isEqual(v, c) == true) {
+                            matched = true;
                             break;
                         }
                     }
-                    return false;
+                    if (matched == false) {
+                        return false;
+                    }
                 }
             }
             return true;
