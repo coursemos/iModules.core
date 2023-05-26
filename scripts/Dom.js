@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 26.
  */
 class Dom {
     element;
@@ -477,6 +477,14 @@ class Dom {
             return this;
         this.element.innerHTML = html;
         return this;
+    }
+    /**
+     * Dom 객체를 HTML 코드로 변환한다.
+     *
+     * @returns {string} html
+     */
+    toHtml() {
+        return this.element?.outerHTML ?? '';
     }
     /**
      * HTML 엘리먼트가 INPUT, TEXTAREA, SELECT 요소인 경우 값을 지정한다.

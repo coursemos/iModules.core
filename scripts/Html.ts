@@ -6,7 +6,7 @@
  * @file /scripts/Html.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 16.
+ * @modified 2023. 5. 26.
  */
 class Html {
     static dataValues: WeakMap<object, any> = new WeakMap();
@@ -43,6 +43,19 @@ class Html {
         } else {
             return null;
         }
+    }
+
+    /**
+     * HTML 코드를 Dom 객체로 변환한다.
+     *
+     * @param {string} html
+     * @returns {Dom} dom - 변환된 Dom 객체
+     */
+    static html(html: string): Dom {
+        const element = document.createElement(null);
+        element.innerHTML = html;
+
+        return new Dom(element.firstChild);
     }
 
     /**

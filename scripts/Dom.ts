@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 26.
  */
 class Dom {
     element: HTMLElement | null;
@@ -503,6 +503,15 @@ class Dom {
         if (this.element === null) return this;
         this.element.innerHTML = html;
         return this;
+    }
+
+    /**
+     * Dom 객체를 HTML 코드로 변환한다.
+     *
+     * @returns {string} html
+     */
+    toHtml(): string {
+        return this.element?.outerHTML ?? '';
     }
 
     /**
