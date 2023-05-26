@@ -71,16 +71,16 @@ body {
 main[data-role='layout'] {
     container-name: main;
     container-type: inline-size;
-}
 
-div[data-role='content'] {
-    container-name: content;
-    container-type: inline-size;
-}
+    div[data-role='content'] {
+        container-name: content;
+        container-type: inline-size;
+    }
 
-div[data-role='widget'] {
-    container-name: widget;
-    container-type: inline-size;
+    div[data-role='widget'] {
+        container-name: widget;
+        container-type: inline-size;
+    }
 }
 
 label {
