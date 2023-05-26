@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 23.
+ * @modified 2023. 5. 26.
  */
 abstract class Component
 {
@@ -127,9 +127,15 @@ abstract class Component
     {
         $icon = self::getPackage()->getIcon() ?? 'xi xi-box';
         if (preg_match('/\.(gif|png|svg)$/', $icon) == true) {
-            return '<i class="icon" style="background-image:url(' . self::getDir() . '/' . $icon . ');"></i>';
+            $iconUrl = self::getDir() . '/' . $icon;
+            return Html::element(
+                'i',
+                ['class' => 'icon', 'style' => 'background-image:url(' . $iconUrl . '); background-color:#fff;'],
+                ''
+            );
         }
-        return '<i class="icon ' . $icon . '"></i>';
+
+        return Html::element('i', ['class' => 'icon ' . $icon], '');
     }
 
     /**
