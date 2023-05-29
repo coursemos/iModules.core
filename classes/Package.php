@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 30.
  */
 class Package
 {
@@ -403,10 +403,7 @@ class Package
         if (in_array($field->type, ['check', 'radio', 'select']) == true) {
             $field->options = [];
             foreach ($configs->options ?? [] as $value => $display) {
-                $option = new stdClass();
-                $option->display = $display->$language ?? ($display->{$this->getLanguage()} ?? $value);
-                $option->value = $value;
-                $field->options[] = $option;
+                $field->options[$value] = $display->$language ?? ($display->{$this->getLanguage()} ?? $value);
             }
         }
 
