@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 30.
  */
 class Modules
 {
@@ -68,7 +68,7 @@ class Modules
          * 전역모듈을 초기화한다.
          */
         foreach (self::$_modules as $module) {
-            if ($module->isGlobal() === true) {
+            if ($module->hasPackageProperty('GLOBAL') === true) {
                 $module->init();
             }
         }
