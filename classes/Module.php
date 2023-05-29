@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 5. 29.
  */
 class Module extends Component
 {
@@ -30,6 +30,11 @@ class Module extends Component
      * @var object $_template 모듈의 컨텍스트 템플릿을 초기화한다.
      */
     private object $_template;
+
+    /**
+     * @var array $_contextAttributes 모듈의 콘텐츠 컨테이너의 속성값을 저장한다.
+     */
+    private array $_contextAttributes = [];
 
     /**
      * 모듈을 초기화한다.
@@ -61,29 +66,40 @@ class Module extends Component
     public function getPackageProperties(): array
     {
         $properties = [];
-        if ($this->isGlobal() == true) {
+        if (($this->getPackage()->get('global') === true) == true) {
             $properties[] = 'GLOBAL';
         }
-        if ($this->isAdmin() == true) {
+        if ($this->getPackage()->get('admin') === true) {
             $properties[] = 'ADMIN';
         }
-        if ($this->isContext() == true) {
+        if ($this->getPackage()->get('context') === true) {
             $properties[] = 'CONTEXT';
         }
-        if ($this->isWidget() == true) {
+        if ($this->getPackage()->get('widget') === true) {
             $properties[] = 'WIDGET';
         }
-        if ($this->isTheme() == true) {
+        if ($this->getPackage()->get('theme') === true) {
             $properties[] = 'THEME';
         }
-        if ($this->isCron() == true) {
+        if ($this->getPackage()->get('cron') === true) {
             $properties[] = 'CRON';
         }
-        if ($this->isConfigs() == true) {
+        if ($this->getPackage()->get('configs') === true) {
             $properties[] = 'CONFIGS';
         }
 
         return $properties;
+    }
+
+    /**
+     * 패키지의 모듈 속성이 존재하는지 확인한다.
+     *
+     * @param string $property 확인할 속성
+     * @return bool $hasProperty
+     */
+    public function hasPackageProperty(string $property): bool
+    {
+        return in_array($property, $this->getPackageProperties());
     }
 
     /**
@@ -104,76 +120,6 @@ class Module extends Component
     public function isInstalled(): bool
     {
         return $this->getInstalled() !== null;
-    }
-
-    /**
-     * 모듈이 전역모듈인지 확인한다.
-     *
-     * @return bool $is_global 전역여부
-     */
-    public function isGlobal(): bool
-    {
-        return $this->getPackage()->get('global') ?? false;
-    }
-
-    /**
-     * 모듈이 관리자기능을 가지고 있는지 확인한다.
-     *
-     * @return bool $is_admin 관리자여부
-     */
-    public function isAdmin(): bool
-    {
-        return $this->getPackage()->get('admin') ?? false;
-    }
-
-    /**
-     * 모듈이 컨텍스트를 가지고 있는지 확인한다.
-     *
-     * @return bool $is_context 컨텍스트여부
-     */
-    public function isContext(): bool
-    {
-        return $this->getPackage()->get('context') ?? false;
-    }
-
-    /**
-     * 모듈이 사이트테마를 가지고 있는지 확인한다.
-     *
-     * @return bool $is_theme 사이트테마여부
-     */
-    public function isTheme(): bool
-    {
-        return $this->getPackage()->get('theme') ?? false;
-    }
-
-    /**
-     * 모듈이 위젯을 가지고 있는지 확인한다.
-     *
-     * @return bool $is_widget 위젯여부
-     */
-    public function isWidget(): bool
-    {
-        return $this->getPackage()->get('widget') ?? false;
-    }
-
-    /**
-     * 모듈이 자동화작업을 가지고 있는지 확인한다.
-     *
-     * @return bool $is_cron 자동화작업여부
-     */
-    public function isCron(): bool
-    {
-        return $this->getPackage()->get('cron') ?? false;
-    }
-
-    /**
-     * 모듈이 환경설정을 가지고 있는지 확인한다.
-     *
-     * @return bool $is_configs 환경설정여부
-     */
-    public function isConfigs(): bool
-    {
-        return count($this->getPackage()->getConfigsFields()) > 0;
     }
 
     /**
@@ -269,10 +215,58 @@ class Module extends Component
     }
 
     /**
-     * 모듈 컨텍스트의 콘텐츠를 가져온다.
-     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getContent() 메소드를 재정의하여야 한다.
-     * 모듈클래스에서 getContent() 메소드가 정의되어 있지 않다면, 이 메소드가 호출되며,
+     * 모듈의 컨텍스트 목록을 가져온다.
+     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getCOntexts() 메소드를 재정의하여야 한다.
+     *
+     * @return array $contexts 컨텍스트목록
+     */
+    public function getContexts(): array
+    {
+        return [['name' => null, 'title' => $this->getErrorText('NOT_FOUND_MODULE_CONTEXTS')]];
+    }
+
+    /**
+     * 모듈의 컨텍스트 설정필드를 가져온다.
+     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getContextConfigsFields() 메소드를 재정의하여야 한다.
+     * 모듈클래스에서 getContextConfigsFields() 메소드가 정의되어 있지 않다면, 이 메소드가 호출되며,
+     * 기본적인 컨텍스트 템플릿 설정 필드를 반환한다.
+     *
+     * @return array $context 컨텍스트명
+     * @return array $fields 설정필드목록
+     */
+    public function getContextConfigsFields(string $context): array
+    {
+        $template = [
+            'name' => 'template',
+            'label' => $this->getText('template'),
+            'type' => 'template',
+            'component' => [
+                'type' => 'module',
+                'name' => $this->getName(),
+            ],
+            'value' => 'default',
+        ];
+
+        return [$template];
+    }
+
+    /**
+     * 모듈 컨텍스트를 가져온다.
+     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getContext() 메소드를 재정의하여야 한다.
+     * 모듈클래스에서 getContext() 메소드가 정의되어 있지 않다면, 이 메소드가 호출되며,
      * 모듈에서 컨텍스트를 지원하지 않는다는 에러메시지를 출력한다.
+     *
+     * @param string $context 컨텍스트
+     * @param ?object $configs 컨텍스트 설정
+     * @return string $html
+     */
+    protected function getContext(string $context, ?object $configs = null): string
+    {
+        return ErrorHandler::get($this->error('NOT_FOUND_CONTEXT_METHOD', $context, $configs));
+    }
+
+    /**
+     * 모듈 컨텍스트의 내용을 모듈 컨테이너와 함께 가져온다.
      *
      * @param string $context 컨텍스트
      * @param ?object $configs 컨텍스트 설정
@@ -280,7 +274,27 @@ class Module extends Component
      */
     public function getContent(string $context, ?object $configs = null): string
     {
-        return ErrorHandler::get($this->error('NOT_FOUND_CONTEXT_METHOD', $context, $configs));
+        $content = $this->getContext($context, $configs);
+
+        $attributes = $this->_contextAttributes;
+        $attributes['data-role'] ??= 'module';
+        $attributes['data-module'] ??= $this->getName();
+        $attributes['data-context'] ??= $context;
+        $attributes['data-template'] ??= $this->getTemplate()->getName();
+
+        return Html::element('div', $attributes, $content);
+    }
+
+    /**
+     * 모듈 콘텐츠 컨테이터의 속성을 추가한다.
+     * 각 모듈 클래스에서 콘텐츠영역에 추가할 속성이 있는 경우 사용한다.
+     *
+     * @param string $name 속성명
+     * @param string $value 속성값
+     */
+    protected function setContextAttribute(string $name, string $value): void
+    {
+        $this->_contextAttributes[$name] = $value;
     }
 
     /**
