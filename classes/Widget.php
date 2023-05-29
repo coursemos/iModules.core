@@ -7,7 +7,7 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 25.
+ * @modified 2023. 5. 30.
  */
 class Widget extends Component
 {
@@ -74,7 +74,7 @@ class Widget extends Component
                 'data-template' => $template->getName(),
                 'data-module' => $this->getParentModule()?->getName() ?? 'core',
             ],
-            $template->getLayout('index')
+            $template->getLayout()
         );
     }
 
