@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 26.
+ * @modified 2023. 5. 30.
  */
 abstract class Component
 {
@@ -229,5 +229,66 @@ abstract class Component
         }
 
         return 'component';
+    }
+
+    /**
+     * 특정경로의 관리자 권한이 존재하는지 확인한다.
+     *
+     * @param string $path 권한을 확인할 관리자경로
+     * @return bool|string $checkAdmin
+     */
+    public static function checkAdmin(string $path): bool|string
+    {
+        $path = preg_replace('/^\//', '', $path);
+
+        /**
+         * @var \modules\admin\Admin $mAdmin
+         */
+        $mAdmin = Modules::get('admin');
+        $contexts = $mAdmin->getAdminContexts(true);
+        $context =
+            $contexts['/' . self::getType() . '/' . self::getName() . '/' . $path] ?? ($contexts['/' . $path] ?? null);
+
+        $component = $context?->getAdmin()->getComponent() ?? null;
+        if ($component?->getType() != self::getType() || $component?->getName() != self::getName()) {
+            return false;
+        }
+
+        return $mAdmin->checkPermission($context->getPath());
+    }
+
+    /**
+     * 현재 컴포넌트의 관리자 권한이 존재하는지 확인한다.
+     *
+     * @return bool $hasAdmin
+     */
+    public static function hasAdmin(): bool
+    {
+        /**
+         * @var \modules\admin\Admin $mAdmin
+         */
+        $mAdmin = Modules::get('admin');
+        $contexts = $mAdmin->getAdminContexts(true);
+        foreach ($contexts as $context) {
+            $component = $context->getAdmin()->getComponent();
+            if ($component->getType() == self::getType() && $component->getName() == self::getName()) {
+                if ($mAdmin->checkPermission($context->getPath()) == true) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 현재 컴포넌트의 관리자 권한이 존재하는지 확인한다.
+     *
+     * @param string $path 관리자 권한을 확인할 경로 (NULL 인 경우 현재 컴포넌트의 관리자 권한이 존재하는지 확인)
+     * @return bool $hasAdmin
+     */
+    public static function isAdmin(string $path = null): bool
+    {
+        return $path === null ? self::hasAdmin() : self::checkAdmin($path) !== false;
     }
 }
