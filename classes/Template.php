@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 5. 30.
  */
 class Template
 {
@@ -333,20 +333,22 @@ class Template
     }
 
     /**
-     * 콘텐츠 레이아웃을 가져온다.
+     * 컨텍스트 콘텐츠 페이지를 가져온다.
      *
-     * @param string $file PHP 확장자를 포함하지 않는 레이아웃 파일명
+     * @param string $file HTML 확장자를 포함하지 않는 콘텐츠 파일명
      * @param string $header(옵션) 컨텍스트 HTML 상단에 포함할 헤더 HTML
-     * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸더 HTML
+     * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸터 HTML
      * @return string $html 컨텍스트 HTML
      */
-    function getLayout(string $file, string $header = '', string $footer = ''): string
+    function getContext(string $file, string $header = '', string $footer = ''): string
     {
         /**
          * 템플릿폴더에 파일이 없다면 에러메세지를 출력한다.
          */
-        if (is_file($this->getPath() . '/' . $file . '.html') == false) {
-            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLATE_FILE', $this->getPath() . '/' . $file . '.html'));
+        if (is_file($this->getPath() . '/contexts/' . $file . '.html') == false) {
+            return ErrorHandler::get(
+                $this->error('NOT_FOUND_TEMPLATE_FILE', $this->getPath() . '/contexts/' . $file . '.html')
+            );
         }
 
         $this->init();
@@ -360,18 +362,54 @@ class Template
          */
         extract($this->getValues());
 
-        if (is_file($this->getPath() . '/' . $file . '.html') == true) {
+        if (is_file($this->getPath() . '/contexts/' . $file . '.html') == true) {
             ob_start();
-            include $this->getPath() . '/' . $file . '.html';
+            include $this->getPath() . '/contexts/' . $file . '.html';
             $context = ob_get_clean();
         }
+
+        $content = Html::tag($header, $context, $footer);
 
         /**
          * @todo 이벤트를 발생시킨다.
          */
-        $html = Html::tag($header, $context, $footer);
+        return $this->getLayout($content);
+    }
 
-        return $html;
+    /**
+     * 템플릿 레이아웃을 가져온다.
+     *
+     * @param string $content 콘텐츠
+     * @return string $html
+     */
+    function getLayout(string $content = ''): string
+    {
+        if (is_file($this->getPath() . '/index.html') == false) {
+            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLATE_INDEX', $this->getPath() . '/index.html'));
+        }
+
+        $this->init();
+
+        /**
+         * @todo 이벤트를 발생시킨다.
+         */
+
+        /**
+         * 레이아웃에서 사용할 변수선언
+         */
+        extract($this->getValues());
+
+        $main = $content;
+
+        ob_start();
+        include $this->getPath() . '/index.html';
+        $layout = ob_get_clean();
+
+        /**
+         * @todo 이벤트를 발생시킨다.
+         */
+
+        return $layout;
     }
 
     /**
