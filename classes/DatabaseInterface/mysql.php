@@ -8,7 +8,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2023. 5. 3.
+ * @modified 2023. 6. 1.
  */
 class mysql extends DatabaseInterface
 {
@@ -246,10 +246,14 @@ class mysql extends DatabaseInterface
          */
         $columns = [];
         $exists = [];
+        $auto_increment = null;
         foreach ($this->query('SHOW FULL COLUMNS FROM `' . $table . '`')->get() as $column) {
             $columns[$column->Field] = new stdClass();
             $columns[$column->Field]->type = $column->Type;
             $columns[$column->Field]->is_null = $column->Null == 'YES';
+            if (isset($column->Extra) == true && $column->Extra == 'auto_increment') {
+                $auto_increment = $column->Field;
+            }
 
             if ($column->Default !== null && $this->_isNumeric($column->Type) == true) {
                 $column->Default = intval($column->Default);
@@ -260,6 +264,10 @@ class mysql extends DatabaseInterface
             $columns[$column->Field]->collation = $column->Collation;
 
             $exists[] = $column->Field;
+        }
+
+        if ($auto_increment !== ($schema->auto_increment ?? null)) {
+            return false;
         }
 
         /**
@@ -523,6 +531,22 @@ class mysql extends DatabaseInterface
             $query = 'ALTER TABLE `' . $created . '` ';
             $query .= implode(', ', $indexes);
 
+            $results = $this->query($query)->execute();
+            if ($results->success == false) {
+                $this->drop($created);
+                return $this->getLastError();
+            }
+        }
+
+        if (isset($schema->auto_increment) == true && isset($schema->columns->{$schema->auto_increment}) == true) {
+            $query =
+                'ALTER TABLE `' .
+                $created .
+                '` CHANGE `' .
+                $schema->auto_increment .
+                '` ' .
+                $this->_columnQuery($schema->auto_increment, $schema->columns->{$schema->auto_increment}) .
+                ' AUTO_INCREMENT';
             $results = $this->query($query)->execute();
             if ($results->success == false) {
                 $this->drop($created);
