@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 26.
+ * @modified 2023. 6. 4.
  */
 class Format {
     /**
@@ -96,7 +96,7 @@ class Format {
             }
         }
 
-        return keycode.replace(/ /g, '');
+        return keycode.replace(/ /g, '').toLowerCase();
     }
 
     /**

@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 27.
+ * @modified 2023. 6. 4.
  */
 class Format
 {
@@ -331,7 +331,7 @@ class Format
             }
         }
 
-        return str_replace(' ', '', $keycode);
+        return strtolower(str_replace(' ', '', $keycode));
     }
 
     /**
