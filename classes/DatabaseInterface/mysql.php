@@ -48,6 +48,7 @@ class mysql extends DatabaseInterface
     private array $_bindParams = [];
     private array $_tableDatas = [];
     private string $_tableLockMethod = 'READ';
+    private ?int $_insert_id = null;
     private int $_count = 0;
     private bool $_displayError = true;
 
@@ -1089,9 +1090,26 @@ class mysql extends DatabaseInterface
 
         $this->_buildQuery();
         $results = $this->_execute();
+
+        if ($this->_startQuery == 'INSERT') {
+            $this->_insert_id = $results->insert_id;
+        } else {
+            $this->_insert_id = null;
+        }
+
         $this->_end();
 
         return $results;
+    }
+
+    /**
+     * INSERT 쿼리성공시 INSERT_ID 를 가지고 온다.
+     *
+     * @return ?int $insert_id
+     */
+    public function getInsertId(): ?int
+    {
+        return $this->_insert_id ?? null;
     }
 
     /**

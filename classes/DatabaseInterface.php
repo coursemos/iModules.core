@@ -338,6 +338,13 @@ abstract class DatabaseInterface
     abstract public function execute(): object;
 
     /**
+     * INSERT 쿼리성공시 INSERT_ID 를 가지고 온다.
+     *
+     * @return ?int $insert_id
+     */
+    abstract public function getInsertId(): ?int;
+
+    /**
      * SELECT 쿼리문에 의해 선택된 데이터의 갯수를 가져온다.
      *
      * @return int $count
