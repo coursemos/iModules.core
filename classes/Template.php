@@ -300,9 +300,28 @@ class Template
     function getValues(): array
     {
         $values = $this->_values;
+
+        /**
+         * 필수변수가 정의되어 있지 않은 경우, 해당 변수를 설정한다.
+         */
+        if (isset($values['site']) == false) {
+            $values['site'] = Sites::get();
+        }
+
+        if (isset($values['theme']) == false) {
+            $values['theme'] = &$this;
+        }
+
+        if (isset($values['context']) == false) {
+            $values['context'] = Sites::get()->getIndex();
+        }
+
+        if (isset($values['route']) == false) {
+            $values['route'] = Router::get();
+        }
+
         $values['me'] = &$this->_parent;
         $values['template'] = &$this;
-        $values['route'] = Router::get();
 
         return $values;
     }
