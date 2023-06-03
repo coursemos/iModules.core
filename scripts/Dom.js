@@ -123,6 +123,21 @@ class Dom {
         return Html.el(parent);
     }
     /**
+     * HTML 엘리먼트의 자식요소를 가져온다.
+     *
+     * @return {Dom[]} children
+     */
+    getChildren() {
+        if (this.element == null) {
+            return [];
+        }
+        const children = [];
+        Array.prototype.forEach.call(this.element.children, (item) => {
+            children.push(new Dom(item));
+        });
+        return children;
+    }
+    /**
      * 현재 DOM 이 부모요소의 몇번째 자식요소인지 가져온다.
      *
      * @return {number} index - 인덱스
@@ -131,7 +146,7 @@ class Dom {
         if (this.element == null) {
             return -1;
         }
-        const children = this.element.parentNode.childNodes ?? [];
+        const children = this.element.parentElement.children ?? [];
         let index = 0;
         for (let i = 0, loop = children.length; i < loop; i++) {
             if (children[i].isEqualNode(this.element) == true) {
