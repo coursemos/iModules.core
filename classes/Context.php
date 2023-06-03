@@ -462,6 +462,49 @@ class Context
     }
 
     /**
+     * 컨텍스트 경로에서 서브경로가 변경된 URL 경로를 가져온다.
+     *
+     * @param string $subPath 변경할 하위 경로
+     * @param string[] $queryString 추가할 쿼리스트링
+     * @param bool $is_domain 도메인 포함 여부 (기본값 : false)
+     * @return string $subUrl
+     */
+    public function getSubUrl(string $subPath, array $queryString = [], bool $is_domain = false): string
+    {
+        if ($this->getPath() == '/') {
+            return $this->getSite()->getUrl();
+        }
+
+        if (
+            $is_domain == true ||
+            $this->getHost() != Request::host() ||
+            $this->getDomain()->isHttps() != Request::isHttps()
+        ) {
+            $url = $this->getDomain()->getUrl();
+        } else {
+            $url = '';
+        }
+        $url .= Configs::dir();
+
+        $route = '';
+        if ($this->getDomain()->isInternationalization() == true) {
+            $route .= '/' . $this->getLanguage();
+        }
+
+        $route .= $this->getPath() . $subPath;
+
+        if ($this->getDomain()->isRewrite() == true) {
+            $url .= $route != '' ? $route : '/';
+            $url .= count($queryString) > 0 ? '?' . http_build_query($queryString) : '';
+        } else {
+            $url .= '/' . ($route != '' ? '?route=' . $route : '');
+            $url .= count($queryString) > 0 ? '&' . http_build_query($queryString) : '';
+        }
+
+        return $url;
+    }
+
+    /**
      * 현재 컨텍스트를 포함한 모든 자식 컨텍스트를 배열로 가져온다.
      *
      * @return Context[] $tree
