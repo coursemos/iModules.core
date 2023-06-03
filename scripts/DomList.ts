@@ -6,7 +6,7 @@
  * @file /scripts/DomList.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 6. 4.
  */
 class DomList {
     domList: Dom[];
@@ -43,6 +43,15 @@ class DomList {
      */
     getList(): Dom[] {
         return this.domList;
+    }
+
+    /**
+     * 전체 목록의 갯수를 가져온다.
+     *
+     * @return {number} count
+     */
+    getCount(): number {
+        return this.domList.length;
     }
 
     /**
