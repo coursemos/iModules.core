@@ -59,6 +59,14 @@ class Widget extends Component
     }
 
     /**
+     * 위젯을 출력하는데 사용하는 데이터를 할당한다.
+     * 각 위젯클래스에서 재정의하여 사용한다.
+     */
+    public function setValues(): void
+    {
+    }
+
+    /**
      * 위젯 레이아웃을 가져온다.
      *
      * @return string $layout
@@ -66,6 +74,8 @@ class Widget extends Component
     public function getLayout(): string
     {
         $template = $this->getTemplate();
+        $this->setValues();
+
         return Html::element(
             'div',
             [
