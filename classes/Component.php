@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2023. 6. 5.
  */
 abstract class Component
 {
@@ -40,6 +40,63 @@ abstract class Component
     public static function table(string $table): string
     {
         return iModules::table(self::getType() . '_' . str_replace('/', '_', self::getName()) . '_' . $table);
+    }
+
+    /**
+     * 캐시데이터를 가져온다.
+     *
+     * @param string $name 캐시명
+     * @param int $lifetime 캐시유지시간(초)
+     */
+    public static function getCache(string $name, int $lifetime = 0): mixed
+    {
+        $cache = self::getType();
+        if (self::getParentModule() !== null) {
+            $cache .= '.' . self::getParentModule()->getName();
+        }
+        $cache .= '.' . self::getName();
+        $cache .= '.' . $name;
+        $cache = str_replace('/', '.', $cache);
+
+        return Cache::get($cache, $lifetime);
+    }
+
+    /**
+     * 캐시데이터를 제거한다.
+     *
+     * @param string $name 캐시명
+     * @param mixed $data 캐시데이터
+     * @return bool $success
+     */
+    public static function storeCache(string $name, mixed $data): bool
+    {
+        $cache = self::getType();
+        if (self::getParentModule() !== null) {
+            $cache .= '.' . self::getParentModule()->getName();
+        }
+        $cache .= '.' . self::getName();
+        $cache .= '.' . $name;
+        $cache = str_replace('/', '.', $cache);
+
+        return Cache::store($cache, $data);
+    }
+
+    /**
+     * 캐시데이터를 제거한다.
+     *
+     * @param string $name 캐시명
+     */
+    public static function removeCache(string $name): void
+    {
+        $cache = self::getType();
+        if (self::getParentModule() !== null) {
+            $cache .= '.' . self::getParentModule()->getName();
+        }
+        $cache .= '.' . self::getName();
+        $cache .= '.' . $name;
+        $cache = str_replace('/', '.', $cache);
+
+        Cache::remove($cache);
     }
 
     /**
