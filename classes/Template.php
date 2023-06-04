@@ -313,7 +313,7 @@ class Template
         }
 
         if (isset($values['context']) == false) {
-            $values['context'] = Sites::get()->getIndex();
+            $values['context'] = Contexts::get() ?? Sites::get()->getIndex();
         }
 
         if (isset($values['route']) == false) {
