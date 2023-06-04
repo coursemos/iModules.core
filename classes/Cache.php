@@ -84,7 +84,7 @@ class Cache
      * 캐시 내용을 업데이트한다.
      *
      * @param string $name 캐시파일명
-     * @param string $data 캐시데이터
+     * @param mixed $data 캐시데이터
      * @param bool $is_raw RAW 데이터 여부
      * @return bool $success
      */
@@ -118,12 +118,17 @@ class Cache
      * 캐시 데이터를 가져온다.
      *
      * @param string $name 캐시파일명
+     * @param int $lifetime 캐시유지시간(초)
      * @return mixed $data
      */
-    public static function get(string $name): mixed
+    public static function get(string $name, int $lifetime = 0): mixed
     {
-        $data = File::read(Configs::cache() . '/' . $name . '.cache');
-        return $data === false ? null : unserialize($data);
+        if (self::has($name, $lifetime) == true) {
+            $data = File::read(Configs::cache() . '/' . $name . '.cache');
+            return $data === false ? null : unserialize($data);
+        } else {
+            return null;
+        }
     }
 
     /**
