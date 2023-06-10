@@ -180,12 +180,12 @@ class Widgets
 
         switch ($code) {
             case 'NOT_FOUND_WIDGET':
-                $error->message = ErrorHandler::getText($code, ['module' => $message]);
+                $error->message = ErrorHandler::getText($code, ['widget' => $message]);
                 $error->suffix = Request::url();
                 break;
 
             case 'NOT_FOUND_WIDGET_PROCESS':
-                $error->message = ErrorHandler::getText($code, ['module' => $message]);
+                $error->message = ErrorHandler::getText($code, ['widget' => $message]);
                 $error->suffix = Request::url();
                 break;
 
