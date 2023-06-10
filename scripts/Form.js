@@ -68,9 +68,7 @@ class Form {
             }
             const $error = Html.all('div[data-role=form][data-field].error', this.$form).get(0);
             if ($error.getEl() !== null) {
-                $error.setAttr('tabindex', '1');
-                $error.focus();
-                $error.removeAttr('tabindex');
+                $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
         return results;
