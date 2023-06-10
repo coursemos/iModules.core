@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 5.
+ * @modified 2023. 6. 10.
  */
 abstract class Component
 {
@@ -20,15 +20,12 @@ abstract class Component
      * 각 컴포넌트에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
      *
      * @param ?string $name 데이터베이스 인터페이스 고유명
-     * @param ?object $connector 데이터베이스정보
+     * @param ?DatabaseConnector $connector 데이터베이스정보
      * @return DatabaseInterface $interface
      */
-    public static function db(?string $name = null, ?object $connector = null): DatabaseInterface
+    public static function db(?string $name = null, ?DatabaseConnector $connector = null): DatabaseInterface
     {
-        return Database::getInterface(
-            $name ?? self::getType() . '/' . self::getName(),
-            $connector ?? Configs::get('db')
-        );
+        return Database::getInterface($name ?? self::getType() . '/' . self::getName(), $connector ?? Configs::db());
     }
 
     /**

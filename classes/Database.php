@@ -7,28 +7,42 @@
  * @file /classes/Database.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 6. 10.
  */
 class Database
 {
     /**
-     * 데이터베이스 커넥션 정보
+     * @var mixed[] $_connections 데이터베이스 커넥션 정보
      */
     private static array $_connections = [];
 
     /**
-     * 데이터베이스 인터페이스 정보
+     * @var DatabaseInterface[] $_interfaces 데이터베이스 인터페이스 정보
      */
     private static array $_interfaces = [];
+
+    /**
+     * 데이터베이스 커넥터를 가져온다.
+     *
+     * @param string $type 데이터베이스타입
+     * @return DatabaseConnector $connector
+     */
+    public static function getConnector(string $type): DatabaseConnector
+    {
+        if ($type == 'mysql') {
+            require_once Configs::path() . '/classes/DatabaseInterface/mysql.php';
+            return new \databases\mysql\connector($type);
+        }
+    }
 
     /**
      * 데이터베이스 인터페이스 클래스를 가져온다.
      *
      * @param string $name 커넥션명
-     * @param object $connector 데이터베이스정보
+     * @param DatabaseConnector $connector 데이터베이스정보
      * @return DatabaseInterface $interface
      */
-    public static function getInterface(string $name, object $connector): DatabaseInterface
+    public static function getInterface(string $name, DatabaseConnector $connector): DatabaseInterface
     {
         if (isset(self::$_interfaces[$name]) == true) {
             return self::$_interfaces[$name];
@@ -37,12 +51,12 @@ class Database
         /**
          * 데이터베이스 정보를 이용하여 데이터베이스 서버 고유값을 구한다.
          */
-        $connection = sha1($connector->type . $connector->host . $connector->database);
+        $connection = $connector->uuid();
         $interface = null;
 
         if ($connector->type == 'mysql') {
             require_once Configs::path() . '/classes/DatabaseInterface/mysql.php';
-            $interface = new mysql();
+            $interface = new \databases\mysql\mysql();
         }
 
         if ($interface === null) {

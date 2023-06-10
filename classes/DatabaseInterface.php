@@ -7,17 +7,17 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 6. 10.
  */
 abstract class DatabaseInterface
 {
     /**
      * 데이터베이스에 접속한다.
      *
-     * @param object $connector 데이터베이스정보
+     * @param DatabaseConnector $connector 데이터베이스정보
      * @return mixed $interface 인터페이스객체
      */
-    abstract public function connect(object $connector): mixed;
+    abstract public function connect(DatabaseConnector $connector): mixed;
 
     /**
      * 커넥션을 설정한다.
@@ -417,4 +417,22 @@ abstract class DatabaseInterface
      * @return DatabaseInterface $this
      */
     abstract public function displayError(bool $display): DatabaseInterface;
+}
+
+abstract class DatabaseConnector
+{
+    public string $type;
+
+    public function __construct(string $type)
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * 현재 커넥션의 고유값을 가져온다.
+     * 같은 데이터베이스에 접근하는 커넥터는 동일한 값을 반환하여야 한다.
+     *
+     * @return string $uuid
+     */
+    abstract public function uuid(): string;
 }

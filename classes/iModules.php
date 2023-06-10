@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 23.
+ * @modified 2023. 6. 10.
  */
 class iModules
 {
@@ -68,12 +68,12 @@ class iModules
      * 데이터베이스 인터페이스 클래스를 가져온다.
      *
      * @param string $name 데이터베이스 인터페이스 고유명
-     * @param ?object $connector 데이터베이스정보
+     * @param ?DatabaseConnector $connector 데이터베이스정보
      * @return DatabaseInterface $interface
      */
-    public static function db(string $name = 'default', ?object $connector = null): DatabaseInterface
+    public static function db(string $name = 'default', ?DatabaseConnector $connector = null): DatabaseInterface
     {
-        return Database::getInterface($name, $connector ?? Configs::get('db'));
+        return Database::getInterface($name, $connector ?? Configs::db());
     }
 
     /**

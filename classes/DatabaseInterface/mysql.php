@@ -8,8 +8,16 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2023. 6. 1.
+ * @modified 2023. 6. 10.
  */
+namespace databases\mysql;
+use mysqli;
+use mysqli_stmt;
+use mysqli_result;
+use DatabaseInterface;
+use DatabaseConnector;
+use ErrorHandler;
+use stdClass;
 class mysql extends DatabaseInterface
 {
     /**
@@ -34,7 +42,7 @@ class mysql extends DatabaseInterface
     private bool $_is_builder_stated = false;
     private ?string $_startQuery = null;
     private ?string $_from_table = null;
-    private ?DatabaseInterface $_from_query = null;
+    private ?\DatabaseInterface $_from_query = null;
     private ?string $_from_alias = null;
 
     private array $_columns = [];
@@ -65,10 +73,10 @@ class mysql extends DatabaseInterface
     /**
      * 데이터베이스에 접속한다.
      *
-     * @param object $connector 데이터베이스정보
+     * @param DatabaseConnector $connector 데이터베이스정보
      * @return mysqli $mysqli mysqli 클래스객체
      */
-    public function connect(object $connector): mysqli
+    public function connect(DatabaseConnector $connector): mysqli
     {
         set_error_handler(null);
         mysqli_report(MYSQLI_REPORT_OFF);
@@ -1845,5 +1853,38 @@ class mysql extends DatabaseInterface
         }
 
         return $query;
+    }
+}
+
+class connector extends DatabaseConnector
+{
+    public string $host;
+    public string $id;
+    public string $password;
+    public string $database;
+    public int $port;
+
+    /**
+     * mysql 커넥터를 생성한다.
+     */
+    public function create(string $host, string $id, string $password, string $database, int $port = 3306)
+    {
+        $this->host = $host;
+        $this->id = $id;
+        $this->password = $password;
+        $this->database = $database;
+        $this->port = $port;
+
+        return $this;
+    }
+
+    /**
+     * 현재 커넥션의 고유값을 가져온다.
+     *
+     * @return string $uuid
+     */
+    public function uuid(): string
+    {
+        return sha1($this->host . $this->id . $this->database);
     }
 }
