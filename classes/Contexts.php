@@ -99,6 +99,27 @@ class Contexts
     }
 
     /**
+     * 경로에 따른 컨텍스트가 존재한다면 가져온다.
+     *
+     * @param ?Route $route 경로 (NULL 인 경우 현재 경로)
+     * @return ?Context $context
+     */
+    public static function has(?Route $route = null): ?Context
+    {
+        $route ??= Router::get();
+        if ($route->getType() != 'context') {
+            return null;
+        }
+
+        $contexts = self::all($route->getSite());
+        if (isset($contexts[$route->getPath()]) == false) {
+            return null;
+        }
+
+        return $contexts[$route->getPath()];
+    }
+
+    /**
      * 경로에 따른 컨텍스트를 가져온다.
      *
      * @param string $host 호스트명
