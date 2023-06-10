@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 26.
+ * @modified 2023. 6. 10.
  */
 class Dom {
     element: HTMLElement | null;
@@ -528,8 +528,12 @@ class Dom {
      *
      * @returns {string} html
      */
-    toHtml(): string {
-        return this.element?.outerHTML ?? '';
+    toHtml(is_inner_html: boolean = false): string {
+        if (is_inner_html === true) {
+            return this.element?.innerHTML ?? '';
+        } else {
+            return this.element?.outerHTML ?? '';
+        }
     }
 
     /**
@@ -539,7 +543,12 @@ class Dom {
      * @return {Dom} this
      */
     setValue(value: string | boolean): this {
-        if (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) {
+        if (
+            this.element instanceof HTMLInputElement ||
+            this.element instanceof HTMLTextAreaElement ||
+            this.element instanceof HTMLSelectElement
+        ) {
+            const originValue = this.getValue();
             if (this.element.getAttribute('type') == 'checkbox' || this.element.getAttribute('type') == 'radio') {
                 if (typeof value === 'boolean') {
                     (this.element as HTMLInputElement).checked = value;
@@ -548,6 +557,10 @@ class Dom {
                 }
             } else if (typeof value == 'string') {
                 this.element.value = value;
+            }
+
+            if (originValue !== this.getValue()) {
+                this.trigger('change');
             }
         } else {
             console.error('HTMLElement is not HTMLInputElement');
@@ -561,7 +574,11 @@ class Dom {
      * @return {string} value - 값
      */
     getValue(): string {
-        if (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement) {
+        if (
+            this.element instanceof HTMLInputElement ||
+            this.element instanceof HTMLTextAreaElement ||
+            this.element instanceof HTMLSelectElement
+        ) {
             return this.element.value;
         }
     }
