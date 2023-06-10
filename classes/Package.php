@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2023. 6. 10.
  */
 class Package
 {
@@ -101,13 +101,19 @@ class Package
     /**
      * 패키지파일의 정보에서 특정 언어코드에 해당하는 정보를 가져온다.
      *
-     * @param string $path 가져올 정보 경로
+     * @param string|object $path 가져올 정보 경로 또는 데이터
      * @param string $language 가져올 언어코드
+     * @param bool $is_data $path 값이 실제 데이터인지 여부
      * @return mixed $value
      */
-    public function getByLanguage(string $path, string $language = null): mixed
+    public function getByLanguage(string|object $path, string $language = null, bool $is_data = false): mixed
     {
-        $values = $this->get($path);
+        if ($is_data == true) {
+            $values = $path;
+        } else {
+            $values = $this->get($path);
+        }
+
         if (is_object($values) === false) {
             return $values;
         }
@@ -397,13 +403,13 @@ class Package
         $language ??= Router::getLanguage();
         $field = new stdClass();
         $field->name = $name;
-        $field->label = $configs->label?->$language ?? ($configs->label?->{$this->getLanguage()} ?? $name);
+        $field->label = $this->getByLanguage($configs->label ?? '', null, true);
         $field->type = $configs->type ?? 'text';
 
         if (in_array($field->type, ['check', 'radio', 'select']) == true) {
             $field->options = [];
             foreach ($configs->options ?? [] as $value => $display) {
-                $field->options[$value] = $display->$language ?? ($display->{$this->getLanguage()} ?? $value);
+                $field->options[$value] = $this->getByLanguage($display, null, true);
             }
         }
 
@@ -419,7 +425,7 @@ class Package
                 $field->items[] = $this->getConfigsField($childName, $childConfigs, $values);
             }
         } else {
-            $field->value = $values->$name ?? null;
+            $field->value = $value->$name ?? null;
         }
 
         return $field;
