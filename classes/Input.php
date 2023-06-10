@@ -55,13 +55,17 @@ class Input
      *
      * @param string $key - 데이터를 가지고 올 키값
      * @param array &$errors 데이터가 존재하지 않을 경우 에러를 담을 배열
+     * @param ?string $message 에러메시지 (NULL 인 경우 기본 메시지)
      * @return mixed $value
      */
-    public function get(string $key, array &$errors = null): mixed
+    public function get(string $key, array &$errors = null, ?string $message = null): mixed
     {
         $value = isset($this->values?->$key) == true ? $this->values->$key : null;
         if ($value === null && $errors !== null) {
-            $errors[$key] = Language::getText('errors.REQUIRED');
+            $errors[$key] = $message ?? Language::getText('errors.REQUIRED');
+            if (strlen($errors[$key]) == 0) {
+                $errors[$key] = null;
+            }
         }
         return $value;
     }
