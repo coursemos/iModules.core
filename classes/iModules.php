@@ -18,6 +18,13 @@ class iModules
     private static bool $_init = false;
 
     /**
+     * @var float $_startTime 최초시작시간
+     * @var array $_loadingTime 로딩시간 기록
+     */
+    private static float $_startTime = 0;
+    private static array $_loadingTime = [];
+
+    /**
      * 아이모듈을 초기화한다.
      */
     private static function init(): void
@@ -25,6 +32,8 @@ class iModules
         if (self::$_init == true) {
             return;
         }
+
+        self::$_startTime = self::microtime();
 
         /**
          * 라우터를 초기화한다.
@@ -62,6 +71,8 @@ class iModules
          * 전체 컨텍스트를 초기화한다.
          */
         Contexts::init();
+
+        self::loadingTime('init');
     }
 
     /**
@@ -86,6 +97,48 @@ class iModules
     {
         // todo: prefix 설정 제대로
         return 'im_' . $table;
+    }
+
+    /**
+     * 함수가 호출될 시점의 microtime 을 구한다.
+     *
+     * @return double $microtime
+     */
+    public static function microtime(): float
+    {
+        $microtimestmp = explode(' ', microtime());
+        return floatval($microtimestmp[0]) + floatval($microtimestmp[1]);
+    }
+
+    /**
+     * 로딩시간을 기록한다.
+     *
+     * @param string $name
+     */
+    public static function loadingTime(string $name): void
+    {
+        self::$_loadingTime[] = [$name, self::microtime()];
+    }
+
+    /**
+     * 기록된 전체 로딩시간을 가져온다.
+     *
+     * @param object $times
+     */
+    public static function loadingTimes(): array
+    {
+        $loadingTimes = [];
+        $latestTime = self::$_startTime;
+        foreach (self::$_loadingTime as $time) {
+            $loadingTimes[] = [
+                'name' => $time[0],
+                'current' => sprintf('%0.6f', $time[1] - $latestTime),
+                'total' => sprintf('%0.6f', $time[1] - self::$_startTime),
+            ];
+            $latestTime = $time[1];
+        }
+
+        return $loadingTimes;
     }
 
     /**
@@ -125,6 +178,7 @@ class iModules
         Cache::script('common', '/scripts/Html.js');
         Cache::script('common', '/scripts/Dom.js');
         Cache::script('common', '/scripts/DomList.js');
+        Cache::script('common', '/scripts/Form.js');
         Html::script(Cache::script('common'), 1);
 
         Cache::script('core', '/scripts/iModules.js');
@@ -156,6 +210,8 @@ class iModules
          * 모듈의 스타일시트파일을 불러온다.
          */
         Html::style(Modules::styles(), 5);
+
+        self::loadingTime('resources');
     }
 
     /**
@@ -273,6 +329,8 @@ class iModules
              */
             Header::type('json');
         }
+
+        self::loadingTime('initContent');
     }
 
     /**
@@ -350,11 +408,32 @@ class iModules
          */
         self::initContent();
 
+        self::loadingTime('doContext');
+
         /**
          * HTML 헤더 및 푸터를 포함하여 출력한다.
          * @todo 이벤트
          */
         Html::print(Html::header(), $layout, Html::footer());
+
+        Html::print('<!-- Powered By iModules v' . __IM_VERSION__ . ' -->');
+        if (Configs::debug() == true) {
+            if (count(self::$_loadingTime) > 0) {
+                $loadingTimes = ['<!--', 'Loading Times'];
+                foreach (self::loadingTimes() as $time) {
+                    $loadingTimes[] =
+                        $time['name'] .
+                        ':' .
+                        str_repeat(' ', 20 - strlen($time['name'])) .
+                        $time['total'] .
+                        '(+' .
+                        $time['current'] .
+                        ')';
+                }
+                $loadingTimes[] = '-->';
+                Html::print(...$loadingTimes);
+            }
+        }
     }
 
     /**
