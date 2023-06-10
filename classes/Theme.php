@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 25.
+ * @modified 2023. 6. 5.
  */
 class Theme
 {
@@ -146,7 +146,7 @@ class Theme
         $package = $this->getPackage();
         if ($package->hasStyle() == true) {
             foreach ($package->getStyles() as $style) {
-                if (preg_match('/^http(s)?:\/\//', $style) == true) {
+                if (preg_match('/^(http(s)?:)?\/\//', $style) == true) {
                     Html::style($style);
                 } else {
                     Cache::style($this->getCacheName(), $this->getBase() . $style);
@@ -158,7 +158,7 @@ class Theme
 
         if ($package->hasScript() == true) {
             foreach ($package->getScripts() as $script) {
-                $script = preg_match('/^http(s)?:\/\//', $style) == true ? $script : $this->getDir() . $script;
+                $script = preg_match('/^(http(s)?:)?\/\//', $script) == true ? $script : $this->getDir() . $script;
                 Html::script($script);
             }
         }
@@ -321,7 +321,7 @@ class Theme
         }
 
         if (isset($values['context']) == false) {
-            $values['context'] = Sites::get()->getIndex();
+            $values['context'] = Contexts::has() ?? Sites::get()->getIndex();
         }
 
         if (isset($values['route']) == false) {

@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2023. 6. 5.
  */
 class Template
 {
@@ -144,14 +144,14 @@ class Template
         $package = $this->getPackage();
         if ($package->hasStyle() == true) {
             foreach ($package->getStyles() as $style) {
-                $style = preg_match('/^http(s)?:\/\//', $style) == true ? $style : $this->getDir() . $style;
+                $style = preg_match('/^(http(s)?:)?\/\//', $style) == true ? $style : $this->getDir() . $style;
                 Html::style($style);
             }
         }
 
         if ($package->hasScript() == true) {
             foreach ($package->getScripts() as $script) {
-                $script = preg_match('/^http(s)?:\/\//', $style) == true ? $script : $this->getDir() . $script;
+                $script = preg_match('/^(http(s)?:)?\/\//', $script) == true ? $script : $this->getDir() . $script;
                 Html::script($script);
             }
         }
@@ -313,7 +313,7 @@ class Template
         }
 
         if (isset($values['context']) == false) {
-            $values['context'] = Contexts::get() ?? Sites::get()->getIndex();
+            $values['context'] = Contexts::has() ?? Sites::get()->getIndex();
         }
 
         if (isset($values['route']) == false) {
