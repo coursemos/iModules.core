@@ -6,7 +6,7 @@
  * @file /styles/common.scss
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2023. 6. 10.
  */
 :root {
     --main-background-default: #fff;
@@ -73,30 +73,71 @@ body {
             line-height: 1.6;
         }
     }
+
+    > div[data-role='absolutes'] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        z-index: 10000;
+        display: none;
+
+        > div[data-role='absolute'] {
+            position: absolute;
+        }
+
+        &.show {
+            display: block;
+        }
+    }
+
+    &:has(div[data-role='absolutes'].show) {
+        overflow: hidden;
+    }
 }
 
-div[data-role='input'] {
+div[data-role='form'][data-field] {
     --input-font-size: 1rem;
     --input-font-weight: 400;
+    --input-font-size-small: 0.8rem;
     --input-padding-vertical: 8px;
     --input-padding-horizontal: 8px;
     --input-color-default: var(--main-color-default);
+    --input-color-hover: var(--main-color-default);
     --input-color-select: var(--main-background-default);
+    --input-color-error: #dc3535;
+    --input-color-help: #999;
     --input-background-default: var(--main-background-default);
+    --input-background-hover: #e5e5e5;
     --input-background-select: var(--main-color-active);
+    --input-background-error: var(--main-background-default);
     --input-border-weight: 1px;
     --input-border-radius: 0px;
     --input-border-color-default: #ccc;
     --input-border-color-focus: var(--main-color-active);
+    --input-border-color-error: var(--input-color-error);
     --input-line-height: calc(var(--input-font-size) + 4px);
+    --input-inner-height: calc(var(--input-line-height) + var(--input-padding-vertical) * 2);
+    --input-outer-height: calc(var(--input-inner-height) + var(--input-border-weight) * 2);
+
+    > div[data-role='help'] {
+        display: block;
+        padding: calc(var(--input-padding-vertical) / 2) 0;
+        color: var(--input-color-help);
+        font-size: var(--input-font-size-small);
+        box-sizing: border-box;
+    }
 
     > input {
+        display: block;
         font-size: var(--input-font-size);
         font-weight: var(--input-font-weight);
         line-height: var(--input-line-height);
         padding: var(--input-padding-vertical) var(--input-padding-horizontal);
         width: 100%;
-        height: calc(var(--input-line-height) + var(--input-padding-vertical) * 2 + var(--input-border-weight) * 2);
+        height: var(--input-outer-height);
         box-sizing: border-box;
         border: var(--input-border-weight) solid var(--input-border-color-default);
         background: var(--input-background-default);
@@ -106,81 +147,296 @@ div[data-role='input'] {
         &:focus {
             border-color: var(--input-border-color-focus);
         }
+
+        &::placeholder {
+            color: var(--input-color-help);
+            font-size: var(--input-font-size);
+            font-weight: var(--input-font-weight);
+            line-height: var(--input-line-height);
+        }
     }
 
-    > label {
-        display: block;
-        cursor: pointer;
-        font-size: var(--input-font-size);
-        font-weight: var(--input-font-weight);
-        line-height: var(--input-line-height);
-        padding: var(--input-padding-vertical) 0px;
-        width: fit-content;
+    &.error {
+        > div[data-role='help'] {
+            color: var(--input-color-error);
+        }
 
         > input {
-            position: relative;
-            width: var(--input-line-height);
-            height: var(--input-line-height);
-            cursor: pointer;
-            vertical-align: top;
-            margin-right: calc(var(--input-padding-horizontal) / 2);
-            appearance: none;
+            border-color: var(--input-border-color-error);
+        }
+    }
 
-            &::after {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                content: ' ';
+    &[data-field='check'],
+    &[data-field='radio'] {
+        > label {
+            display: block;
+            cursor: pointer;
+            font-size: var(--input-font-size);
+            font-weight: var(--input-font-weight);
+            line-height: var(--input-line-height);
+            padding: var(--input-padding-vertical) 0px var(--input-padding-vertical)
+                calc(var(--input-line-height) + var(--input-padding-horizontal) / 2);
+            width: fit-content;
+            color: var(--input-color-default);
+
+            > input {
+                position: relative;
+                width: var(--input-line-height);
+                height: var(--input-line-height);
+                cursor: pointer;
+                vertical-align: top;
+                margin: 0px calc(var(--input-padding-horizontal) / 2) 0px
+                    calc((var(--input-line-height) + var(--input-padding-horizontal) / 2) * -1);
+                appearance: none;
+
+                &::after {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    content: ' ';
+                    box-sizing: border-box;
+                    border: var(--input-border-weight) solid var(--input-border-color-default);
+                    background: var(--input-background-default);
+                    z-index: 1;
+                }
+
+                &::before {
+                    position: absolute;
+                    top: 1px;
+                    left: 1px;
+                    width: calc(100% - 2px);
+                    height: calc(100% - 2px);
+                    content: ' ';
+                    box-sizing: border-box;
+                    border: 1px solid transparent;
+                    z-index: 2;
+                }
+
+                &:focus {
+                    &::after {
+                        border-color: var(--input-border-color-focus);
+                    }
+
+                    &::before {
+                        border-color: var(--input-background-default);
+                    }
+                }
+
+                &[type='checkbox'] {
+                    &::after {
+                        border-radius: calc(var(--input-border-radius) / 2);
+                    }
+
+                    &::before {
+                        border-radius: calc(var(--input-border-radius) / 2);
+                    }
+
+                    &:checked::after {
+                        border-color: var(--input-border-color-focus);
+                        background: var(--input-background-select);
+                        color: var(--input-color-select);
+                        font-family: moimz;
+                        content: '\eb10';
+                        font-size: 14px;
+                        text-align: center;
+                        line-height: calc(var(--input-line-height) - var(--input-border-weight) * 2);
+                        font-weight: var(--input-font-weight);
+                    }
+                }
+            }
+        }
+
+        > div[data-role='help'] {
+            padding-left: calc(var(--input-line-height) + var(--input-padding-horizontal) / 2);
+        }
+
+        &.error {
+            > label {
+                color: var(--input-color-error);
+
+                > input {
+                    &[type='checkbox'] {
+                        &::after {
+                            border-color: var(--input-border-color-error);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &[data-field='select'] {
+        position: relative;
+
+        > select {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            display: none;
+        }
+
+        > button {
+            display: block;
+            width: 100%;
+            height: var(--input-outer-height);
+            box-sizing: border-box;
+            border: var(--input-border-weight) solid var(--input-border-color-default);
+            background: var(--input-background-default);
+            border-radius: var(--input-border-radius);
+            color: var(--input-color-default);
+            cursor: pointer;
+            font-size: 0;
+            text-align: left;
+            overflow: hidden;
+
+            > span {
+                display: inline-block;
+                width: calc(100% - var(--input-inner-height));
+                height: var(--input-inner-height);
                 box-sizing: border-box;
-                border: var(--input-border-weight) solid var(--input-border-color-default);
-                background: var(--input-background-default);
-                z-index: 1;
+                vertical-align: top;
+                font-size: var(--input-font-size);
+                font-weight: var(--input-font-weight);
+                line-height: var(--input-line-height);
+                padding: var(--input-padding-vertical) var(--input-padding-horizontal);
             }
 
-            &::before {
-                position: absolute;
-                top: 1px;
-                left: 1px;
-                width: calc(100% - 2px);
-                height: calc(100% - 2px);
-                content: ' ';
-                box-sizing: border-box;
-                border: 1px solid transparent;
-                z-index: 2;
+            > i {
+                display: inline-block;
+                width: var(--input-inner-height);
+                height: var(--input-inner-height);
+                font-family: moimz;
+                font-size: var(--input-font-size);
+                line-height: var(--input-inner-height);
+                text-align: center;
+                vertical-align: top;
+                font-style: normal;
+
+                &::before {
+                    content: '\e906';
+                }
             }
 
             &:focus {
-                &::after {
-                    border-color: var(--input-border-color-focus);
+                border-color: var(--input-border-color-focus);
+            }
+        }
+
+        > ul {
+            display: 'block';
+            list-style: none;
+            min-width: 100%;
+            max-height: inherit;
+            overflow-y: scroll;
+            box-sizing: border-box;
+            border: var(--input-border-weight) solid var(--input-border-color-focus);
+            background: var(--input-background-default);
+            border-radius: var(--input-border-radius);
+            color: var(--input-color-default);
+
+            > li {
+                width: 100%;
+                height: var(--input-inner-height);
+                box-sizing: border-box;
+                vertical-align: top;
+                font-size: var(--input-font-size);
+                font-weight: var(--input-font-weight);
+                line-height: var(--input-line-height);
+                padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+                cursor: pointer;
+
+                &:hover {
+                    background: var(--input-background-hover);
+                    color: var(--input-color-hover);
                 }
 
-                &::before {
-                    border-color: var(--input-background-default);
+                &:focus {
+                    background: var(--input-background-select);
+                    color: var(--input-color-select);
+                }
+            }
+        }
+
+        &.expand {
+            > button {
+                border-color: var(--input-border-color-focus);
+
+                > i {
+                    &::before {
+                        content: '\e905';
+                    }
                 }
             }
 
-            &[type='checkbox'] {
-                &::after {
-                    border-radius: calc(var(--input-border-radius) / 2);
+            &.top {
+                > button {
+                    border-bottom-left-radius: 0px;
+                    border-bottom-right-radius: 0px;
                 }
 
-                &::before {
-                    border-radius: calc(var(--input-border-radius) / 2);
+                > ul {
+                    border-top: 0px;
+                    border-top-left-radius: 0px;
+                    border-top-right-radius: 0px;
+                }
+            }
+
+            &.bottom {
+                > button {
+                    border-top-left-radius: 0px;
+                    border-top-right-radius: 0px;
                 }
 
-                &:checked::after {
-                    border-color: var(--input-border-color-focus);
-                    background: var(--input-background-select);
-                    color: var(--input-color-select);
-                    font-family: moimz;
-                    content: '\eb10';
-                    font-size: 14px;
-                    text-align: center;
-                    line-height: calc(var(--input-line-height) - var(--input-border-weight) * 2);
-                    font-weight: var(--input-font-weight);
+                > ul {
+                    border-bottom: 0px;
+                    border-bottom-left-radius: 0px;
+                    border-bottom-right-radius: 0px;
                 }
+            }
+        }
+
+        &.error {
+            > button {
+                border-color: var(--input-color-error);
+            }
+        }
+    }
+
+    &[data-field='textarea'] {
+        > textarea {
+            display: block;
+            font-size: var(--input-font-size);
+            font-weight: var(--input-font-weight);
+            line-height: var(--input-line-height);
+            padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+            width: 100%;
+            box-sizing: border-box;
+            border: var(--input-border-weight) solid var(--input-border-color-default);
+            background: var(--input-background-default);
+            border-radius: var(--input-border-radius);
+            color: var(--input-color-default);
+            resize: none;
+
+            &:focus {
+                border-color: var(--input-border-color-focus);
+            }
+
+            &::placeholder {
+                color: var(--input-color-help);
+                font-size: var(--input-font-size);
+                font-weight: var(--input-font-weight);
+                line-height: var(--input-line-height);
+            }
+        }
+
+        &.error {
+            > textarea {
+                border-color: var(--input-border-color-error);
             }
         }
     }
@@ -192,6 +448,11 @@ main[data-role='layout'] {
 
     div[data-role='content'] {
         container-name: content;
+        container-type: inline-size;
+    }
+
+    div[data-role='module'] {
+        container-name: module;
         container-type: inline-size;
     }
 
