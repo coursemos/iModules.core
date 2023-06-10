@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 29.
+ * @modified 2023. 6. 10.
  */
 class Module extends Component
 {
@@ -84,7 +84,7 @@ class Module extends Component
         if ($this->getPackage()->get('cron') === true) {
             $properties[] = 'CRON';
         }
-        if ($this->getPackage()->get('configs') === true) {
+        if ($this->getPackage()->get('configs') !== null) {
             $properties[] = 'CONFIGS';
         }
 
