@@ -7,7 +7,7 @@
  * @file /classes/Cache.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 10.
  */
 class Cache
 {
@@ -435,13 +435,16 @@ class Cache
             $content = str_replace('@charset "UTF-8";' . "\n", '', $content);
             if (self::writable() == true) {
                 File::write(Configs::cache() . '/' . $cached_file . '.css', $content);
+                $cached_time = time();
             } else {
                 Html::head('style', [], 100, $content);
                 return null;
             }
         }
 
-        return $is_url == true ? self::url($cached_file . '.css') : Configs::cache() . '/' . $cached_file . '.css';
+        return $is_url == true
+            ? self::url($cached_file . '.css', $cached_time)
+            : Configs::cache() . '/' . $cached_file . '.css';
     }
 
     /**
