@@ -7,8 +7,9 @@
  * @file /classes/Form.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 29.
+ * @modified 2023. 6. 10.
  */
+require_once __DIR__ . '/FormElement.php';
 class Form
 {
     /**
@@ -16,123 +17,52 @@ class Form
      *
      * @param string $name 필드명
      * @param string $type 종류 (text, password, search 등)
-     * @return FormElement $element
+     * @return \FormElement\Input $element
      */
-    public static function input(string $name, string $type = 'text'): FormField
+    public static function input(string $name, string $type = 'text'): \FormElement\Input
     {
-        $element = new FormField('input', $name);
-        $element->setAttribute('type', $type);
-
+        $element = new \FormElement\Input($name, $type);
         return $element;
     }
 
-    public static function check(string $name, string $boxLabel = ''): FormField
+    /**
+     * 체크박스 태그를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $value 필드값
+     * @param string $boxLabel 체크박스 라벨텍스트
+     * @return \FormElement\Check $element
+     */
+    public static function check(string $name, string $value = '', string $boxLabel = ''): \FormElement\Check
     {
-        $element = new FormField('check', $name);
-        $element->setAttribute('type', 'checkbox');
-        $element->setBoxLabel($boxLabel);
-
+        $element = new \FormElement\Check($name, $value, $boxLabel);
         return $element;
     }
-}
-
-class FormField
-{
-    /**
-     * @var string $_element 필드종류
-     */
-    private string $_field;
 
     /**
-     * @var string $_name 필드명
-     */
-    private string $_name;
-
-    /**
-     * @var string $_boxLabel 박스라벨
-     */
-    private string $_boxLabel;
-
-    /**
-     * @var string[] $_arributes 태그속성
-     */
-    private array $_attributes = [];
-
-    public function __construct(string $field, string $name)
-    {
-        $this->_field = $field;
-        $this->_name = $name;
-
-        $this->_attributes['name'] = $name;
-    }
-
-    /**
-     * 폼 앨리먼트 속성을 정의한다.
+     * 체크박스 태그를 생성한다.
      *
-     * @param string $name 변수명
-     * @param string $value 변수값
-     * @return this $this
+     * @param string $name 필드명
+     * @param string $options 선택항목 [VALUE=>DISPLAY, ...]
+     * @return \FormElement\Select $element
      */
-    public function setAttribute(string $name, string $value): FormField
+    public static function select(string $name, array $options = []): \FormElement\Select
     {
-        $this->_attributes[$name] = $value;
-
-        return $this;
+        $element = new \FormElement\Select($name, $options);
+        return $element;
     }
 
     /**
-     * 체크박스 또는 라디오박스의 박스라벨을 설정한다.
+     * 텍스트영역 태그를 생성한다.
      *
-     * @param string $boxLabel
-     * @return this $this
+     * @param string $name 필드명
+     * @param int $rows 라인수
+     * @return \FormElement\Textarea $element
      */
-    public function setBoxLabel(string $boxLabel = ''): FormField
+    public static function textarea(string $name, int $rows = 5): \FormElement\Textarea
     {
-        $this->_boxLabel = $boxLabel;
+        $element = new \FormElement\Textarea($name, $rows);
 
-        return $this;
-    }
-
-    /**
-     * 실제 폼필드 태그를 가져온다.
-     *
-     * @return string $field
-     */
-    public function getField(): string
-    {
-        switch ($this->_field) {
-            case 'input':
-                return Html::element('input', $this->_attributes);
-
-            case 'check':
-                return Html::element(
-                    'label',
-                    [],
-                    Html::element('input', $this->_attributes) . ($this->_boxLabel ?? '')
-                );
-                break;
-        }
-    }
-
-    /**
-     * 폼 앨리먼트 HTML를 가져온다.
-     *
-     * @return string $html
-     */
-    public function getLayout(): string
-    {
-        return Html::element(
-            'div',
-            ['data-role' => 'input', 'data-field' => $this->_field, 'data-name' => $this->_name],
-            $this->getField()
-        );
-    }
-
-    /**
-     * 폼 앨리먼트를 출력한다.
-     */
-    public function doLayout(): void
-    {
-        echo $this->getLayout();
+        return $element;
     }
 }
