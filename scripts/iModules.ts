@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 6. 10.
  */
 class iModules {
     static language: string;
@@ -98,4 +98,14 @@ class iModules {
 /**
  * 아이모듈 페이지가 출력되었을 때 UI 이벤트를 등록한다.
  */
-Html.ready(() => {});
+Html.ready(() => {
+    /**
+     * 폼 객체를 초기화한다.
+     */
+    Form.init();
+
+    /**
+     * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
+     */
+    Modules.init();
+});
