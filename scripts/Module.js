@@ -6,11 +6,10 @@
  * @file /scripts/Module.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 6. 10.
  */
 class Module {
     name;
-    $dom;
     /**
      * 모듈 클래스를 생성한다.
      *
@@ -24,10 +23,7 @@ class Module {
      *
      * @param {Dom} $dom - 현재 모듈의 DOM 객체
      */
-    init($dom) {
-        this.$dom = $dom;
-        // @todo 해당 DOM 의 UI 이벤트 처리
-    }
+    init($dom) { }
     /**
      * 프로세스 URL 경로를 가져온다.
      *

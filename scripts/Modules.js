@@ -1,13 +1,14 @@
 class Modules {
+    static modules = new Map();
     static classes = {};
     /**
-     * 모듈 관리자 클래스를 가져온다.
+     * 모듈 클래스를 가져온다.
      *
      * @param {string} name - 모듈명
      * @return {Module} module - 모듈 클래스
      */
     static get(name) {
-        if (Modules.classes[name] === undefined) {
+        if (Modules.modules.has(name) == false) {
             const namespaces = name.split('/');
             if (window['modules'] === undefined) {
                 return null;
@@ -15,21 +16,23 @@ class Modules {
             let namespace = window['modules'];
             for (const name of namespaces) {
                 if (namespace[name] === undefined) {
+                    console.log(namespace, name, '없다');
                     return null;
                 }
                 namespace = namespace[name];
             }
             const classname = namespaces.pop().replace(/^[a-z]/, (char) => char.toUpperCase());
             if (namespace[classname] === undefined) {
+                console.log(namespace, classname, '없다');
                 return null;
             }
             if (typeof namespace[classname] == 'function' && namespace[classname].prototype instanceof Module) {
-                Modules[name] = new namespace[classname](name);
-                return Modules[name];
+                Modules.modules.set(name, new namespace[classname](name));
+                return Modules.modules.get(name);
             }
             return null;
         }
-        return Modules[name];
+        return Modules.modules.get(name);
     }
     /**
      * 페이지에 삽입되어 있는 모든 모듈의 Dom 객체를 초기화한다.
@@ -40,7 +43,3 @@ class Modules {
         });
     }
 }
-/**
- * HTML 문서 랜더링이 완료되면 모듈 클래스를 초기화한다.
- */
-Html.ready(Modules.init);

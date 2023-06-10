@@ -6,49 +6,54 @@
  * @file /scripts/Modules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 3. 19.
+ * @modified 2023. 6. 10.
  */
-interface ModuleConstructor {
-    new (name: string, $dom?: Dom): Module;
+namespace Modules {
+    export interface ModuleConstructor {
+        new (name: string): Module;
+    }
 }
 
 class Modules {
+    static modules: Map<string, Module> = new Map();
     static classes: { [key: string]: Module } = {};
 
     /**
-     * 모듈 관리자 클래스를 가져온다.
+     * 모듈 클래스를 가져온다.
      *
      * @param {string} name - 모듈명
      * @return {Module} module - 모듈 클래스
      */
-    static get(name: string): Module | null {
-        if (Modules.classes[name] === undefined) {
+    static get(name: string): Module {
+        if (Modules.modules.has(name) == false) {
             const namespaces = name.split('/');
             if (window['modules'] === undefined) {
                 return null;
             }
 
-            let namespace: Object | ModuleConstructor = window['modules'];
+            let namespace: Object | Modules.ModuleConstructor = window['modules'];
             for (const name of namespaces) {
                 if (namespace[name] === undefined) {
+                    console.log(namespace, name, '없다');
                     return null;
                 }
                 namespace = namespace[name];
             }
             const classname = namespaces.pop().replace(/^[a-z]/, (char: string) => char.toUpperCase());
             if (namespace[classname] === undefined) {
+                console.log(namespace, classname, '없다');
                 return null;
             }
 
             if (typeof namespace[classname] == 'function' && namespace[classname].prototype instanceof Module) {
-                Modules[name] = new (namespace[classname] as ModuleConstructor)(name);
-                return Modules[name];
+                Modules.modules.set(name, new (namespace[classname] as Modules.ModuleConstructor)(name));
+                return Modules.modules.get(name);
             }
 
             return null;
         }
 
-        return Modules[name];
+        return Modules.modules.get(name);
     }
 
     /**
@@ -60,8 +65,3 @@ class Modules {
         });
     }
 }
-
-/**
- * HTML 문서 랜더링이 완료되면 모듈 클래스를 초기화한다.
- */
-Html.ready(Modules.init);
