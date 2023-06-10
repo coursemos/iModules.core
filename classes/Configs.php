@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 10.
  */
 class Configs
 {
@@ -20,6 +20,11 @@ class Configs
      * @var object $_configs 설치 환경설정 정보
      */
     private static object $_configs;
+
+    /**
+     * @var DatabaseConnector $connector 기본 환경설정에 따른 데이터베이스 커넥터
+     */
+    private static DatabaseConnector $_db;
 
     /**
      * 환경설정을 초기화한다.
@@ -43,6 +48,27 @@ class Configs
             return null;
         }
         return self::$_configs?->{$key} ?? null;
+    }
+
+    /**
+     * 기본 환경설정에 따른 데이터베이스 커넥터를 가져온다.
+     *
+     * @return DatabaseConnector $connector
+     */
+    public static function db(): DatabaseConnector
+    {
+        if (isset(self::$_db) == false) {
+            $db = self::get('db');
+            if ($db->type == 'mysql') {
+                /**
+                 * @var \databases\mysql\connector $connector
+                 */
+                $connector = Database::getConnector($db->type);
+                self::$_db = $connector->create($db->host, $db->id, $db->password, $db->database, $db->port);
+            }
+        }
+
+        return self::$_db;
     }
 
     /**
