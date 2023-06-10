@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 5.
+ * @modified 2023. 6. 10.
  */
 class Ajax {
     /**
@@ -33,7 +33,7 @@ class Ajax {
             const response = (await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Accept-Language': Admin.getLanguage(),
+                    'Accept-Language': iModules.getLanguage(),
                     'Accept': 'application/json',
                     'Content-Type': 'application/json; charset=utf-8',
                 },
@@ -92,7 +92,7 @@ class Ajax {
             const response = (await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Accept-Language': Admin.getLanguage(),
+                    'Accept-Language': iModules.getLanguage(),
                     'Accept': 'application/json',
                     'Content-Type': 'application/json; charset=utf-8',
                 },
