@@ -6,12 +6,14 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 8.
+ * @modified 2023. 6. 11.
  */
 class Form {
     static forms: WeakMap<HTMLElement, Form> = new WeakMap();
     static elements: WeakMap<HTMLElement, FormElement.Base> = new WeakMap();
     $form: Dom;
+    sending: boolean = false;
+    loading: boolean = false;
 
     /**
      * 폼을 초기화한다.
@@ -60,11 +62,34 @@ class Form {
      * @return {Promise<Ajax.Results>} results - 전송결과
      */
     async submit(url: string, params: Ajax.Params = {}, is_retry: boolean = true): Promise<Ajax.Results> {
+        if (this.sending == true) {
+            return;
+        }
+
+        if (this.loading == true) {
+            iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'), [
+                {
+                    text: await Language.getText('buttons.close'),
+                    class: 'confirm',
+                    handler: () => {
+                        iModules.Modal.close();
+                    },
+                },
+            ]);
+            return { success: false };
+        }
+
+        this.sending = true;
+        Html.all('div[data-role=form][data-field]', this.$form).forEach(($element) => {
+            const element = Form.element($element);
+            element.setError(false);
+        });
+
         const data = this.getData();
         const results = await Ajax.post(url, data, params, is_retry);
         if (results.success == false && results.errors !== undefined) {
             for (const name in results.errors) {
-                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]');
+                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]', this.$form);
                 if ($element.getEl() !== null) {
                     const element = Form.element($element);
                     element.setError(results.errors[name]);
@@ -76,6 +101,8 @@ class Form {
                 $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+
+        this.sending = false;
 
         return results;
     }
@@ -266,6 +293,7 @@ namespace FormElement {
     }
 
     export class Select extends FormElement.Base {
+        $button: Dom = null;
         $expand: Dom = null;
 
         /**
@@ -276,12 +304,12 @@ namespace FormElement {
                 return;
             }
 
-            const $button = Html.create('button', { type: 'button' });
+            this.$button = Html.create('button', { type: 'button' });
             const $span = Html.create('span');
-            $button.append($span);
+            this.$button.append($span);
 
             const $icon = Html.create('i');
-            $button.append($icon);
+            this.$button.append($icon);
 
             const $select = Html.get('select', this.$dom);
             $select.on('change', () => {
@@ -292,7 +320,7 @@ namespace FormElement {
             });
             $span.html(Html.get('option[value="' + $select.getValue() + '"]').toHtml(true));
 
-            $button.on('mousedown', (e: MouseEvent) => {
+            this.$button.on('mousedown', (e: MouseEvent) => {
                 if (this.$dom.hasClass('expand') == true) {
                 } else {
                     this.expand();
@@ -301,11 +329,11 @@ namespace FormElement {
                 e.stopPropagation();
             });
 
-            $button.on('keydown', (e: KeyboardEvent) => {
+            this.$button.on('keydown', (e: KeyboardEvent) => {
                 this.keydownEvent(e);
             });
 
-            this.$dom.append($button);
+            this.$dom.append(this.$button);
 
             this.$dom.on('expand', () => {
                 const $select = Html.get('select', this.$dom);
@@ -327,14 +355,6 @@ namespace FormElement {
                 this.setError(false);
             }
 
-            const $absolutes = this.$getAbsolutes();
-            $absolutes.addClass('show');
-
-            const $absolute = Html.create('div', { 'data-role': 'absolute' });
-            $absolute.on('mousedown', (e: MouseEvent) => {
-                e.stopImmediatePropagation();
-            });
-
             this.$expand = Html.create('div', { 'data-role': 'form', 'data-field': 'select' });
             this.$expand.setStyle('min-width', this.$dom.getOuterWidth() + 'px');
 
@@ -352,70 +372,30 @@ namespace FormElement {
                 $li.on('click', () => {
                     $select.setValue($li.getAttr('data-value'));
                     this.collapse();
+                    this.$button.focus();
                 });
                 $ul.append($li);
             });
 
             this.$expand.append($ul);
-            this.$dom.addClass('expand');
-
-            const styles = window.getComputedStyle(this.$dom.getEl());
-            for (const name of styles) {
-                if (name.indexOf('--input') === 0) {
-                    this.$expand.setStyleProperty(name, this.$dom.getStyle(name));
-                }
+            const styles = Html.getStyleProperties('input-');
+            for (const name in styles) {
+                this.$expand.setStyleProperty(name, styles[name]);
             }
-            $absolute.append(this.$expand);
 
-            $absolutes.append($absolute);
-            $absolutes.on('mousedown', () => {
-                this.collapse();
+            iModules.Absolute.show(this.$dom, this.$expand, 'y', true, {
+                show: (position) => {
+                    this.$expand.addClass('expand');
+                    this.$expand.addClass(position.top ? 'top' : 'bottom');
+                    this.$dom.addClass('expand');
+                    this.$dom.addClass(position.top ? 'top' : 'bottom');
+                    this.$dom.trigger('expand');
+                },
+                close: () => {
+                    this.$expand.removeClass('expand', 'top', 'bottom');
+                    this.$dom.removeClass('expand', 'top', 'bottom');
+                },
             });
-
-            const targetRect = this.$dom.getEl().getBoundingClientRect();
-            const absoluteRect = $absolute.getEl().getBoundingClientRect();
-            const windowRect = { width: window.innerWidth, height: window.innerHeight };
-
-            const position: {
-                top?: number;
-                bottom?: number;
-                left?: number;
-                right?: number;
-                maxWidth?: number;
-                maxHeight?: number;
-            } = {};
-
-            if (
-                targetRect.bottom > windowRect.height / 2 &&
-                absoluteRect.height > windowRect.height - targetRect.bottom
-            ) {
-                position.bottom = windowRect.height - targetRect.top;
-                position.maxHeight = windowRect.height - position.bottom - 10;
-            } else {
-                position.top = targetRect.bottom;
-                position.maxHeight = windowRect.height - position.top - 10;
-            }
-
-            if (targetRect.left + absoluteRect.width > windowRect.width) {
-                position.right = windowRect.width - targetRect.right;
-                position.maxWidth = windowRect.width - position.right - 10;
-            } else {
-                position.left = targetRect.left;
-                position.maxWidth = windowRect.width - position.left - 10;
-            }
-
-            for (const name in position) {
-                $absolute.setStyle(name, position[name] + 'px');
-            }
-
-            this.$expand.addClass('expand');
-            this.$expand.setStyle('max-width', position.maxWidth + 'px');
-            this.$expand.setStyle('max-height', position.maxHeight + 'px');
-
-            this.$dom.addClass(position.top ? 'top' : 'bottom');
-            this.$expand.addClass(position.top ? 'top' : 'bottom');
-
-            this.$dom.trigger('expand');
         }
 
         /**
@@ -425,9 +405,9 @@ namespace FormElement {
             if (this.$dom.hasClass('expand') == false) {
                 return;
             }
-            this.$expand = null;
+            this.$expand.remove();
             this.$dom.removeClass('expand', 'top', 'bottom');
-            this.$getAbsolutes().remove();
+            iModules.Absolute.close();
         }
 
         /**
@@ -447,7 +427,10 @@ namespace FormElement {
          * @param {'up'|'down'|'left'|'right'} direction - 이동방향
          */
         focusMove(direction: 'up' | 'down' | 'left' | 'right'): void {
-            this.expand();
+            if (this.$dom.hasClass('expand') == false) {
+                this.expand();
+                return;
+            }
 
             const $ul = Html.get('ul', this.$expand);
             const $items = Html.all('li[tabindex]', $ul);
@@ -504,6 +487,7 @@ namespace FormElement {
                         if ($focus.getEl() !== null) {
                             $select.setValue($focus.getAttr('data-value'));
                             this.collapse();
+                            this.$button.focus();
                         }
                         e.preventDefault();
                     }

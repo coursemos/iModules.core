@@ -6,12 +6,14 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 8.
+ * @modified 2023. 6. 11.
  */
 class Form {
     static forms = new WeakMap();
     static elements = new WeakMap();
     $form;
+    sending = false;
+    loading = false;
     /**
      * 폼을 초기화한다.
      *
@@ -56,11 +58,31 @@ class Form {
      * @return {Promise<Ajax.Results>} results - 전송결과
      */
     async submit(url, params = {}, is_retry = true) {
+        if (this.sending == true) {
+            return;
+        }
+        if (this.loading == true) {
+            iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'), [
+                {
+                    text: await Language.getText('buttons.close'),
+                    class: 'confirm',
+                    handler: () => {
+                        iModules.Modal.close();
+                    },
+                },
+            ]);
+            return { success: false };
+        }
+        this.sending = true;
+        Html.all('div[data-role=form][data-field]', this.$form).forEach(($element) => {
+            const element = Form.element($element);
+            element.setError(false);
+        });
         const data = this.getData();
         const results = await Ajax.post(url, data, params, is_retry);
         if (results.success == false && results.errors !== undefined) {
             for (const name in results.errors) {
-                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]');
+                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]', this.$form);
                 if ($element.getEl() !== null) {
                     const element = Form.element($element);
                     element.setError(results.errors[name]);
@@ -71,6 +93,7 @@ class Form {
                 $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+        this.sending = false;
         return results;
     }
     /**
@@ -247,6 +270,7 @@ var FormElement;
     }
     FormElement.Check = Check;
     class Select extends FormElement.Base {
+        $button = null;
         $expand = null;
         /**
          * UI 를 초기화한다.
@@ -255,11 +279,11 @@ var FormElement;
             if (this.isInit() == true) {
                 return;
             }
-            const $button = Html.create('button', { type: 'button' });
+            this.$button = Html.create('button', { type: 'button' });
             const $span = Html.create('span');
-            $button.append($span);
+            this.$button.append($span);
             const $icon = Html.create('i');
-            $button.append($icon);
+            this.$button.append($icon);
             const $select = Html.get('select', this.$dom);
             $select.on('change', () => {
                 $span.html(Html.get('option[value="' + $select.getValue() + '"]').toHtml(true));
@@ -268,7 +292,7 @@ var FormElement;
                 }
             });
             $span.html(Html.get('option[value="' + $select.getValue() + '"]').toHtml(true));
-            $button.on('mousedown', (e) => {
+            this.$button.on('mousedown', (e) => {
                 if (this.$dom.hasClass('expand') == true) {
                 }
                 else {
@@ -277,10 +301,10 @@ var FormElement;
                 e.preventDefault();
                 e.stopPropagation();
             });
-            $button.on('keydown', (e) => {
+            this.$button.on('keydown', (e) => {
                 this.keydownEvent(e);
             });
-            this.$dom.append($button);
+            this.$dom.append(this.$button);
             this.$dom.on('expand', () => {
                 const $select = Html.get('select', this.$dom);
                 Html.get('li[data-value="' + $select.getValue() + '"]', this.$expand).focus();
@@ -297,12 +321,6 @@ var FormElement;
             if (this.hasError() == true) {
                 this.setError(false);
             }
-            const $absolutes = this.$getAbsolutes();
-            $absolutes.addClass('show');
-            const $absolute = Html.create('div', { 'data-role': 'absolute' });
-            $absolute.on('mousedown', (e) => {
-                e.stopImmediatePropagation();
-            });
             this.$expand = Html.create('div', { 'data-role': 'form', 'data-field': 'select' });
             this.$expand.setStyle('min-width', this.$dom.getOuterWidth() + 'px');
             const $select = Html.get('select', this.$dom);
@@ -315,52 +333,28 @@ var FormElement;
                 $li.on('click', () => {
                     $select.setValue($li.getAttr('data-value'));
                     this.collapse();
+                    this.$button.focus();
                 });
                 $ul.append($li);
             });
             this.$expand.append($ul);
-            this.$dom.addClass('expand');
-            const styles = window.getComputedStyle(this.$dom.getEl());
-            for (const name of styles) {
-                if (name.indexOf('--input') === 0) {
-                    this.$expand.setStyleProperty(name, this.$dom.getStyle(name));
-                }
+            const styles = Html.getStyleProperties('input-');
+            for (const name in styles) {
+                this.$expand.setStyleProperty(name, styles[name]);
             }
-            $absolute.append(this.$expand);
-            $absolutes.append($absolute);
-            $absolutes.on('mousedown', () => {
-                this.collapse();
+            iModules.Absolute.show(this.$dom, this.$expand, 'y', true, {
+                show: (position) => {
+                    this.$expand.addClass('expand');
+                    this.$expand.addClass(position.top ? 'top' : 'bottom');
+                    this.$dom.addClass('expand');
+                    this.$dom.addClass(position.top ? 'top' : 'bottom');
+                    this.$dom.trigger('expand');
+                },
+                close: () => {
+                    this.$expand.removeClass('expand', 'top', 'bottom');
+                    this.$dom.removeClass('expand', 'top', 'bottom');
+                },
             });
-            const targetRect = this.$dom.getEl().getBoundingClientRect();
-            const absoluteRect = $absolute.getEl().getBoundingClientRect();
-            const windowRect = { width: window.innerWidth, height: window.innerHeight };
-            const position = {};
-            if (targetRect.bottom > windowRect.height / 2 &&
-                absoluteRect.height > windowRect.height - targetRect.bottom) {
-                position.bottom = windowRect.height - targetRect.top;
-                position.maxHeight = windowRect.height - position.bottom - 10;
-            }
-            else {
-                position.top = targetRect.bottom;
-                position.maxHeight = windowRect.height - position.top - 10;
-            }
-            if (targetRect.left + absoluteRect.width > windowRect.width) {
-                position.right = windowRect.width - targetRect.right;
-                position.maxWidth = windowRect.width - position.right - 10;
-            }
-            else {
-                position.left = targetRect.left;
-                position.maxWidth = windowRect.width - position.left - 10;
-            }
-            for (const name in position) {
-                $absolute.setStyle(name, position[name] + 'px');
-            }
-            this.$expand.addClass('expand');
-            this.$expand.setStyle('max-width', position.maxWidth + 'px');
-            this.$expand.setStyle('max-height', position.maxHeight + 'px');
-            this.$dom.addClass(position.top ? 'top' : 'bottom');
-            this.$expand.addClass(position.top ? 'top' : 'bottom');
-            this.$dom.trigger('expand');
         }
         /**
          * 폼 필드 확장을 축소한다.
@@ -369,9 +363,9 @@ var FormElement;
             if (this.$dom.hasClass('expand') == false) {
                 return;
             }
-            this.$expand = null;
+            this.$expand.remove();
             this.$dom.removeClass('expand', 'top', 'bottom');
-            this.$getAbsolutes().remove();
+            iModules.Absolute.close();
         }
         /**
          * 폼 필드 확장을 토글한다.
@@ -390,7 +384,10 @@ var FormElement;
          * @param {'up'|'down'|'left'|'right'} direction - 이동방향
          */
         focusMove(direction) {
-            this.expand();
+            if (this.$dom.hasClass('expand') == false) {
+                this.expand();
+                return;
+            }
             const $ul = Html.get('ul', this.$expand);
             const $items = Html.all('li[tabindex]', $ul);
             const $focus = Html.get('*:focus', $ul);
@@ -441,6 +438,7 @@ var FormElement;
                         if ($focus.getEl() !== null) {
                             $select.setValue($focus.getAttr('data-value'));
                             this.collapse();
+                            this.$button.focus();
                         }
                         e.preventDefault();
                     }
