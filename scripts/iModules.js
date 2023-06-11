@@ -85,10 +85,143 @@ class iModules {
         return $disabled;
     }
 }
+(function (iModules) {
+    class Absolute {
+        /**
+         * 절대위치 DOM 객체를 출력한다.
+         *
+         * @param {Dom} $target - 절대위치를 표시할 기준 DOM 객체
+         * @param {Dom} $content - 절대위치 DOM 내부 콘텐츠 DOM 객체
+         * @param {('x'|'y')} direction - 절대위치 DOM 이 출력될 방향
+         * @param {boolean} closable - 자동닫힘 여부
+         * @param {iModules.Absolute.Listeners} listeners - 이벤트리스너
+         */
+        static show($target, $content, direction, closable = true, listeners = null) {
+            const $absolutes = Html.create('div', { 'data-role': 'absolutes' });
+            Html.get('body').append($absolutes);
+            if (closable === true) {
+                $absolutes.on('mousedown', () => {
+                    iModules.Absolute.close();
+                });
+            }
+            const $absolute = Html.create('div', { 'data-role': 'absolute' });
+            $absolute.on('mousedown', (e) => {
+                e.stopImmediatePropagation();
+            });
+            $absolutes.append($absolute);
+            $absolute.append($content);
+            const targetRect = $target.getEl().getBoundingClientRect();
+            const absoluteRect = $absolute.getEl().getBoundingClientRect();
+            const windowRect = { width: window.innerWidth, height: window.innerHeight };
+            const position = {};
+            if (direction == 'y') {
+                if (targetRect.bottom > windowRect.height / 2 &&
+                    absoluteRect.height > windowRect.height - targetRect.bottom) {
+                    position.bottom = windowRect.height - targetRect.top;
+                    position.maxHeight = windowRect.height - position.bottom - 10;
+                }
+                else {
+                    position.top = targetRect.bottom;
+                    position.maxHeight = windowRect.height - position.top - 10;
+                }
+                if (targetRect.left + absoluteRect.width > windowRect.width) {
+                    position.right = windowRect.width - targetRect.right;
+                    position.maxWidth = windowRect.width - position.right - 10;
+                }
+                else {
+                    position.left = targetRect.left;
+                    position.maxWidth = windowRect.width - position.left - 10;
+                }
+            }
+            for (const name in position) {
+                $absolute.setStyle(name, position[name] + 'px');
+            }
+            $content.setStyle('max-width', position.maxWidth + 'px');
+            $content.setStyle('max-height', position.maxHeight + 'px');
+            const show = listeners?.show ?? null;
+            if (show !== null) {
+                listeners.show(position);
+            }
+            if (listeners?.close) {
+                $absolutes.setData('close', listeners.close, false);
+            }
+        }
+        /**
+         * 절대위치 DOM 객체를 닫는다.
+         */
+        static close() {
+            const $absolutes = Html.get('body > div[data-role=absolutes]');
+            if ($absolutes.getEl() !== null) {
+                if (typeof $absolutes.getData('close') == 'function') {
+                    $absolutes.getData('close')();
+                }
+                $absolutes.remove();
+            }
+        }
+    }
+    iModules.Absolute = Absolute;
+    class Modal {
+        /**
+         * 모달창을 연다.
+         *
+         * @param {string} title - 창제목
+         * @param {(string|Dom)} content - 내용
+         * @param {iModules.Modal.Button[]} buttons - 버튼목록
+         */
+        static show(title, content, buttons) {
+            iModules.Modal.close();
+            const $modals = Html.create('div', { 'data-role': 'modals' });
+            const $section = Html.create('section');
+            const $modal = Html.create('div', { 'data-role': 'modal' });
+            const $title = Html.create('div', { 'data-role': 'title' });
+            $title.html(title);
+            $modal.append($title);
+            const $content = Html.create('div', { 'data-role': 'content' });
+            if (typeof content == 'string') {
+                $content.html(content);
+            }
+            else {
+                $content.append(content);
+            }
+            $modal.append($content);
+            const $buttons = Html.create('div', { 'data-role': 'buttons' });
+            $modal.append($buttons);
+            if (buttons.length == 0) {
+                buttons.push({
+                    text: Language.printText('buttons.close'),
+                    class: 'confirm',
+                    handler: () => {
+                        iModules.Modal.close();
+                    },
+                });
+            }
+            for (const button of buttons) {
+                const $button = Html.create('button', { 'data-role': 'button' });
+                $button.html(button.text);
+                $button.on('click', button.handler);
+                if (button.class) {
+                    $button.addClass(button.class);
+                }
+                $buttons.append($button);
+            }
+            $section.append($modal);
+            $modals.append($section);
+            Html.get('body').append($modals);
+        }
+        /**
+         * 모달창을 닫는다.
+         */
+        static close() {
+            Html.get('body > div[data-role=modals]').remove();
+        }
+    }
+    iModules.Modal = Modal;
+})(iModules || (iModules = {}));
 /**
  * 아이모듈 페이지가 출력되었을 때 UI 이벤트를 등록한다.
  */
 Html.ready(() => {
+    Html.get('body').setAttr('data-device', iModules.isMobile() == true ? 'mobile' : 'desktop');
     /**
      * 폼 객체를 초기화한다.
      */
@@ -97,4 +230,10 @@ Html.ready(() => {
      * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
      */
     Modules.init();
+    /**
+     * 리사이즈 이벤트를 처리한다.
+     */
+    new ResizeObserver(() => {
+        iModules.Absolute.close();
+    }).observe(document.body);
 });

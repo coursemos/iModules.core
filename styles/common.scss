@@ -9,11 +9,58 @@
  * @modified 2023. 6. 10.
  */
 :root {
+    --main-font-size-default: 16px;
+    --main-font-weight: 400;
+
     --main-background-default: #fff;
     --main-color-default: #222;
-    --main-color-active: red;
     --main-color-hover: #000;
-    --main-color-disabled: #000;
+    --main-color-gray: #999;
+    --main-color-disabled: #999;
+    --main-color-active: #0075f8;
+    --main-color-active-hover: #005ec6;
+    --main-color-active-disabled: #3391f9;
+    --main-color-danger: #dc3535;
+    --main-color-danger-hover: #dc3535;
+    --main-color-danger-disabled: #dc3535;
+    --main-border-color-default: #ccc;
+
+    --modal-title-background: #ffffff;
+    --modal-title-color: #222;
+    --modal-title-font-size: 16px;
+    --modal-content-background: #fff;
+    --modal-content-color: #222;
+    --modal-content-font-size: 14px;
+    --modal-padding-vertical: 20px;
+    --modal-padding-horizontal: 20px;
+    --modal-button-height: 40px;
+    --modal-button-font-size: 14px;
+    --modal-button-default-background: #bdbdbd;
+    --modal-button-default-background-hover: #aeaeae;
+    --modal-button-default-color: #ffffff;
+    --modal-button-confirm-background: #0075f8;
+    --modal-button-confirm-background-hover: #005ec6;
+    --modal-button-confirm-color: #ffffff;
+
+    --input-font-size: 1rem;
+    --input-font-size-small: 0.8rem;
+    --input-font-weight: 400;
+    --input-padding-vertical: 8px;
+    --input-padding-horizontal: 8px;
+    --input-color-default: var(--main-color-default);
+    --input-color-hover: var(--main-color-default);
+    --input-color-select: var(--main-background-default);
+    --input-color-error: var(--main-color-danger);
+    --input-color-help: var(--main-color-gray);
+    --input-background-default: var(--main-background-default);
+    --input-background-hover: #e5e5e5;
+    --input-background-select: var(--main-color-active);
+    --input-background-error: var(--main-background-default);
+    --input-border-weight: 1px;
+    --input-border-radius: 0px;
+    --input-border-color-default: var(--main-border-color-default);
+    --input-border-color-focus: var(--main-color-active);
+    --input-border-color-error: var(--input-color-error);
 }
 
 * {
@@ -82,42 +129,110 @@ body {
         height: 100%;
         background: transparent;
         z-index: 10000;
-        display: none;
 
         > div[data-role='absolute'] {
             position: absolute;
         }
+    }
 
-        &.show {
-            display: block;
+    > div[data-role='modals'] {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 20000;
+        top: 0;
+        left: 0;
+        overflow-y: auto;
+
+        &::before {
+            content: ' ';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        > section {
+            min-width: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            > div[data-role='modal'] {
+                width: 90%;
+                max-width: 400px;
+                box-sizing: border-box;
+                background: var(--modal-content-background);
+                box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+
+                > div[data-role='title'] {
+                    background: var(--modal-title-background);
+                    color: var(--modal-title-color);
+                    font-size: var(--modal-title-font-size);
+                    line-height: 1.4;
+                    padding: var(--modal-padding-vertical) var(--modal-padding-horizontal);
+                    width: 100%;
+                    font-weight: bold;
+                    box-sizing: border-box;
+                    position: sticky;
+                    top: 0;
+                }
+
+                > div[data-role='content'] {
+                    font-size: var(--modal-content-font-size);
+                    line-height: 1.6;
+                    padding: var(--modal-padding-vertical) var(--modal-padding-horizontal);
+                    box-sizing: border-box;
+                    color: var(--modal-content-color);
+                }
+
+                > div[data-role='buttons'] {
+                    width: 100%;
+                    position: sticky;
+                    bottom: 0;
+                    display: flex;
+
+                    > button {
+                        flex-grow: 1;
+                        flex-shrink: 1;
+                        flex-basis: 0;
+                        height: var(--modal-button-height);
+                        font-size: var(--modal-button-font-size);
+                        background: var(--modal-button-default-background);
+                        color: var(--modal-button-default-color);
+                        border: 0;
+                        cursor: pointer;
+
+                        &:hover {
+                            background: var(--modal-button-default-background-hover);
+                        }
+
+                        &.confirm {
+                            color: var(--modal-button-confirm-color);
+                            background: var(--modal-button-confirm-background);
+
+                            &:hover {
+                                background: var(--modal-button-confirm-background-hover);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    &:has(div[data-role='absolutes'].show) {
+    &:has(div[data-role='absolutes']),
+    &:has(div[data-role='modals']) {
         overflow: hidden;
     }
 }
 
 div[data-role='form'][data-field] {
-    --input-font-size: 1rem;
-    --input-font-weight: 400;
-    --input-font-size-small: 0.8rem;
-    --input-padding-vertical: 8px;
-    --input-padding-horizontal: 8px;
-    --input-color-default: var(--main-color-default);
-    --input-color-hover: var(--main-color-default);
-    --input-color-select: var(--main-background-default);
-    --input-color-error: #dc3535;
-    --input-color-help: #999;
-    --input-background-default: var(--main-background-default);
-    --input-background-hover: #e5e5e5;
-    --input-background-select: var(--main-color-active);
-    --input-background-error: var(--main-background-default);
-    --input-border-weight: 1px;
-    --input-border-radius: 0px;
-    --input-border-color-default: #ccc;
-    --input-border-color-focus: var(--main-color-active);
-    --input-border-color-error: var(--input-color-error);
     --input-line-height: calc(var(--input-font-size) + 4px);
     --input-inner-height: calc(var(--input-line-height) + var(--input-padding-vertical) * 2);
     --input-outer-height: calc(var(--input-inner-height) + var(--input-border-weight) * 2);
