@@ -425,7 +425,7 @@ class Package
                 $field->items[] = $this->getConfigsField($childName, $childConfigs, $values);
             }
         } else {
-            $field->value = $value->$name ?? null;
+            $field->value = $values->$name ?? null;
         }
 
         return $field;
