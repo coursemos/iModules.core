@@ -204,7 +204,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '"></span>';
+        return '<span data-language="' + uuid + '">...</span>';
     }
 
     /**
@@ -226,7 +226,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: 'errors.' + error, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '"></span>';
+        return '<span data-language="' + uuid + '">...</span>';
     }
 
     /**

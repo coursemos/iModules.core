@@ -161,7 +161,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '"></span>';
+        return '<span data-language="' + uuid + '">...</span>';
     }
     /**
      * 에러메시지를 출력한다.
@@ -177,7 +177,7 @@ class Language {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: 'errors.' + error, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '"></span>';
+        return '<span data-language="' + uuid + '">...</span>';
     }
     /**
      * 언어팩 출력을 위한 옵저버를 시작한다.
