@@ -7,7 +7,7 @@
  * @file /classes/Site.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 11.
  */
 class Site
 {
@@ -42,19 +42,24 @@ class Site
     private Theme $_theme;
 
     /**
-     * @var \modules\attachment\dto\File[] $_logo 사이트 로고객체
+     * @var ?\modules\attachment\dto\Attachment $_logo 사이트 로고객체
      */
-    private \modules\attachment\dto\File $_logo;
+    private ?\modules\attachment\dto\Attachment $_logo;
 
     /**
-     * @var \modules\attachment\dto\File $_favicon 사이트 Favicon
+     * @var ?\modules\attachment\dto\Attachment $_favicon 사이트 Favicon
      */
-    private \modules\attachment\dto\File $_favicon;
+    private ?\modules\attachment\dto\Attachment $_favicon;
 
     /**
-     * @var \modules\attachment\dto\File $_emblem 사이트 엠블럼
+     * @var ?\modules\attachment\dto\Attachment $_emblem 사이트 엠블럼
      */
-    private \modules\attachment\dto\File $_emblem;
+    private ?\modules\attachment\dto\Attachment $_emblem;
+
+    /**
+     * @var ?\modules\attachment\dto\Attachment $_image 사이트 대표이미지
+     */
+    private ?\modules\attachment\dto\Attachment $_image;
 
     /**
      * @var object $_header 사이트 헤더설정
@@ -160,68 +165,59 @@ class Site
     /**
      * 사이트 로고이미지를 가져온다.
      *
-     * @return \modules\attachment\dto\File $logo
+     * @return ?\modules\attachment\dto\Attachment $logo
      */
-    public function getLogo(): \modules\attachment\dto\File
+    public function getLogo(): ?\modules\attachment\dto\Attachment
     {
         if (isset($this->_logo) == true) {
             return $this->_logo;
         }
 
         /**
-         * @var modules\attachment\Module $attachment
+         * @var \modules\attachment\Attachment $mAttachment
          */
-        $attachment = Modules::get('attachment');
-        if ($this->_site->logo !== null) {
-            $logo = $attachment->getAttachment($this->_site->logo);
-        }
-        $this->_logo = $logo ?? $attachment->getRawFile(Configs::path() . '/images/logo.png');
+        $mAttachment = Modules::get('attachment');
+        $this->_logo = $this->_site->logo != null ? $mAttachment->getAttachment($this->_site->logo) : null;
 
         return $this->_logo;
     }
 
     /**
-     * 사이트 대표이미지를 가져온다.
+     * 사이트 패비콘을 가져온다.
      *
-     * @return \modules\attachment\dto\File $favicon
+     * @return ?\modules\attachment\dto\Attachment $favicon
      */
-    public function getFavicon(): \modules\attachment\dto\File
+    public function getFavicon(): ?\modules\attachment\dto\Attachment
     {
         if (isset($this->_favicon) == true) {
             return $this->_favicon;
         }
 
         /**
-         * @var modules\attachment\Module $attachment
+         * @var \modules\attachment\Attachment $mAttachment
          */
-        $attachment = Modules::get('attachment');
-        if ($this->_site->favicon !== null) {
-            $favicon = $attachment->getAttachment($this->_site->favicon);
-        }
-        $this->_favicon = $favicon ?? $attachment->getRawFile(Configs::path() . '/images/favicon.ico');
+        $mAttachment = Modules::get('attachment');
+        $this->_favicon = $this->_site->favicon != null ? $mAttachment->getAttachment($this->_site->favicon) : null;
 
         return $this->_favicon;
     }
 
     /**
-     * 사이트 대표이미지를 가져온다.
+     * 사이트 엠블럼을 가져온다.
      *
-     * @return \modules\attachment\dto\File $emblem
+     * @return ?\modules\attachment\dto\Attachment $emblem
      */
-    public function getEmblem(): \modules\attachment\dto\File
+    public function getEmblem(): ?\modules\attachment\dto\Attachment
     {
         if (isset($this->_emblem) == true) {
             return $this->_emblem;
         }
 
         /**
-         * @var modules\attachment\Module $attachment
+         * @var \modules\attachment\Attachment $mAttachment
          */
-        $attachment = Modules::get('attachment');
-        if ($this->_site->emblem !== null) {
-            $emblem = $attachment->getAttachment($this->_site->emblem);
-        }
-        $this->_emblem = $emblem ?? $attachment->getRawFile(Configs::path() . '/images/emblem.png');
+        $mAttachment = Modules::get('attachment');
+        $this->_emblem = $this->_site->emblem != null ? $mAttachment->getAttachment($this->_site->emblem) : null;
 
         return $this->_emblem;
     }
@@ -229,22 +225,19 @@ class Site
     /**
      * 사이트 대표이미지를 가져온다.
      *
-     * @return \modules\attachment\dto\File $image
+     * @return ?\modules\attachment\dto\Attachment $image
      */
-    public function getImage(): \modules\attachment\dto\File
+    public function getImage(): ?\modules\attachment\dto\Attachment
     {
         if (isset($this->_image) == true) {
             return $this->_image;
         }
 
         /**
-         * @var modules\attachment\Module $attachment
+         * @var \modules\attachment\Attachment $mAttachment
          */
-        $attachment = Modules::get('attachment');
-        if ($this->_site->image !== null) {
-            $image = $attachment->getAttachment($this->_site->image);
-        }
-        $this->_image = $image ?? $attachment->getRawFile(Configs::path() . '/images/image.png');
+        $mAttachment = Modules::get('attachment');
+        $this->_image = $this->_site->image != null ? $mAttachment->getAttachment($this->_site->image) : null;
 
         return $this->_image;
     }
