@@ -6,7 +6,7 @@
  * @file /scripts/Html.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 26.
+ * @modified 2023. 6. 12.
  */
 class Html {
     static dataValues = new WeakMap();
@@ -129,6 +129,34 @@ class Html {
         else {
             document.documentElement.scroll({ top: top, behavior: animate === true ? 'smooth' : 'auto' });
         }
+    }
+    /**
+     * 현재 페이지에 정의된 모든 스타일시트 변수를 가져온다.
+     *
+     * @param {string} startsWith - 변수시작문자열
+     * @return {Object} properties
+     */
+    static getStyleProperties(startsWith = '') {
+        const isSameDomain = (styleSheet) => {
+            if (!styleSheet.href) {
+                return true;
+            }
+            return styleSheet.href.indexOf(window.location.origin) === 0;
+        };
+        const isStyleRule = (rule) => {
+            return rule.constructor.name === 'CSSStyleRule';
+        };
+        const getProperties = (startsWith) => [...document.styleSheets].filter(isSameDomain).reduce((sheets, sheet) => sheets.concat([...sheet.cssRules].filter(isStyleRule).reduce((propValArr, rule) => {
+            const props = [...rule.style]
+                .map((propName) => [propName.trim(), rule.style.getPropertyValue(propName).trim()])
+                .filter(([propName]) => propName.indexOf('--' + startsWith) === 0);
+            return [...propValArr, ...props];
+        }, [])), []);
+        const properties = {};
+        for (const [key, value] of getProperties(startsWith)) {
+            properties[key] = value;
+        }
+        return properties;
     }
     /**
      * HTML 문서의 랜더링 완료 이벤트리스너를 등록한다.
