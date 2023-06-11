@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 11.
  */
 class ErrorHandler
 {
@@ -28,13 +28,13 @@ class ErrorHandler
     /**
      * 언어팩 에러코드 문자열을 가져온다.
      *
-     * @param string $code 에러코드
+     * @param string $error 에러코드
      * @param ?array $placeHolder 치환자
      * @return string $message 치환된 메시지
      */
-    public static function getText(string $text, ?array $placeHolder = null): string
+    public static function getText(string $error, ?array $placeHolder = null): string
     {
-        return Language::getText('errors.' . $text, $placeHolder);
+        return Language::getErrorText($error, $placeHolder);
     }
 
     /**

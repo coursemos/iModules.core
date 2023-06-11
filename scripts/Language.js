@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 11.
  */
 class Language {
     static observer;
@@ -39,7 +39,7 @@ class Language {
      * @param {string} path - 불러올 언어팩 경로
      * @param {string} code - 언어코드
      * @param {number} retry - 재시도횟수
-     * @return {Promise<object>} texts - 언어팩
+     * @return {Promise<Object>} texts - 언어팩
      */
     static async load(path, code, retry = 0) {
         const url = Language.getPath(path) + '/' + code + '.json';
@@ -98,11 +98,11 @@ class Language {
     /**
      * 언어팩을 불러온다.
      *
-     * @param string $text 언어팩코드
-     * @param ?array $placeHolder 치환자
-     * @param ?array $paths 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @param ?array $codes 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @return array|string|null $message 치환된 메시지
+     * @param {string} text - 언어팩코드
+     * @param {Object} placeHolder - 치환자
+     * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return {string|Object} message - 치환된 메시지
      */
     static async getText(text, placeHolder = null, paths = null, codes = null) {
         paths ??= ['/'];
@@ -130,20 +130,54 @@ class Language {
         return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : string;
     }
     /**
+     * 에러메시지를 불러온다.
+     *
+     * @param {string} error - 에러코드
+     * @param {Object} placeHolder - 치환자
+     * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return {string} message - 치환된 메시지
+     */
+    static async getErrorText(error, placeHolder = null, paths = null, codes = null) {
+        const text = await Language.getText('errors.' + error, placeHolder, paths, codes);
+        if (typeof text == 'string') {
+            return text;
+        }
+        else {
+            return error;
+        }
+    }
+    /**
      * 언어팩을 출력한다.
      * 언어팩을 비동기방식으로 가져오기때문에 치환자를 먼저 반환하고, 언어팩이 로딩완료되면 언어팩으로 대치한다.
      *
-     * @param string $text 언어팩코드
-     * @param ?array $placeHolder 치환자
-     * @param ?array $paths 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @param ?array $codes 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @return array|string|null $message 치환된 메시지
+     * @param {string} text - 언어팩코드
+     * @param {Object} placeHolder - 치환자
+     * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return {string} message - 치환된 메시지
      */
     static printText(text, placeHolder = null, paths = null, codes = null) {
         const uuid = crypto.randomUUID();
         Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
-        return '<span data-language="' + uuid + '">' + text + '</span>';
+        return '<span data-language="' + uuid + '"></span>';
+    }
+    /**
+     * 에러메시지를 출력한다.
+     * 언어팩을 비동기방식으로 가져오기때문에 치환자를 먼저 반환하고, 언어팩이 로딩완료되면 언어팩으로 대치한다.
+     *
+     * @param {string} error - 에러코드
+     * @param {Object} placeHolder - 치환자
+     * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return {string} $message 치환된 메시지
+     */
+    static printErrorText(error, placeHolder = null, paths = null, codes = null) {
+        const uuid = crypto.randomUUID();
+        Language.prints.set(uuid, { text: 'errors.' + error, placeHolder: placeHolder, paths: paths, codes: codes });
+        Language.observe();
+        return '<span data-language="' + uuid + '"></span>';
     }
     /**
      * 언어팩 출력을 위한 옵저버를 시작한다.

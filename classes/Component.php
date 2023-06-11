@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 11.
  */
 abstract class Component
 {
@@ -111,13 +111,13 @@ abstract class Component
     /**
      * 언어팩 에러코드 문자열을 가져온다.
      *
-     * @param string $code 에러코드
+     * @param string $error 에러코드
      * @param ?array $placeHolder 치환자
      * @return string $message 치환된 메시지
      */
-    public static function getErrorText(string $code, ?array $placeHolder = null): string
+    public static function getErrorText(string $error, ?array $placeHolder = null): string
     {
-        return self::getText('errors.' . $code, $placeHolder);
+        return Language::getErrorText($error, $placeHolder, [self::getBase(), '/']);
     }
 
     /**

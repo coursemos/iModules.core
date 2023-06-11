@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2023. 6. 11.
  */
 class Language
 {
@@ -123,5 +123,28 @@ class Language
         }
 
         return is_string($string) == true ? self::replacePlaceHolder($string, $placeHolder) : $string;
+    }
+
+    /**
+     * 에러메시지를 불러온다.
+     *
+     * @param string $error 에러코드
+     * @param ?array $placeHolder 치환자
+     * @param ?array $paths 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param ?array $codes 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return string $message 치환된 메시지
+     */
+    public static function getErrorText(
+        string $error,
+        ?array $placeHolder = null,
+        ?array $paths = null,
+        ?array $codes = null
+    ): string {
+        $text = self::getText('errors.' . $error, $placeHolder, $paths, $codes);
+        if (is_string($text) == true) {
+            return $text;
+        } else {
+            return $error;
+        }
     }
 }

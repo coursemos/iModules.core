@@ -7,7 +7,7 @@
  * @file /classes/Input.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 11.
  */
 class Input
 {
@@ -62,7 +62,7 @@ class Input
     {
         $value = isset($this->values?->$key) == true ? $this->values->$key : null;
         if ($value === null && $errors !== null) {
-            $errors[$key] = $message ?? Language::getText('errors.REQUIRED');
+            $errors[$key] = $message ?? Language::getErrorText('REQUIRED');
             if (strlen($errors[$key]) == 0) {
                 $errors[$key] = null;
             }
