@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 23.
  */
 class Dom {
     element;
@@ -287,19 +287,20 @@ class Dom {
     getOuterWidth(includeMargin = false) {
         if (this.element == null)
             return 0;
-        const style = window.getComputedStyle(this.element);
-        const margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
-        const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-        const scrollBar = this.element.offsetWidth - this.element.clientWidth - border;
+        const rect = this.element.getBoundingClientRect();
         if (includeMargin == true) {
+            const style = window.getComputedStyle(this.element);
+            const margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+            const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+            const scrollBar = this.element.offsetWidth - rect.width - border;
             if (style.boxSizing == 'border-box') {
-                return this.element.offsetWidth + margin;
+                return rect.width + margin;
             }
             else {
-                return this.element.offsetWidth + margin - scrollBar;
+                return rect.width + margin - scrollBar;
             }
         }
-        return this.element.offsetWidth;
+        return rect.width;
     }
     /**
      * HTML 엘리먼트의 높이(테두리 및 여백포함)를 가져온다.
@@ -861,6 +862,43 @@ class Dom {
             return true;
         }
         return this.element.offsetParent === null;
+    }
+    /**
+     * HTML 엘리먼트의 비활성 여부를 설정한다.
+     *
+     * @param {boolean} disabled - 비활성여부
+     */
+    setDisabled(disabled) {
+        if (disabled == true) {
+            this.setAttr('disabled', 'disabled');
+        }
+        else {
+            this.removeAttr('disabled');
+        }
+    }
+    /**
+     * HTML 엘리먼트를 활성화한다.
+     */
+    enable() {
+        this.setDisabled(false);
+        if (this.hasClass('loading') == true) {
+            this.removeClass('loading');
+            this.setStyle('width', null);
+            this.setStyle('height', null);
+        }
+    }
+    /**
+     * HTML 엘리먼트를 비활성화한다.
+     *
+     * @param {boolean} is_loading - 로딩 인디케이터를 보일지 여부
+     */
+    disable(is_loading = false) {
+        this.setDisabled(true);
+        if (is_loading == true) {
+            this.setStyle('width', this.getOuterWidth() + 'px');
+            this.setStyle('height', this.getOuterHeight() + 'px');
+            this.addClass('loading');
+        }
     }
     /**
      * HTML 엘리먼트를 복제한다.

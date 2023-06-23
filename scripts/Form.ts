@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2023. 6. 23.
  */
 class Form {
     static forms: WeakMap<HTMLElement, Form> = new WeakMap();
@@ -69,7 +69,7 @@ class Form {
         if (this.loading == true) {
             iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'), [
                 {
-                    text: await Language.getText('buttons.close'),
+                    text: (await Language.getText('buttons.close')) as string,
                     class: 'confirm',
                     handler: () => {
                         iModules.Modal.close();
@@ -359,7 +359,7 @@ namespace FormElement {
             this.$expand.setStyle('min-width', this.$dom.getOuterWidth() + 'px');
 
             const $select = Html.get('select', this.$dom);
-            const $ul = Html.create('ul');
+            const $ul = Html.create('ul', { 'data-scrollbar': 'auto' });
             Html.all('option', $select).forEach(($option) => {
                 const $li = Html.create(
                     'li',
@@ -380,7 +380,7 @@ namespace FormElement {
             this.$expand.append($ul);
             const styles = Html.getStyleProperties('input-');
             for (const name in styles) {
-                this.$expand.setStyleProperty(name, styles[name]);
+                this.$expand.setStyleProperty(name, window.getComputedStyle(this.$dom.getEl()).getPropertyValue(name));
             }
 
             iModules.Absolute.show(this.$dom, this.$expand, 'y', true, {
