@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 4.
+ * @modified 2023. 6. 23.
  */
 class Format
 {
@@ -277,8 +277,12 @@ class Format
      * @param string $str 변환할 텍스트
      * @return string $keycode 키코드
      */
-    public static function keycode($str): string
+    public static function keycode(?string $str = null): string
     {
+        if ($str === null) {
+            return '';
+        }
+
         $chos = explode(',', 'ㄱ,ㄲ,ㄴ,ㄷ,ㄸ,ㄹ,ㅁ,ㅂ,ㅃ,ㅅ,ㅆ,ㅇ,ㅈ,ㅉ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ');
         $jungs = explode(',', 'ㅏ,ㅐ,ㅑ,ㅒ,ㅓ,ㅔ,ㅕ,ㅖ,ㅗ,ㅘ,ㅙ,ㅚ,ㅛ,ㅜ,ㅝ,ㅞ,ㅟ,ㅠ,ㅡ,ㅢ,ㅣ');
         $jongs = explode(',', ',ㄱ,ㄲ,ㄳ,ㄴ,ㄵ,ㄶ,ㄷ,ㄹ,ㄺ,ㄻ,ㄼ,ㄽ,ㄾ,ㄿ,ㅀ,ㅁ,ㅂ,ㅄ,ㅅ,ㅆ,ㅇ,ㅈ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ');
@@ -337,22 +341,28 @@ class Format
     /**
      * 이메일이 형식에 맞는지 확인한다.
      *
-     * @param string $email 이메일
+     * @param ?string $email 이메일
      * @return bool $isValid
      */
-    public static function checkEmail(string $email): bool
+    public static function checkEmail(?string $email = null): bool
     {
+        if ($email === null) {
+            return false;
+        }
         return preg_match('/^[_\.0-9a-zA-Z-]+@([0-9a-zA-Z][0-9a-zA-Z-]+\.)+[a-zA-Z]{2,6}$/', $email) === 1;
     }
 
     /**
      * 패스워드가 형식에 맞는지 확인한다.
      *
-     * @param string $password 패스워드
+     * @param ?string $password 패스워드
      * @return bool $isValid
      */
-    public static function checkPassword(string $password): bool
+    public static function checkPassword(?string $password = null): bool
     {
+        if ($password === null) {
+            return false;
+        }
         $pattern = self::reg('!@#$%^&*()+=-[];,./{}|:<>?~');
         return preg_match('/^[A-Za-z\d' . $pattern . ']{6,}$/', $password) === 1;
     }
