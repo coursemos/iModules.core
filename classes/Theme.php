@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 5.
+ * @modified 2023. 6. 23.
  */
 class Theme
 {
@@ -278,6 +278,23 @@ class Theme
             return $this->_configs;
         }
         return $this->_configs->{$key} ?? null;
+    }
+
+    /**
+     * 테마의 환경설정을 임시로 저장한다.
+     *
+     * @param string|object $key 설정을 저장할 키값
+     * @param mixed $value 설정값
+     * @return mixed $value 환경설정값
+     */
+    public function setConfigs(string|object $key, mixed $value): Theme
+    {
+        if (is_string($key) == true) {
+            $this->_configs->{$key} = $value;
+        } else {
+            $this->_configs = $key;
+        }
+        return $this;
     }
 
     /**
