@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 23.
  */
 class iModules
 {
@@ -179,6 +179,7 @@ class iModules
         Cache::script('common', '/scripts/Dom.js');
         Cache::script('common', '/scripts/DomList.js');
         Cache::script('common', '/scripts/Form.js');
+        Cache::script('common', '/scripts/Scrollbar.js');
         Html::script(Cache::script('common'), 1);
 
         Cache::script('core', '/scripts/iModules.js');

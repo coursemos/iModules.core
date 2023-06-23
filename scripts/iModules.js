@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 23.
  */
 class iModules {
     static language;
@@ -168,7 +168,7 @@ class iModules {
          * @param {(string|Dom)} content - 내용
          * @param {iModules.Modal.Button[]} buttons - 버튼목록
          */
-        static show(title, content, buttons) {
+        static show(title, content, buttons = []) {
             iModules.Modal.close();
             const $modals = Html.create('div', { 'data-role': 'modals' });
             const $section = Html.create('section');
@@ -196,7 +196,7 @@ class iModules {
                 });
             }
             for (const button of buttons) {
-                const $button = Html.create('button', { 'data-role': 'button' });
+                const $button = Html.create('button', { 'data-role': 'button', 'type': 'button' });
                 $button.html(button.text);
                 $button.on('click', button.handler);
                 if (button.class) {
@@ -230,6 +230,10 @@ Html.ready(() => {
      * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
      */
     Modules.init();
+    /**
+     * 스크롤바를 처리한다.
+     */
+    Scrollbar.init();
     /**
      * 리사이즈 이벤트를 처리한다.
      */
