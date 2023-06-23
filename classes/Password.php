@@ -7,7 +7,7 @@
  * @file /classes/Password.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 6. 23.
  */
 class Password
 {
@@ -79,7 +79,7 @@ class Password
      * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
      * @return string $ciphertext
      */
-    public static function encoder(string $value, ?string $key = null, string $mode = 'base64')
+    public static function encode(string $value, ?string $key = null, string $mode = 'base64'): string
     {
         $key = md5($key ?? (Configs::get('key') ?? 'MoimzTools'));
         $padSize = 16 - (strlen($value) % 16);
@@ -104,7 +104,7 @@ class Password
      * @param string $mode 암호화된 문자열 인코딩방식 (base64 또는 hex)
      * @return string $plaintext
      */
-    public static function decoder($value, $key = null, $mode = 'base64')
+    public static function decode($value, $key = null, $mode = 'base64'): string
     {
         $key = md5($key ?? (Configs::get('key') ?? 'MoimzTools'));
         $value = $mode == 'base64' ? base64_decode(str_replace(' ', '+', $value)) : hex2bin($value);
