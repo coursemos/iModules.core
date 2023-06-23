@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 23.
  */
 class Module extends Component
 {
@@ -177,18 +177,23 @@ class Module extends Component
     /**
      * 모듈의 컨텍스트 템플릿을 가져온다.
      *
+     * @param ?object $template 템플릿설정
      * @return Template $template
      */
-    public function getTemplate(): Template
+    public function getTemplate(?object $template = null): Template
     {
-        /**
-         * 모듈의 컨텍스트 템플릿이 지정되지 않은 경우 에러메시지를 출력한다.
-         */
-        if (isset($this->_template) == false) {
-            ErrorHandler::get($this->error('UNDEFINED_TEMPLATE'));
-        }
+        if ($template !== null) {
+            return new Template($this, $template);
+        } else {
+            /**
+             * 모듈의 컨텍스트 템플릿이 지정되지 않은 경우 에러메시지를 출력한다.
+             */
+            if (isset($this->_template) == false) {
+                ErrorHandler::get($this->error('UNDEFINED_TEMPLATE'));
+            }
 
-        return new Template($this, $this->_template);
+            return new Template($this, $this->_template);
+        }
     }
 
     /**

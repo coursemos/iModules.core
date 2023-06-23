@@ -7,7 +7,7 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2023. 6. 23.
  */
 class Widget extends Component
 {
@@ -50,11 +50,13 @@ class Widget extends Component
      */
     public function getTemplate(): Template
     {
-        if (isset($this->_template) == true) {
-            return $this->_template;
+        /**
+         * 위젯 템플릿이 지정되지 않은 경우 기본 템플릿을 반환한다.
+         */
+        if (isset($this->_template) == false) {
+            $this->_template = new Template($this, (object) ['name' => 'default', 'configs' => null]);
         }
 
-        $this->_template = new Template($this, (object) ['name' => 'default', 'configs' => null]);
         return $this->_template;
     }
 
