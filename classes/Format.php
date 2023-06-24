@@ -235,6 +235,19 @@ class Format
     }
 
     /**
+     * 함수가 호출될 시점의 microtime 을 구한다.
+     *
+     * @param int $scale 소숫점 자리수
+     * @return double $microtime
+     */
+    public static function microtime(int $scale = 8): string
+    {
+        $scale = min(8, $scale);
+        $microtimestmp = explode(' ', microtime());
+        return $microtimestmp[1] . substr($microtimestmp[0], 1, $scale + 1);
+    }
+
+    /**
      * 랜덤문자열을 가져온다.
      *
      * @param int $length 랜덤문자열 길이
@@ -365,6 +378,28 @@ class Format
         }
         $pattern = self::reg('!@#$%^&*()+=-[];,./{}|:<>?~');
         return preg_match('/^[A-Za-z\d' . $pattern . ']{6,}$/', $password) === 1;
+    }
+
+    /**
+     * 사용자의 IP 를 특정형식으로 가져온다.
+     *
+     * @return string $ip
+     */
+    public static function ip(): string
+    {
+        return isset($_SERVER['HTTP_X_FORWARDED_FOR']) == true
+            ? $_SERVER['HTTP_X_FORWARDED_FOR']
+            : $_SERVER['REMOTE_ADDR'];
+    }
+
+    /**
+     * 사용자의 브라우저정보를 특정형식으로 가져온다.
+     *
+     * @return string $agent
+     */
+    public static function agent(): string
+    {
+        return isset($_SERVER['HTTP_USER_AGENT']) == true ? $_SERVER['HTTP_USER_AGENT'] : '';
     }
 
     /**

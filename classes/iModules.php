@@ -33,7 +33,7 @@ class iModules
             return;
         }
 
-        self::$_startTime = self::microtime();
+        self::$_startTime = Format::microtime();
 
         /**
          * 라우터를 초기화한다.
@@ -100,24 +100,13 @@ class iModules
     }
 
     /**
-     * 함수가 호출될 시점의 microtime 을 구한다.
-     *
-     * @return double $microtime
-     */
-    public static function microtime(): float
-    {
-        $microtimestmp = explode(' ', microtime());
-        return floatval($microtimestmp[0]) + floatval($microtimestmp[1]);
-    }
-
-    /**
      * 로딩시간을 기록한다.
      *
      * @param string $name
      */
     public static function loadingTime(string $name): void
     {
-        self::$_loadingTime[] = [$name, self::microtime()];
+        self::$_loadingTime[] = [$name, Format::microtime()];
     }
 
     /**
@@ -420,18 +409,17 @@ class iModules
         Html::print('<!-- Powered By iModules v' . __IM_VERSION__ . ' -->');
         if (Configs::debug() == true) {
             if (count(self::$_loadingTime) > 0) {
-                $loadingTimes = ['<!--', 'Loading Times'];
                 foreach (self::loadingTimes() as $time) {
                     $loadingTimes[] =
+                        '<!-- ' .
                         $time['name'] .
                         ':' .
                         str_repeat(' ', 20 - strlen($time['name'])) .
                         $time['total'] .
                         '(+' .
                         $time['current'] .
-                        ')';
+                        ') -->';
                 }
-                $loadingTimes[] = '-->';
                 Html::print(...$loadingTimes);
             }
         }
