@@ -7,15 +7,12 @@
  * @file /configs/init.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 6. 24.
  */
 if (is_file('./configs/configs.php') == false) {
     header('location: ./install');
     exit();
 }
-
-error_reporting(E_ALL);
-ini_set('display_errors', true);
 
 /**
  * 환경설정파일을 불러온다.

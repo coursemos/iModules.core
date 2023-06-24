@@ -7,7 +7,7 @@
  * @file /install/process/index.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 6. 24.
  */
 define('__IM__', true);
 
@@ -22,6 +22,11 @@ AutoLoader::register('/', '/classes');
 AutoLoader::register('/vendor', '/src');
 
 Configs::setPath(realpath('../..'));
+
+/**
+ * 에러클래스를 초기화한다.
+ */
+ErrorHandler::init();
 
 $action = Request::get('action');
 if ($action == 'requirements') {
@@ -57,7 +62,7 @@ if ($action == 'install') {
         $hasConfigs = true;
 
         AutoLoader::setPath(Configs::path());
-        $token = json_decode(Password::decoder(Request::get('token') ?? ''));
+        $token = json_decode(Password::decode(Request::get('token') ?? ''));
     } else {
         $hasConfigs = false;
     }
