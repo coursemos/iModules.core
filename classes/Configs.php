@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 23.
  */
 class Configs
 {
@@ -368,8 +368,8 @@ class Configs
         try {
             $mysqli = @new mysqli($db_host, $db_id, $db_password, $db_database, $db_port);
             $mysql_server = $mysqli->get_server_info();
-            if (self::package()?->requirements?->mysql_server) {
-                if (version_compare($mysql_server, self::package()->requirements->mysql_server, '<') == true) {
+            if (self::package()?->get('requirements.mysql_server')) {
+                if (version_compare($mysql_server, self::package()->get('requirements.mysql_server'), '<') == true) {
                     $errors['db_host'] = $db_host;
                     $errors['db_port'] = $db_port;
                     $errors['db_id'] = $db_id;
@@ -379,7 +379,7 @@ class Configs
                     $errors['db'] = [
                         'text' => 'requirements.mysql_server.version_fail',
                         'replacements' => [
-                            'requirement' => self::package()->requirements->mysql_server,
+                            'requirement' => self::package()->get('requirements.mysql_server'),
                             'current' => $mysql_server,
                         ],
                     ];
@@ -452,7 +452,7 @@ class Configs
         }
 
         $results->success = true;
-        $results->token = Password::encoder(
+        $results->token = Password::encode(
             json_encode([
                 'admin_email' => $admin_email,
                 'admin_password' => $admin_password,
@@ -473,7 +473,7 @@ class Configs
      */
     public static function debug(): bool
     {
-        return Request::get('debug') === 'true';
+        return true; //Request::get('debug') === 'true';
     }
 
     /**
