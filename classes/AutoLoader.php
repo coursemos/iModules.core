@@ -7,7 +7,7 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 6. 24.
  */
 class AutoLoader
 {
@@ -28,7 +28,7 @@ class AutoLoader
      */
     public static function init(?string $path = null): void
     {
-        self::$_path = $path;
+        self::$_path = $path !== null ? realpath($path) : $path;
         spl_autoload_register(['AutoLoader', 'loader']);
     }
 
