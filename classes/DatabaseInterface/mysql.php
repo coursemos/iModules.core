@@ -55,6 +55,7 @@ class mysql extends DatabaseInterface
     private array $_bindTypes = [];
     private array $_bindParams = [];
     private array $_tableDatas = [];
+    private array $_duplidated = [];
     private string $_tableLockMethod = 'READ';
     private ?int $_insert_id = null;
     private int $_count = 0;
@@ -184,6 +185,7 @@ class mysql extends DatabaseInterface
         $this->_bindTypes = [];
         $this->_bindParams = [];
         $this->_tableDatas = [];
+        $this->_duplidated = [];
         $this->_tableLockMethod = 'READ';
         $this->_count = 0;
     }
@@ -815,14 +817,16 @@ class mysql extends DatabaseInterface
      *
      * @param string $table 테이블명
      * @param array $data 저장할 데이터 ([컬럼명=>값] 또는 [컬럼명])
+     * @param array $duplicated 고유값이 중복될 경우, 업데이트할 컬럼명
      * @return DatabaseInterface $this
      */
-    public function insert(string $table, array $data): DatabaseInterface
+    public function insert(string $table, array $data, array $duplicated = []): DatabaseInterface
     {
         $this->_start('INSERT');
 
         $this->_query = 'INSERT INTO `' . $table . '`';
         $this->_tableDatas = $data;
+        $this->_duplidated = $duplicated;
 
         return $this;
     }
@@ -1433,8 +1437,17 @@ class mysql extends DatabaseInterface
             }
         }
         $this->_query = rtrim($this->_query, ',');
-        if ($this->_startQuery !== 'UPDATE') {
+        if ($this->_startQuery != 'UPDATE') {
             $this->_query .= ')';
+        }
+
+        if ($this->_startQuery == 'INSERT' && count($this->_duplidated) > 0) {
+            $this->_query .= ' ON DUPLICATE KEY UPDATE ';
+            foreach ($this->_duplidated as $column) {
+                $this->_query .= '`' . $column . '`=?,';
+                $this->_bindParam($this->_tableDatas[$column]);
+            }
+            $this->_query = rtrim($this->_query, ',');
         }
     }
 

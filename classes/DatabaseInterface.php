@@ -197,9 +197,10 @@ abstract class DatabaseInterface
      *
      * @param string $table 테이블명
      * @param array $data 저장할 데이터 ([컬럼명=>값] 또는 [컬럼명])
+     * @param array $duplicated 고유값이 중복될 경우, 업데이트할 컬럼명
      * @return DatabaseInterface $this
      */
-    abstract public function insert(string $table, array $data): DatabaseInterface;
+    abstract public function insert(string $table, array $data, array $duplicated = []): DatabaseInterface;
 
     /**
      * REPLACE 쿼리빌더를 시작한다.
