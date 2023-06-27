@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2023. 6. 27.
  */
 class iModules
 {
@@ -34,6 +34,11 @@ class iModules
         }
 
         self::$_startTime = Format::microtime();
+
+        /**
+         * 세션을 시작한다.
+         */
+        self::session_start();
 
         /**
          * 라우터를 초기화한다.
@@ -135,6 +140,10 @@ class iModules
      */
     public static function session_start(): void
     {
+        if (defined('IM_SESSION_STARTED') == true) {
+            return;
+        }
+
         /**
          * 별도의 세션폴더가 생성되어있다면, 해당 폴더에 세션을 저장한다.
          */
@@ -146,14 +155,30 @@ class iModules
             session_save_path(Configs::get('session_path'));
         }
 
-        session_set_cookie_params(
-            0,
-            '/',
-            Configs::get('session_domain') ?? '',
-            Request::isHttps() == true,
-            Request::isHttps() == false
-        );
-        session_start();
+        $options = [
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => Configs::get('session_domain'),
+            'secure' => Request::isHttps() == true,
+            'httponly' => Request::isHttps() == false,
+            'samesite' => 'None',
+        ];
+
+        session_name('IM_SESSION_ID');
+        session_set_cookie_params($options);
+        session_cache_expire(3600);
+        $started = session_start();
+        if ($started == true) {
+            define('IM_SESSION_STARTED', true);
+        }
+    }
+
+    /**
+     * 세션쓰기 대기를 방지하기 위해 세션쓰기를 일시중단한다.
+     */
+    public static function session_stop(): void
+    {
+        session_write_close();
     }
 
     /**
