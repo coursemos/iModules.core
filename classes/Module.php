@@ -7,9 +7,9 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2023. 6. 27.
  */
-class Module extends Component
+abstract class Module extends Component
 {
     /**
      * @var bool $_init 모듈 클래스가 초기화되었는지 여부
@@ -63,7 +63,7 @@ class Module extends Component
      *
      * @return string[] $properties
      */
-    public function getPackageProperties(): array
+    final public function getPackageProperties(): array
     {
         $properties = [];
         if (($this->getPackage()->get('global') === true) == true) {
@@ -97,7 +97,7 @@ class Module extends Component
      * @param string $property 확인할 속성
      * @return bool $hasProperty
      */
-    public function hasPackageProperty(string $property): bool
+    final public function hasPackageProperty(string $property): bool
     {
         return in_array($property, $this->getPackageProperties());
     }
@@ -107,7 +107,7 @@ class Module extends Component
      *
      * @return ?object $installed 모듈설치정보
      */
-    public function getInstalled(): ?object
+    final public function getInstalled(): ?object
     {
         return Modules::getInstalled($this->getName());
     }
@@ -117,7 +117,7 @@ class Module extends Component
      *
      * @return bool $is_installed 설치여부
      */
-    public function isInstalled(): bool
+    final public function isInstalled(): bool
     {
         return $this->getInstalled() !== null;
     }
@@ -128,7 +128,7 @@ class Module extends Component
      * @param int $position 경로를 가져올 위치 (NULL 일 경우 전체 경로를 가져온다.)
      * @return ?string $path
      */
-    public function getRouteAt(int $position): ?string
+    final public function getRouteAt(int $position): ?string
     {
         $route = $this->_route ?? Router::get();
         $paths = explode('/', preg_replace('/^\//', '', $route->getSubPath()));
@@ -141,7 +141,7 @@ class Module extends Component
      * @param string|int ...$paths 모듈 URL 에 추가할 내부 경로 (없는 경우 모듈 기본 URL만 가져온다.)
      * @return string $url
      */
-    public function getUrl(string|int ...$paths): string
+    final public function getUrl(string|int ...$paths): string
     {
         $route = $this->_route ?? Router::get();
         $url = $route->getUrl();
@@ -158,7 +158,7 @@ class Module extends Component
      * @param string $path 프로세스 경로
      * @return string $url
      */
-    public function getProcessUrl(string $path): string
+    final public function getProcessUrl(string $path): string
     {
         return iModules::getProcessUrl('module', $this->getName(), $path);
     }
@@ -168,7 +168,7 @@ class Module extends Component
      *
      * @param object $template 템플릿설정
      */
-    public function setTemplate(object $template): self
+    final public function setTemplate(object $template): self
     {
         $this->_template = $template;
         return $this;
@@ -180,7 +180,7 @@ class Module extends Component
      * @param ?object $template 템플릿설정
      * @return Template $template
      */
-    public function getTemplate(?object $template = null): Template
+    final public function getTemplate(?object $template = null): Template
     {
         if ($template !== null) {
             return new Template($this, $template);
@@ -202,7 +202,7 @@ class Module extends Component
      * @param ?string $key 환경설정코드값 (NULL인 경우 전체 환경설정값)
      * @return mixed $value 환경설정값
      */
-    public function getConfigs(?string $key = null): mixed
+    final public function getConfigs(?string $key = null): mixed
     {
         if (isset(self::$_configs) == false) {
             $installed = Modules::getInstalled($this->getName());
@@ -277,7 +277,7 @@ class Module extends Component
      * @param ?object $configs 컨텍스트 설정
      * @return string $html
      */
-    public function getContent(string $context, ?object $configs = null): string
+    final public function getContent(string $context, ?object $configs = null): string
     {
         $content = $this->getContext($context, $configs);
 
@@ -297,7 +297,7 @@ class Module extends Component
      * @param string $name 속성명
      * @param string $value 속성값
      */
-    protected function setContextAttribute(string $name, string $value): void
+    final protected function setContextAttribute(string $name, string $value): void
     {
         $this->_contextAttributes[$name] = $value;
     }

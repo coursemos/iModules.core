@@ -7,9 +7,9 @@
  * @file /classes/Plugin.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2023. 6. 27.
  */
-class Plugin extends Component
+abstract class Plugin extends Component
 {
     /**
      * @var bool $_init 플러그인 클래스가 초기화되었는지 여부

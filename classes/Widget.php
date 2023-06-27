@@ -7,9 +7,9 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2023. 6. 27.
  */
-class Widget extends Component
+abstract class Widget extends Component
 {
     /**
      * @var bool $_init 위젯 클래스가 초기화되었는지 여부
@@ -37,7 +37,7 @@ class Widget extends Component
      * @param string $name 템플릿명
      * @param array $configs 템플릿설정
      */
-    public function setTemplate(string $name, array $configs = []): void
+    final public function setTemplate(string $name, array $configs = []): void
     {
         $template = (object) ['name' => $name, 'configs' => (object) $configs];
         $this->_template = new Template($this, $template);
@@ -48,7 +48,7 @@ class Widget extends Component
      *
      * @return Template $template
      */
-    public function getTemplate(): Template
+    final public function getTemplate(): Template
     {
         /**
          * 위젯 템플릿이 지정되지 않은 경우 기본 템플릿을 반환한다.
@@ -62,18 +62,15 @@ class Widget extends Component
 
     /**
      * 위젯을 출력하는데 사용하는 데이터를 할당한다.
-     * 각 위젯클래스에서 재정의하여 사용한다.
      */
-    public function setValues(): void
-    {
-    }
+    abstract public function setValues(): void;
 
     /**
      * 위젯 레이아웃을 가져온다.
      *
      * @return string $layout
      */
-    public function getLayout(): string
+    final public function getLayout(): string
     {
         $template = $this->getTemplate();
         $this->setValues();
@@ -90,7 +87,7 @@ class Widget extends Component
         );
     }
 
-    public function doLayout(): void
+    final public function doLayout(): void
     {
         echo $this->getLayout();
     }
