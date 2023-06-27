@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 4. 10.
+ * @modified 2023. 6. 27.
  */
 class Request
 {
@@ -233,6 +233,32 @@ class Request
     }
 
     /**
+     * SESSION 값을 저장한다.
+     *
+     * @param string $name 변수명
+     * @param ?string $value 저장할 값 (NULL 인 경우 세션을 삭제한다.)
+     * @return bool $success
+     */
+    public static function setSession(string $name, ?string $value = null): bool
+    {
+        if (defined('IM_SESSION_STARTED') == false) {
+            if (headers_sent() == true) {
+                return false;
+            } else {
+                iModules::session_start();
+            }
+        }
+
+        if ($value === null) {
+            unset($_SESSION[$name]);
+        } else {
+            $_SESSION[$name] = $value;
+        }
+
+        return true;
+    }
+
+    /**
      * COOKIE 변수데이터를 가져온다.
      *
      * @param string $name 변수명
@@ -246,6 +272,38 @@ class Request
         }
 
         return $value;
+    }
+
+    /**
+     * COOKIE를 저장한다.
+     *
+     * @param string $name 변수명
+     * @param ?string $value 저장할 값 (NULL 인 경우 세션을 삭제한다.)
+     * @param int $lifetime 쿠키만료일시 (기본 1시간=3600)
+     * @return bool $success
+     */
+    public static function setCookie(string $name, ?string $value = null, int $lifetime = 3600): bool
+    {
+        if (headers_sent() == true) {
+            return false;
+        }
+
+        $options = [
+            'expires' => time() + $lifetime,
+            'path' => '/',
+            'domain' => Configs::get('session_domain'),
+            'secure' => Request::isHttps() == true,
+            'httponly' => Request::isHttps() == false,
+            'samesite' => 'None',
+        ];
+
+        if ($value === null) {
+            setcookie($name, '', $options);
+        } else {
+            setcookie($name, $value, $options);
+        }
+
+        return true;
     }
 
     /**
