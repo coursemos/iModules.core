@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2023. 6. 27.
  */
 class Configs
 {
@@ -173,8 +173,8 @@ class Configs
 
         $results->latest = new stdClass();
         $results->latest->status = 'success';
-        $results->latest->current = $package->version;
-        $results->latest->latest = $package->version;
+        $results->latest->current = $package->getVersion();
+        $results->latest->latest = $package->getVersion();
 
         if (function_exists('curl_init') == true) {
             $apiUrl = 'https://api.moimz.com/tools/' . $package->getId() . '/latest/' . $package->getVersion();
