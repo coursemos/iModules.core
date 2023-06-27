@@ -8,7 +8,7 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 27.
  */
 namespace databases\mysql;
 use mysqli;
@@ -596,7 +596,7 @@ class mysql extends DatabaseInterface
                 foreach ($datas as $data) {
                     $insert = $defaults;
                     foreach ($data as $name => $value) {
-                        if (isset($insert[$name]) == true) {
+                        if (array_key_exists($name, $insert) === true) {
                             $insert[$name] = $value;
                         }
                     }
