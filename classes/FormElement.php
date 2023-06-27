@@ -7,7 +7,7 @@
  * @file /classes/FormElement.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 6. 24.
  */
 namespace FormElement;
 class Base
@@ -117,7 +117,7 @@ class Base
         $field = strtolower(end($field));
         return \Html::element(
             'div',
-            ['data-role' => 'form', 'data-field' => $field, 'data-name' => $this->_name],
+            ['data-role' => 'form', 'data-type' => 'field', 'data-field' => $field, 'data-name' => $this->_name],
             \Html::tag($this->getField(), $this->getHelpText())
         );
     }
