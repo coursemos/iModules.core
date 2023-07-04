@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2023. 7. 3.
  */
 class Request
 {
@@ -134,6 +134,66 @@ class Request
     }
 
     /**
+     * GET 변수데이터를 특정값으로 분리한 배열형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param string $seperator 분리자 (기본값 : ,)
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?string[] $value
+     */
+    public static function getSplit(string $name, string $seperator = ',', bool $is_required = false): ?array
+    {
+        $value = Request::get($name, $is_required);
+        if ($value == null) {
+            return null;
+        }
+
+        return explode($seperator, $value);
+    }
+
+    /**
+     * GET 변수데이터를 JSON 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return mixed $value
+     */
+    public static function getJson(string $name, bool $is_required = false): mixed
+    {
+        $value = Request::get($name, $is_required);
+        if ($value == null) {
+            return null;
+        }
+        return json_decode($value);
+    }
+
+    /**
+     * GET 변수데이터를 INT 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?int $value
+     */
+    public static function getInt(string $name, bool $is_required = false): ?int
+    {
+        $value = Request::get($name, $is_required);
+        return $value === null || is_numeric($value) == false ? null : intval($value, 10);
+    }
+
+    /**
+     * GET 변수데이터를 INT 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?int $value
+     */
+    public static function getFloat(string $name, bool $is_required = false): ?float
+    {
+        $value = Request::get($name, $is_required);
+        return $value === null || is_numeric($value) == false ? null : floatval($value);
+    }
+
+    /**
      * POST 변수데이터를 가져온다.
      *
      * @param string $name 변수명
@@ -159,6 +219,66 @@ class Request
         }
 
         return $value;
+    }
+
+    /**
+     * POST 변수데이터를 특정값으로 분리한 배열형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param string $seperator 분리자 (기본값 : ,)
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?string[] $value
+     */
+    public static function postSplit(string $name, string $seperator = ',', bool $is_required = false): ?array
+    {
+        $value = Request::post($name, $is_required);
+        if ($value == null) {
+            return null;
+        }
+
+        return explode($seperator, $value);
+    }
+
+    /**
+     * POST 변수데이터를 JSON 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return mixed $value
+     */
+    public static function postJson(string $name, bool $is_required = false): mixed
+    {
+        $value = Request::post($name, $is_required);
+        if ($value == null) {
+            return null;
+        }
+        return json_decode($value);
+    }
+
+    /**
+     * POST 변수데이터를 INT 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?int $value
+     */
+    public static function postInt(string $name, bool $is_required = false): ?int
+    {
+        $value = Request::post($name, $is_required);
+        return $value === null || is_numeric($value) == false ? null : intval($value, 10);
+    }
+
+    /**
+     * POST 변수데이터를 INT 형식으로 가져온다.
+     *
+     * @param string $name 변수명
+     * @param bool $is_required 필수여부 (기본값 : false)
+     * @return ?int $value
+     */
+    public static function postFloat(string $name, bool $is_required = false): ?float
+    {
+        $value = Request::post($name, $is_required);
+        return $value === null || is_numeric($value) == false ? null : floatval($value);
     }
 
     /**
