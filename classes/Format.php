@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2023. 7. 4.
  */
 class Format
 {
@@ -132,6 +132,20 @@ class Format
         $substring .= trim(mb_substr($string, $origin - $length[1], $length[1], 'utf-8'));
 
         return $substring;
+    }
+
+    /**
+     * 대상 배열에서 필터배열에 존재하지 않는 값을 필터링한다.
+     *
+     * @param array $array  대상배열
+     * @param array $filters 필터배열
+     * @return array $filtered
+     */
+    public static function filter(array $array, array $filters): array
+    {
+        return array_filter($array, function ($v) use ($filters) {
+            return in_array($v, $filters);
+        });
     }
 
     /**
