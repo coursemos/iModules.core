@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 3.
+ * @modified 2023. 7. 4.
  */
 class File
 {
@@ -37,7 +37,51 @@ class File
             $result = file_put_contents($path, $data);
         }
 
+        if ($result !== false) {
+            @chmod($path, 0707);
+        }
+
         return $result !== false;
+    }
+
+    /**
+     * URL 로 부터 파일을 저장한다.
+     *
+     * @param string $url 파일 URL
+     * @param string $path 저장할 경로
+     * @return bool $success
+     */
+    public static function writeByUrl(string $url, string $path): bool
+    {
+        $pURL = parse_url($url);
+        if ($pURL === false) {
+            return false;
+        }
+
+        $referer = $pURL['scheme'] . '://' . $pURL['host'];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, false);
+        curl_setopt(
+            $ch,
+            CURLOPT_USERAGENT,
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36'
+        );
+
+        curl_setopt($ch, CURLOPT_REFERER, $referer);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $data = curl_exec($ch);
+        $cinfo = curl_getinfo($ch);
+        curl_close($ch);
+
+        if ($cinfo['http_code'] !== 200) {
+            return false;
+        }
+
+        return File::write($path, $data);
     }
 
     /**
