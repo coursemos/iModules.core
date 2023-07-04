@@ -6,9 +6,23 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 4.
+ * @modified 2023. 7. 4.
  */
 class Format {
+    /**
+     * 숫자 포맷을 지역에 따라 변경한다.
+     *
+     * @param {number|string} number - 숫자
+     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     */
+    static number(number: number | string, locale: string = null): string {
+        if (typeof number == 'string') {
+            number = parseFloat(number);
+        }
+
+        return number.toLocaleString(locale ?? iModules.getLanguage());
+    }
+
     /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.
      *
