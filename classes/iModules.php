@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2023. 7. 4.
  */
 class iModules
 {
@@ -270,6 +270,23 @@ class iModules
             $this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
         }
         */
+    }
+
+    /**
+     * 아이모듈 기본 URL 을 가져온다.
+     *
+     * @param bool $is_full_url 도메인을 포함한 전체 URL 여부
+     * @return string $url
+     */
+    public static function getUrl(bool $is_full_url = false): string
+    {
+        $url = '';
+        if ($is_full_url === true) {
+            $url .= Domains::get()->getUrl();
+        }
+        $url .= \Configs::dir();
+
+        return $url;
     }
 
     /**
