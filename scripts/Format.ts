@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 7. 4.
+ * @modified 2023. 8. 2.
  */
 class Format {
     /**
@@ -159,6 +159,128 @@ class Format {
      */
     static normalizer(string: string): string {
         return string.normalize('NFC');
+    }
+
+    /**
+     * SHA1 해시를 가져온다.
+     *
+     * @param {string} string - 해시를 만들 문자열
+     * @return {string} hash - 해시
+     */
+    static sha1(string: string): string {
+        const rotate_left = (n: number, s: number) => {
+            return (n << s) | (n >>> (32 - s));
+        };
+
+        const cvt_hex = (val: number) => {
+            let str = '';
+            for (let i = 7; i >= 0; i--) {
+                str += ((val >>> (i * 4)) & 0x0f).toString(16);
+            }
+            return str;
+        };
+
+        const W = new Array(80);
+        let H0 = 0x67452301;
+        let H1 = 0xefcdab89;
+        let H2 = 0x98badcfe;
+        let H3 = 0x10325476;
+        let H4 = 0xc3d2e1f0;
+
+        const encoder = new TextEncoder();
+        const utf8 = encoder.encode(string);
+        const length = utf8.length;
+
+        var word_array = [];
+        for (let i = 0; i < length - 3; i += 4) {
+            word_array.push((utf8[i] << 24) | (utf8[i + 1] << 16) | (utf8[i + 2] << 8) | utf8[i + 3]);
+        }
+
+        switch (length % 4) {
+            case 0:
+                word_array.push(0x080000000);
+                break;
+
+            case 1:
+                word_array.push((utf8[length - 1] << 24) | 0x0800000);
+                break;
+
+            case 2:
+                word_array.push((utf8[length - 2] << 24) | (utf8[length - 1] << 16) | 0x08000);
+                break;
+
+            case 3:
+                word_array.push((utf8[length - 3] << 24) | (utf8[length - 2] << 16) | (utf8[length - 1] << 8) | 0x80);
+                break;
+        }
+
+        while (word_array.length % 16 != 14) {
+            word_array.push(0);
+        }
+
+        word_array.push(length >>> 29);
+        word_array.push((length << 3) & 0x0ffffffff);
+
+        for (let blockstart = 0; blockstart < word_array.length; blockstart += 16) {
+            for (let i = 0; i < 16; i++) {
+                W[i] = word_array[blockstart + i];
+            }
+            for (let i = 16; i <= 79; i++) {
+                W[i] = rotate_left(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+            }
+
+            let A = H0;
+            let B = H1;
+            let C = H2;
+            let D = H3;
+            let E = H4;
+            let temp: number;
+
+            for (let i = 0; i <= 19; i++) {
+                temp = (rotate_left(A, 5) + ((B & C) | (~B & D)) + E + W[i] + 0x5a827999) & 0x0ffffffff;
+                E = D;
+                D = C;
+                C = rotate_left(B, 30);
+                B = A;
+                A = temp;
+            }
+
+            for (let i = 20; i <= 39; i++) {
+                temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ed9eba1) & 0x0ffffffff;
+                E = D;
+                D = C;
+                C = rotate_left(B, 30);
+                B = A;
+                A = temp;
+            }
+
+            for (let i = 40; i <= 59; i++) {
+                temp = (rotate_left(A, 5) + ((B & C) | (B & D) | (C & D)) + E + W[i] + 0x8f1bbcdc) & 0x0ffffffff;
+                E = D;
+                D = C;
+                C = rotate_left(B, 30);
+                B = A;
+                A = temp;
+            }
+
+            for (let i = 60; i <= 79; i++) {
+                temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0xca62c1d6) & 0x0ffffffff;
+                E = D;
+                D = C;
+                C = rotate_left(B, 30);
+                B = A;
+                A = temp;
+            }
+
+            H0 = (H0 + A) & 0x0ffffffff;
+            H1 = (H1 + B) & 0x0ffffffff;
+            H2 = (H2 + C) & 0x0ffffffff;
+            H3 = (H3 + D) & 0x0ffffffff;
+            H4 = (H4 + E) & 0x0ffffffff;
+        }
+
+        const hash = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
+        return hash.toLowerCase();
     }
 
     /**
