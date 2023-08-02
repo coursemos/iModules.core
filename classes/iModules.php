@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 7. 4.
+ * @modified 2023. 8. 2.
  */
 class iModules
 {
@@ -160,7 +160,7 @@ class iModules
             'path' => '/',
             'domain' => Configs::get('session_domain'),
             'secure' => Request::isHttps() == true,
-            'httponly' => Request::isHttps() == false,
+            'httponly' => true,
             'samesite' => 'None',
         ];
 
