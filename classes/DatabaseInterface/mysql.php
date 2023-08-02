@@ -8,9 +8,11 @@
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @version 2.0.0
- * @modified 2023. 6. 27.
+ * @modified 2023. 8. 2.
  */
+
 namespace databases\mysql;
+
 use mysqli;
 use mysqli_stmt;
 use mysqli_result;
@@ -18,6 +20,7 @@ use DatabaseInterface;
 use DatabaseConnector;
 use ErrorHandler;
 use stdClass;
+
 class mysql extends DatabaseInterface
 {
     /**
@@ -785,7 +788,7 @@ class mysql extends DatabaseInterface
      * @param array $bindParams 바인딩할 변수
      * @return DatabaseInterface $this
      */
-    function query(string $query, ?array $bindParams = null): DatabaseInterface
+    public function query(string $query, ?array $bindParams = null): DatabaseInterface
     {
         $this->_start('RAW');
         $this->_query = trim($query);
@@ -1478,8 +1481,8 @@ class mysql extends DatabaseInterface
         $this->_query .= ' WHERE ';
         $this->_where[0][0] = '';
 
-        foreach ($this->_where as $index => &$cond) {
-            list($concat, $wValue, $wKey) = $cond;
+        foreach ($this->_where as $index => &$condition) {
+            list($concat, $wValue, $wKey) = $condition;
 
             if ($wKey == '(') {
                 $this->_query .= ' ' . $concat . ' ';
@@ -1489,15 +1492,12 @@ class mysql extends DatabaseInterface
             } elseif ($wKey != ')') {
                 $this->_query .= ' ' . $concat . ' ';
             }
+
             if (
                 is_array($wValue) == false ||
                 (strtolower(key($wValue)) != 'inset' && strtolower(key($wValue)) != 'fulltext')
             ) {
                 $this->_query .= $wKey;
-            }
-
-            if ($wValue === null) {
-                continue;
             }
 
             if (is_array($wValue) == false) {
@@ -1506,6 +1506,10 @@ class mysql extends DatabaseInterface
 
             $key = key($wValue);
             $val = $wValue[$key];
+            if ($val === null) {
+                $key = $key == '=' ? 'is_null' : 'is_not_null';
+            }
+
             switch (strtolower($key)) {
                 case '0':
                     $this->_bindParams($wValue);
@@ -1529,11 +1533,11 @@ class mysql extends DatabaseInterface
 
                     $this->_query .= $comparison;
                     break;
-                case 'is not':
-                    $this->_query .= ' IS NOT NULL';
-                    break;
-                case 'is':
+                case 'is_null':
                     $this->_query .= ' IS NULL';
+                    break;
+                case 'is_not_null':
+                    $this->_query .= ' IS NOT NULL';
                     break;
                 case 'not between':
                 case 'between':
