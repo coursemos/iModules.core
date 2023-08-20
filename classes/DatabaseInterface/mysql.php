@@ -748,7 +748,7 @@ class mysql extends DatabaseInterface
     public function locks(array $tables, ?string $method = 'READ'): bool
     {
         if (in_array(strtoupper($method), ['READ', 'WRITE']) == false) {
-            $this->_error('Bad lock type: Can be either READ or WRITE');
+            $this->_error(\Language::getText('errors/databases/lock_method'));
         }
         return true;
     }
