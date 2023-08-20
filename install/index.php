@@ -7,7 +7,7 @@
  * @file /install/index.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2023. 8. 20.
  */
 if (version_compare(PHP_VERSION, '8.0.0', '<') == true) {
     exit('PHP version 8.0 or higher is required.');
@@ -22,9 +22,9 @@ AutoLoader::register('/', '/');
 AutoLoader::register('/', '/classes');
 AutoLoader::register('/vendor', '/src');
 
-Configs::setPath('..');
+Configs::setPath(str_replace('/install/index.php', '', $_SERVER['SCRIPT_FILENAME']));
 Html::language(Request::get('language') ?? Request::languages(true));
-Html::title(Configs::package()->title . ' Installer');
+Html::title(Configs::package()->get('title') . ' Installer');
 Html::viewport('width=1000');
 Html::script('//www.moimz.tools/installer/scripts/script.js');
 Html::style('//www.moimz.tools/installer/styles/style.css');

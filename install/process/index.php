@@ -21,7 +21,7 @@ AutoLoader::register('/', '/');
 AutoLoader::register('/', '/classes');
 AutoLoader::register('/vendor', '/src');
 
-Configs::setPath(realpath('../..'));
+Configs::setPath(str_replace('/install/process/index.php', '', $_SERVER['SCRIPT_FILENAME']));
 
 /**
  * 에러클래스를 초기화한다.
@@ -35,7 +35,6 @@ if ($action == 'requirements') {
 }
 
 if ($action == 'configs') {
-    Configs::setPath(realpath('../..'));
     Header::type('json');
 
     $configs = json_decode(file_get_contents('php://input')) ?? null;
@@ -57,7 +56,7 @@ if ($action == 'install') {
     if (is_file(Configs::path() . '/configs/configs.php') == true) {
         $_CONFIGS = new stdClass();
         $_CONFIGS->db = new stdClass();
-        require_once Configs::path() . '/configs/configs.php';
+        include Configs::path() . '/configs/configs.php';
         Configs::init($_CONFIGS);
         $hasConfigs = true;
 
@@ -100,6 +99,46 @@ if ($action == 'install') {
         }
 
         if (count($results->errors) == 0) {
+            if (
+                $db
+                    ->select()
+                    ->from(iModules::table('domains'))
+                    ->where('host', $_SERVER['HTTP_HOST'])
+                    ->has() == false
+            ) {
+                $db->insert(iModules::table('domains'), [
+                    'host' => $_SERVER['HTTP_HOST'],
+                    'alias' => '',
+                    'language' => Request::languages(true),
+                    'is_https' => Request::isHttps() == true ? 'TRUE' : 'FALSE',
+                    'is_rewrite' => 'TRUE', // @todo Rewrite 설정확인,
+                    'is_internationalization' => 'FALSE',
+                    'sort' => 0,
+                ])->execute();
+            }
+
+            if (
+                $db
+                    ->select()
+                    ->from(iModules::table('sites'))
+                    ->where('host', $_SERVER['HTTP_HOST'])
+                    ->where('language', Request::languages(true))
+                    ->has() == false
+            ) {
+                $db->insert(iModules::table('sites'), [
+                    'host' => $_SERVER['HTTP_HOST'],
+                    'language' => Request::languages(true),
+                    'title' => 'iModules',
+                    'description' => '',
+                    'theme' => Format::toJson(['name' => 'default', 'configs' => null]),
+                ])->execute();
+            }
+
+            Cache::remove('domains');
+            Cache::remove('sites');
+            Cache::remove('contexts');
+            Cache::remove('modules');
+
             $results->success = true;
             $results->status = 'success';
         } else {
@@ -121,7 +160,7 @@ if ($action == 'install') {
         $results->success = false;
         $results->key = $key;
         $results->current = '0.0.0';
-        $results->requirement = Configs::package()->dependencies?->{$key} ?? false;
+        $results->requirement = Configs::package()->getDependencies()->{$key} ?? false;
 
         if ($type == 'modules') {
             $installable = Modules::installable($name, false);
