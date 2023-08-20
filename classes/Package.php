@@ -417,6 +417,7 @@ class Package
             $field->component = new stdClass();
             $field->component->type = $configs->component?->type ?? '';
             $field->component->name = $configs->component?->name ?? '';
+            $field->component->use_default = $configs->component?->use_default ?? false;
         }
 
         if ($field->type == 'fieldset') {
