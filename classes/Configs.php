@@ -94,6 +94,7 @@ class Configs
     public static function setPath(string $path): void
     {
         self::$_path = $path;
+        self::read();
     }
 
     /**
@@ -192,6 +193,7 @@ class Configs
 
         $results->configs = new stdClass();
         $results->configs->status = is_file(self::path() . '/configs/configs.php') == false ? 'success' : 'notice';
+        $results->configs->path = self::path() . '/configs/configs.php';
 
         foreach ($package->getRequirements() as $key => $value) {
             $check = new stdClass();
@@ -264,12 +266,12 @@ class Configs
         if (is_file(self::path() . '/configs/configs.php') == true) {
             $_CONFIGS = new stdClass();
             $_CONFIGS->db = new stdClass();
-            require_once self::path() . '/configs/configs.php';
+            include self::path() . '/configs/configs.php';
             self::init($_CONFIGS);
         }
 
         $configs = new stdClass();
-        $configs->has_configs = is_file('../../configs/configs.php');
+        $configs->has_configs = is_file(self::path() . '/configs/configs.php');
         $configs->path = self::path();
         $configs->dir = self::dir();
         $configs->dir = $configs->dir == '' ? '/' : '';
@@ -288,7 +290,7 @@ class Configs
      */
     public static function write(object $configs): object
     {
-        if ($configs->path) {
+        if (isset($configs->path) == true && $configs->path !== null) {
             self::setPath($configs->path);
         }
 
@@ -297,7 +299,7 @@ class Configs
         if (is_file(self::path() . '/configs/configs.php') == true) {
             $_CONFIGS = new stdClass();
             $_CONFIGS->db = new stdClass();
-            require_once self::path() . '/configs/configs.php';
+            include self::path() . '/configs/configs.php';
 
             if ($_CONFIGS->key != $configs->key) {
                 $results->success = false;
