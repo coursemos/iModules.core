@@ -35,15 +35,17 @@ class Router
             return;
         }
 
-        $domain = Domains::get();
+        $domain = Domains::has();
         $routes = self::stringToArray(Request::get('route') ?? '');
-        if ($domain->isInternationalization() == true) {
+        if ($domain?->isInternationalization() == true) {
             if (count($routes) > 0 && preg_match('/^[a-z]{2}$/i', $routes[0]) == true) {
                 $code = array_shift($routes);
                 self::$_language = $code;
             } else {
                 self::$_language = $domain->getLanguage();
             }
+        } else {
+            self::$_language = $domain?->getLanguage() ?? Request::languages(true);
         }
 
         self::$_path = '/' . implode('/', $routes);
