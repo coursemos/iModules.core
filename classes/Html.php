@@ -296,7 +296,7 @@ class Html
      */
     public static function tag(string ...$tags): string
     {
-        return implode("\n", $tags);
+        return implode("\n", array_filter($tags));
     }
 
     /**
@@ -383,7 +383,8 @@ class Html
         }
 
         if (isset(self::$_attributes['data-rewrite']) == false) {
-            self::$_attributes['data-rewrite'] = Domains::has()?->isRewrite() == true ? 'true' : 'false';
+            self::$_attributes['data-rewrite'] =
+                Configs::isInstalled() == true && Domains::has()?->isRewrite() == true ? 'true' : 'false';
         }
 
         if (isset(self::$_attributes['data-type']) == false) {
