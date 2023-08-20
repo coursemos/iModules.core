@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2023. 8. 20.
  */
 abstract class DatabaseInterface
 {
@@ -143,21 +143,13 @@ abstract class DatabaseInterface
     abstract public function alter(string $table, string $target, object|bool $column, ?string $after = null): bool;
 
     /**
-     * LOCK 방법을 설정한다.
-     *
-     * @param string $method LOCK METHOD (READ, WRITE)
-     * @return DatabaseInterface $this
-     */
-    abstract public function setLockMethod(string $method): DatabaseInterface;
-
-    /**
      * 단일 테이블을 설정된 LOCK 방법에 따라 LOCK 한다.
      *
      * @param string $table LOCK할 테이블
      * @param ?string $method LOCK METHOD (READ, WRITE)
      * @return bool $success
      */
-    abstract public function lock(string $table, ?string $method = null): bool;
+    abstract public function lock(string $table, ?string $method = 'READ'): bool;
 
     /**
      * 복수 테이블을 설정된 LOCK 방법에 따라 LOCK 한다.
@@ -166,7 +158,7 @@ abstract class DatabaseInterface
      * @param ?string $method LOCK METHOD (READ, WRITE)
      * @return bool $success
      */
-    abstract public function locks(array $tables, ?string $method = null): bool;
+    abstract public function locks(array $tables, ?string $method = 'READ'): bool;
 
     /**
      * 현재 LOCK 중인 테이블을 UNLOCK 한다.

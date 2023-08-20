@@ -1,14 +1,13 @@
 <?php
 /**
- * 이 파일은 모임즈툴즈의 일부입니다. (https://www.moimz.tools)
+ * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
  *
  * MySQL 인터페이스를 정의한다.
  *
  * @file /classes/Databases/mysql.class.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 2.0.0
- * @modified 2023. 8. 2.
+ * @modified 2023. 8. 20.
  */
 
 namespace databases\mysql;
@@ -77,7 +76,7 @@ class mysql extends DatabaseInterface
     /**
      * 데이터베이스에 접속한다.
      *
-     * @param DatabaseConnector $connector 데이터베이스정보
+     * @param connector $connector 데이터베이스정보
      * @return mysqli $mysqli mysqli 클래스객체
      */
     public function connect(DatabaseConnector $connector): mysqli
@@ -101,7 +100,6 @@ class mysql extends DatabaseInterface
         restore_error_handler();
 
         $this->_mysqli->set_charset($this->_charset);
-        $this->_mysqli->report_mode = MYSQLI_REPORT_OFF;
 
         return $this->_mysqli;
     }
@@ -729,32 +727,13 @@ class mysql extends DatabaseInterface
     }
 
     /**
-     * LOCK 방법을 설정한다.
-     *
-     * @param string $method LOCK METHOD (READ, WRITE)
-     * @return DatabaseInterface $this
-     */
-    public function setLockMethod(string $method): DatabaseInterface
-    {
-        switch (strtoupper($method)) {
-            case 'READ' || 'WRITE':
-                $this->_tableLockMethod = $method;
-                break;
-            default:
-                $this->_error('Bad lock type: Can be either READ or WRITE');
-                break;
-        }
-        return $this;
-    }
-
-    /**
      * 단일 테이블을 설정된 LOCK 방법에 따라 LOCK 한다.
      *
      * @param string $table LOCK할 테이블
      * @param ?string $method LOCK METHOD (READ, WRITE)
      * @return bool $success
      */
-    public function lock(string $table, ?string $method = null): bool
+    public function lock(string $table, ?string $method = 'READ'): bool
     {
         return $this->locks([$table], $method);
     }
@@ -766,8 +745,11 @@ class mysql extends DatabaseInterface
      * @param ?string $method LOCK METHOD (READ, WRITE)
      * @return bool $success
      */
-    public function locks(array $tables, ?string $method = null): bool
+    public function locks(array $tables, ?string $method = 'READ'): bool
     {
+        if (in_array(strtoupper($method), ['READ', 'WRITE']) == false) {
+            $this->_error('Bad lock type: Can be either READ or WRITE');
+        }
         return true;
     }
 
@@ -1173,13 +1155,9 @@ class mysql extends DatabaseInterface
 
         $datas = $results->datas;
         if ($field !== null) {
-            array_walk(
-                $datas,
-                function (&$item, $key, $field) {
-                    $item = isset($item->{$field}) == true ? $item->{$field} : null;
-                },
-                $field
-            );
+            array_walk($datas, function (&$item) use ($field) {
+                $item = isset($item->{$field}) == true ? $item->{$field} : null;
+            });
         } else {
             $datas = $results->datas;
         }
@@ -1216,9 +1194,8 @@ class mysql extends DatabaseInterface
      */
     public function transaction(): void
     {
+        // @todo 트랜잭션이 이미 시작중인지 체크
         $this->_mysqli->autocommit(false);
-        $this->_transaction_in_progress = true;
-        //register_shutdown_function([$this, '_transaction_status_check']);
     }
 
     /**
@@ -1227,7 +1204,6 @@ class mysql extends DatabaseInterface
     public function commit(): void
     {
         $this->_mysqli->commit();
-        $this->_transaction_in_progress = false;
         $this->_mysqli->autocommit(true);
     }
 
@@ -1237,7 +1213,6 @@ class mysql extends DatabaseInterface
     public function rollback(): void
     {
         $this->_mysqli->rollback();
-        $this->_transaction_in_progress = false;
         $this->_mysqli->autocommit(true);
     }
 
@@ -1712,10 +1687,6 @@ class mysql extends DatabaseInterface
         }
 
         $stmt->free_result();
-
-        if ($results->success == true) {
-            $this->_lastError = null;
-        }
 
         return $results;
     }
