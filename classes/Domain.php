@@ -7,7 +7,7 @@
  * @file /classes/Domain.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2022. 12. 1.
+ * @modified 2023. 8. 20.
  */
 class Domain
 {
@@ -30,11 +30,6 @@ class Domain
      * @var Site[] 도메인 하위 사이트
      */
     private array $_sites;
-
-    /**
-     * @var string $_membership 회원 시스템 구조 (INDEPENDENCE : 사이트별 독립, DEPENDENCE : 도메인에 종속)
-     */
-    private string $_membership;
 
     /**
      * @var bool $_is_https HTTPS 사용여부
@@ -61,8 +56,6 @@ class Domain
         $this->_host = $domain->host;
         $this->_alias = $domain->alias ? explode(',', $domain->alias) : [];
         $this->_language = $domain->language;
-        $this->_languages = [];
-        $this->_membership = $domain->membership;
         $this->_is_https = $domain->is_https == 'TRUE';
         $this->_is_rewrite = $domain->is_rewrite == 'TRUE';
         $this->_is_internationalization = $domain->is_internationalization == 'TRUE';
@@ -96,16 +89,6 @@ class Domain
     public function getLanguage(): string
     {
         return $this->_language;
-    }
-
-    /**
-     * 회원데이터 처리방법을 가져온다.
-     *
-     * @return string $membership (INDEPENDENCE : 독립 / DEPENDENCE : 통합)
-     */
-    public function getMembership(): string
-    {
-        return $this->_membership;
     }
 
     /**

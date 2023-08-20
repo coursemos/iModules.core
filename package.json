@@ -36,11 +36,6 @@
                     "length": 2,
                     "comment": "기본언어코드"
                 },
-                "membership": {
-                    "type": "enum",
-                    "length": "'INDEPENDENCE', 'DEPENDENCE'",
-                    "comment": "통합회원설정"
-                },
                 "is_https": {
                     "type": "enum",
                     "length": "'TRUE', 'FALSE'",
