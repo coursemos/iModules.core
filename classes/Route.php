@@ -202,6 +202,8 @@ class Route
             $route .= $this->getPath($is_included_subpage);
         }
 
+        $route = $route == '' ? '/' : $route;
+
         if ($this->getDomain()->isRewrite() == true) {
             $url .= $route != '/' ? $route : '/';
         } else {
