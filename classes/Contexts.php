@@ -50,17 +50,18 @@ class Contexts
         /**
          * 현재 도메인에 해당하는 컨텍스트를 경로에 추가한다.
          */
-        $domain = Domains::get();
-
-        /**
-         * @var string $language 언어코드
-         * @var Context[] $contexts 해당 언어코드의 전체 컨텍스트
-         */
-        foreach (self::$_contexts[$domain->getHost()] ?? [] as $language => $contexts) {
-            foreach ($contexts as $context) {
-                Router::add($context->getPath(), $language, 'context', [$context, 'getContent']);
-                if ($context->isRouting() == true || $context->getType() == 'MODULE') {
-                    Router::add($context->getPath() . '/*', $language, 'context', [$context, 'getContent']);
+        $domain = Domains::has();
+        if ($domain !== null) {
+            /**
+             * @var string $language 언어코드
+             * @var Context[] $contexts 해당 언어코드의 전체 컨텍스트
+             */
+            foreach (self::$_contexts[$domain->getHost()] ?? [] as $language => $contexts) {
+                foreach ($contexts as $context) {
+                    Router::add($context->getPath(), $language, 'context', [$context, 'getContent']);
+                    if ($context->isRouting() == true || $context->getType() == 'MODULE') {
+                        Router::add($context->getPath() . '/*', $language, 'context', [$context, 'getContent']);
+                    }
                 }
             }
         }
