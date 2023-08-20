@@ -19,7 +19,7 @@ if (is_file('./configs/configs.php') == false) {
  */
 $_CONFIGS = new stdClass();
 $_CONFIGS->db = new stdClass();
-require_once realpath(__DIR__ . '/configs.php');
+require_once './configs/configs.php';
 
 /**
  * 환경설정을 불러오기위한 클래스를 초기화한다.
