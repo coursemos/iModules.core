@@ -406,7 +406,7 @@ class Cache
             $compiler->setImportPaths(dirname(Configs::path() . $path));
             $content = $compiler->compileString(File::read(Configs::path() . $path))->getCss();
 
-            $converter = new \MatthiasMullie\PathConverter\Converter($path, self::url());
+            $converter = new \MatthiasMullie\PathConverter\Converter($path, self::url(), '/');
             $matches = [];
 
             $relativeRegex = '/url\(\s*(?P<quotes>["\'])?(?P<path>.+?)(?(quotes)(?P=quotes))\s*\)/ix';
