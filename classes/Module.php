@@ -248,6 +248,7 @@ abstract class Module extends Component
             'component' => [
                 'type' => 'module',
                 'name' => $this->getName(),
+                'use_default' => true,
             ],
             'value' => 'default',
         ];
