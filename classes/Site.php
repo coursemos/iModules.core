@@ -296,7 +296,6 @@ class Site
                     'host' => $this->_host,
                     'language' => $this->_language,
                     'path' => '/',
-                    'icon' => '',
                     'title' => 'INDEX',
                     'type' => 'EMPTY',
                     'description' => '',
