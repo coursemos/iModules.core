@@ -322,7 +322,7 @@ class Theme
      *
      * @return mixed[] $values 정리된 변수
      */
-    function getValues(): array
+    private function getValues(): array
     {
         $values = $this->_values;
 
@@ -349,6 +349,18 @@ class Theme
         $values['theme'] = &$this;
 
         return $values;
+    }
+
+    /**
+     * 테마 파일에서 이용하는 변수를 초기화한다.
+     */
+    private function resetValues(): void
+    {
+        foreach (array_keys($this->_values) as $key) {
+            if (in_array($key, ['site', 'theme', 'context', 'route', 'me', 'template']) == false) {
+                unset($this->_values[$key]);
+            }
+        }
     }
 
     /**
@@ -430,11 +442,13 @@ class Theme
         include $this->getPath() . '/index.html';
         $layout = ob_get_clean();
 
+        $html = Html::tag($header, $layout, $footer);
+
         /**
          * @todo 이벤트를 발생시킨다.
          */
-        $html = Html::tag($header, $layout, $footer);
 
+        $this->resetValues();
         return $html;
     }
 
@@ -469,6 +483,8 @@ class Theme
         $html = ob_get_clean();
 
         // @todo 이벤트 발생
+
+        $this->resetValues();
 
         return $html;
     }

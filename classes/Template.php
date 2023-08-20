@@ -314,7 +314,7 @@ class Template
      *
      * @return mixed[] $values 정리된 변수
      */
-    function getValues(): array
+    private function getValues(): array
     {
         $values = $this->_values;
 
@@ -341,6 +341,18 @@ class Template
         $values['template'] = &$this;
 
         return $values;
+    }
+
+    /**
+     * 템플릿 파일에서 이용하는 변수를 초기화한다.
+     */
+    private function resetValues(): void
+    {
+        foreach (array_keys($this->_values) as $key) {
+            if (in_array($key, ['site', 'theme', 'context', 'route', 'me', 'template']) == false) {
+                unset($this->_values[$key]);
+            }
+        }
     }
 
     /**
@@ -409,42 +421,39 @@ class Template
         /**
          * @todo 이벤트를 발생시킨다.
          */
-        return $this->getLayout($content);
+
+        $this->resetValues();
+        return $content;
     }
 
     /**
-     * 템플릿 레이아웃을 가져온다.
+     * 템플릿 공용 레이아웃을 가져온다.
      *
-     * @param string $content 콘텐츠
+     * @param string $main 메인콘텐츠
      * @return string $html
      */
-    function getLayout(string $content = ''): string
+    function getLayout(string $main = ''): string
     {
-        if (is_file($this->getPath() . '/index.html') == false) {
-            return ErrorHandler::get($this->error('NOT_FOUND_TEMPLATE_INDEX', $this->getPath() . '/index.html'));
+        /**
+         * @todo 이벤트를 발생시킨다.
+         */
+        if (is_file($this->getPath() . '/index.html') == true) {
+            $this->init();
+
+            extract($this->getValues());
+
+            ob_start();
+            include $this->getPath() . '/index.html';
+            $layout = ob_get_clean();
+        } else {
+            $layout = $main;
         }
 
-        $this->init();
-
         /**
          * @todo 이벤트를 발생시킨다.
          */
 
-        /**
-         * 레이아웃에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
-        $main = $content;
-
-        ob_start();
-        include $this->getPath() . '/index.html';
-        $layout = ob_get_clean();
-
-        /**
-         * @todo 이벤트를 발생시킨다.
-         */
-
+        $this->resetValues();
         return $layout;
     }
 
