@@ -34,7 +34,7 @@ class ErrorHandler
      */
     public static function getText(string $error, ?array $placeHolder = null): string
     {
-        return Language::getErrorText($error, $placeHolder);
+        return Language::getErrorText($error, $placeHolder, null, Request::languages());
     }
 
     /**
