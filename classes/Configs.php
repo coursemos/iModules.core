@@ -7,7 +7,7 @@
  * @file /classes/Configs.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2023. 8. 20.
  */
 class Configs
 {
@@ -275,7 +275,7 @@ class Configs
         $configs->dir = $configs->dir == '' ? '/' : '';
         $configs->attachment = self::attachment();
         $configs->cache = self::cache();
-        $configs->prefix = self::get('prefix') ?? self::package()->prefix;
+        $configs->prefix = self::get('prefix') ?? (self::package()->get('prefix') ?? '');
 
         return $configs;
     }
@@ -359,7 +359,7 @@ class Configs
         $db_database = $configs->db_database ?? self::get('db')?->database;
         $need_to_write = $need_to_write || $db_database != ($_CONFIGS?->db?->database ?? '');
 
-        $prefix = $configs->prefix ?? (self::get('prefix') ?? self::package()->prefix);
+        $prefix = $configs->prefix ?? (self::get('prefix') ?? (self::package()->get('prefix') ?? ''));
         if (preg_match('/^[a-z_]*$/', $prefix) !== 1) {
             $errors['prefix'] = $prefix;
         }
