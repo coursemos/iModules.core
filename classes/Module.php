@@ -318,8 +318,8 @@ abstract class Module extends Component
         $results = new stdClass();
         if (is_file($this->getPath() . '/process/' . $process . '.' . $method . '.php') == true) {
             File::include($this->getPath() . '/process/' . $process . '.' . $method . '.php', [
-                'me' => $this,
-                'results' => $results,
+                'me' => &$this,
+                'results' => &$results,
                 'path' => $path,
                 'input' => $input,
             ]);
