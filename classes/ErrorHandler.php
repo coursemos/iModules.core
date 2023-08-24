@@ -335,8 +335,11 @@ class ErrorHandler
                 break;
 
             default:
-                $error->prefix = self::getText($code);
-                if ($message !== null) {
+                if ($message === null) {
+                    $error->prefix = null;
+                    $error->message = self::getText($code);
+                } else {
+                    $error->prefix = self::getText($code);
                     $error->message = $message;
                 }
         }
