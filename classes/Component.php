@@ -48,9 +48,11 @@ abstract class Component
      * 캐시데이터를 가져온다.
      *
      * @param string $name 캐시명
-     * @param int $lifetime 캐시유지시간(초)
+     * @param bool $lifetime 캐시유지시간
+     * @param bool $is_raw RAW 데이터 여부
+     * @return mixed $data 캐시데이터 (NULL 인 경우 캐시가 존재하지 않음)
      */
-    public static function getCache(string $name, int $lifetime = 0): mixed
+    public static function getCache(string $name, int $lifetime = 0, bool $is_raw = false): mixed
     {
         $cache = self::getType();
         if (self::getParentModule() !== null) {
@@ -60,7 +62,7 @@ abstract class Component
         $cache .= '.' . $name;
         $cache = str_replace('/', '.', $cache);
 
-        return Cache::get($cache, $lifetime);
+        return Cache::get($cache, $lifetime, $is_raw);
     }
 
     /**
@@ -68,9 +70,10 @@ abstract class Component
      *
      * @param string $name 캐시명
      * @param mixed $data 캐시데이터
+     * @param bool $is_raw RAW 데이터 여부
      * @return bool $success
      */
-    public static function storeCache(string $name, mixed $data): bool
+    public static function storeCache(string $name, mixed $data, bool $is_raw = false): bool
     {
         $cache = self::getType();
         if (self::getParentModule() !== null) {
@@ -80,15 +83,16 @@ abstract class Component
         $cache .= '.' . $name;
         $cache = str_replace('/', '.', $cache);
 
-        return Cache::store($cache, $data);
+        return Cache::store($cache, $data, $is_raw);
     }
 
     /**
      * 캐시데이터를 제거한다.
      *
      * @param string $name 캐시명
+     * @param bool $is_raw RAW 데이터 여부
      */
-    public static function removeCache(string $name): void
+    public static function removeCache(string $name, bool $is_raw = false): void
     {
         $cache = self::getType();
         if (self::getParentModule() !== null) {
@@ -98,7 +102,7 @@ abstract class Component
         $cache .= '.' . $name;
         $cache = str_replace('/', '.', $cache);
 
-        Cache::remove($cache);
+        Cache::remove($cache, $is_raw);
     }
 
     /**
