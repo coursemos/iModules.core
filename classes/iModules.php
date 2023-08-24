@@ -234,6 +234,25 @@ class iModules
      */
     public static function metas(): void
     {
+        $site = Sites::get();
+
+        /**
+         * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
+         */
+        if ($site->getEmblem() !== null) {
+            Html::head('link', ['rel' => 'apple-touch-icon', 'href' => $site->getEmblem()->getUrl('origin')]);
+        }
+
+        /**
+         * 사이트 Favicon 태그를 정의한다.
+         */
+        if ($site->getFavicon() !== null) {
+            Html::head('link', [
+                'rel' => 'shortcut icon',
+                'type' => 'image/x-icon',
+                'href' => $site->getFavicon()->getUrl('origin'),
+            ]);
+        }
         /**
          * OG 태그를 설정한다.
          *
@@ -250,25 +269,6 @@ class iModules
             $this->head('meta',array('property'=>'og:image','content'=>$viewImage));
         }
         $this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
-        */
-
-        /**
-         * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
-         *
-        if ($this->getSiteEmblem() !== null) {
-            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'57x57','href'=>$this->getSiteEmblem(true)));
-            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'114x114','href'=>$this->getSiteEmblem(true)));
-            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'72x72','href'=>$this->getSiteEmblem(true)));
-            $this->head('link',array('rel'=>'apple-touch-icon','sizes'=>'144x144','href'=>$this->getSiteEmblem(true)));
-        }
-        */
-
-        /**
-         * 사이트 Favicon 태그를 정의한다.
-         *
-        if ($this->getSiteFavicon() !== null) {
-            $this->head('link',array('rel'=>'shortcut icon','type'=>'image/x-icon','href'=>$this->getSiteFavicon(true)));
-        }
         */
     }
 
