@@ -102,6 +102,7 @@
     --container-max-width: 80rem;
     --container-gap: var(--gap-container);
 
+    --input-gap: 5px;
     --input-font-size: 1rem;
     --input-font-size-small: 0.8rem;
     --input-font-weight: 400;
@@ -178,7 +179,7 @@
     --modal-title-background: var(--body-background);
     --modal-title-color: var(--body-color);
     --modal-title-font-size: 1.2rem;
-    --modal-title-line-height: 3rem;
+    --modal-title-line-height: 3.6rem;
     --modal-content-background: var(--body-background);
     --modal-content-color: var(--body-color);
     --modal-content-font-size: 1rem;
@@ -435,6 +436,7 @@ body[data-type='website'] {
                     color: var(--modal-title-color);
                     font-size: var(--modal-title-font-size);
                     line-height: var(--modal-title-line-height);
+                    padding-top: calc(var(--modal-padding-vertical) / 2);
                     padding-left: var(--modal-padding-horizontal);
                     padding-right: var(--modal-padding-horizontal);
                     width: 100%;
@@ -449,6 +451,7 @@ body[data-type='website'] {
                     font-weight: var(--modal-content-font-weight);
                     line-height: var(--modal-content-line-height);
                     padding: var(--modal-padding-vertical) var(--modal-padding-horizontal);
+                    padding-top: calc(var(--modal-padding-vertical) / 2);
                     color: var(--modal-content-color);
                     box-sizing: border-box;
                 }
@@ -555,6 +558,50 @@ body[data-type='website'] {
             > button {
                 border-color: var(--input-border-color-error);
             }
+        }
+
+        &[data-field='date'] {
+            display: flex;
+            flex-direction: row;
+            position: relative;
+
+            > input {
+                flex-grow: 1;
+                flex-basis: 0;
+                border-right: 0;
+
+                &[type='date'] {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    display: none;
+                }
+            }
+
+            > button {
+                width: calc(var(--input-line-height) + var(--input-padding-vertical) * 2);
+                line-height: var(--input-line-height);
+                padding-top: var(--input-padding-vertical);
+                padding-bottom: var(--input-padding-vertical);
+
+                > i {
+                    font-family: moimz;
+                    font-style: normal;
+                    &::before {
+                        content: '\ec12';
+                    }
+                }
+            }
+
+            &:has(:focus) {
+                > button {
+                    border-color: var(--input-border-color-focus);
+                }
+            }
+            //
         }
 
         &[data-field='check'],
@@ -795,6 +842,10 @@ body[data-type='website'] {
                 }
             }
         }
+    }
+
+    div[data-role='form'][data-field] + div[data-role='form'][data-field] {
+        margin-top: var(--input-gap);
     }
 
     main[data-role='layout'] {
