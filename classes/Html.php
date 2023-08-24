@@ -432,6 +432,17 @@ class Html
     }
 
     /**
+     * HTML 문자열로 부터 DOM 파서를 가져온다.
+     *
+     * @param string $html
+     * @return \simplehtmldom\simplehtmldom\simple_html_dom $dom
+     */
+    public static function dom(string $html): \simplehtmldom\simplehtmldom\simple_html_dom
+    {
+        return new \simplehtmldom\simplehtmldom\simple_html_dom($html);
+    }
+
+    /**
      * 파일경로에 파일 수정시간을 추가한다.
      *
      * @param string $path 파일경로
