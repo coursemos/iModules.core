@@ -18,16 +18,16 @@ class Html {
      *
      * @param {string} type - 생성할 Node명
      * @param {Object} attributes - 포함할 attribute
-     * @param {string} text - 포함될 텍스트내용
+     * @param {string} html - 포함될 텍스트내용
      * @return {Dom} dom - 생성된 Dom 객체
      */
-    static create(type: string, attributes: { [key: string]: string } = {}, text: string = ''): Dom {
+    static create(type: string, attributes: { [key: string]: string } = {}, html: string = ''): Dom {
         const element = document.createElement(type);
         const dom = new Dom(element);
         for (let key in attributes) {
             dom.setAttr(key, attributes[key]);
         }
-        dom.text(text);
+        dom.html(html);
         return dom;
     }
 
