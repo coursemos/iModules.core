@@ -167,8 +167,9 @@ class iModules {
          * @param {string} title - 창제목
          * @param {(string|Dom)} content - 내용
          * @param {iModules.Modal.Button[]} buttons - 버튼목록
+         * @param {Function} onShow - 모달창이 열렸을 때 발생할 이벤트리스너
          */
-        static show(title, content, buttons = []) {
+        static show(title, content, buttons = [], onShow = null) {
             iModules.Modal.close();
             const $modals = Html.create('div', { 'data-role': 'modals' });
             const $section = Html.create('section');
@@ -198,7 +199,9 @@ class iModules {
             for (const button of buttons) {
                 const $button = Html.create('button', { 'data-role': 'button', 'type': 'button' });
                 $button.html(button.text);
-                $button.on('click', button.handler);
+                $button.on('click', () => {
+                    button.handler($button);
+                });
                 if (button.class) {
                     $button.addClass(button.class);
                 }
@@ -207,6 +210,9 @@ class iModules {
             $section.append($modal);
             $modals.append($section);
             Html.get('body').append($modals);
+            if (typeof onShow == 'function') {
+                onShow($modal);
+            }
         }
         /**
          * 모달창을 닫는다.
