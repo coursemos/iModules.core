@@ -397,6 +397,14 @@ class Dom {
         }
     }
     /**
+     * 현재 객체의 상대적인 위치정보를 가져온다.
+     *
+     * @return
+     */
+    getRect() {
+        return this.element?.getBoundingClientRect();
+    }
+    /**
      * HTML 엘리먼트의 스크롤 위치를 가져온다.
      *
      * @return {{left:number, top:number}} scroll
@@ -656,6 +664,54 @@ class Dom {
         if (this.element == null || child.getEl() == null)
             return false;
         return this.element.contains(child.getEl());
+    }
+    /**
+     * 현재 Dom 의 이전 Dom 을 가져온다.
+     *
+     * @param {string} selector - 다음에 위치한 Dom 중 찾을 selector (NULL 인 경우 바로 다음 Dom 을 반환한다.)
+     * @return {Dom} prev
+     */
+    prev(selector = null) {
+        let current = this.element;
+        while (current !== null) {
+            let prev = current.previousElementSibling;
+            if (prev === null) {
+                return null;
+            }
+            if (selector === null) {
+                return new Dom(prev);
+            }
+            else {
+                if (new Dom(prev).is(selector) == true) {
+                    return new Dom(prev);
+                }
+                current = prev;
+            }
+        }
+    }
+    /**
+     * 현재 Dom 의 다음 Dom 을 가져온다.
+     *
+     * @param {string} selector - 다음에 위치한 Dom 중 찾을 selector (NULL 인 경우 바로 다음 Dom 을 반환한다.)
+     * @return {Dom} next
+     */
+    next(selector = null) {
+        let current = this.element;
+        while (current !== null) {
+            let next = current.nextElementSibling;
+            if (next === null) {
+                return null;
+            }
+            if (selector === null) {
+                return new Dom(next);
+            }
+            else {
+                if (new Dom(next).is(selector) == true) {
+                    return new Dom(next);
+                }
+                current = next;
+            }
+        }
     }
     /**
      * HTML 엘리먼트에 포커스를 지정한다.
