@@ -237,7 +237,7 @@ class File
             /**
              * 삽입할 파일에서 사용할 변수선언
              */
-            extract($values);
+            extract($values, EXTR_REFS);
             include $__path;
         }
     }
