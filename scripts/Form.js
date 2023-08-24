@@ -21,7 +21,17 @@ class Form {
      */
     constructor($form) {
         this.$form = $form;
+    }
+    /**
+     * 폼 전송을 제어하는 이벤트를 등록한다.
+     *
+     * @param {Function} submit - 전송이벤트리스너
+     */
+    onSubmit(submit = null) {
         this.$form.on('submit', (e) => {
+            if (typeof submit == 'function' && this.sending == false && this.loading == false) {
+                submit(e);
+            }
             e.preventDefault();
         });
     }
@@ -54,10 +64,11 @@ class Form {
      *
      * @param {string} url - 전송할주소
      * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean} is_raw - JSON 방식이 아닌 전통적인 방식으로 전송할지 여부
      * @param {boolean} is_retry - 실패시 재시도여부
      * @return {Promise<Ajax.Results>} results - 전송결과
      */
-    async submit(url, params = {}, is_retry = true) {
+    async submit(url, params = {}, is_raw = false, is_retry = true) {
         if (this.sending == true) {
             return;
         }
@@ -73,12 +84,14 @@ class Form {
             ]);
             return { success: false };
         }
+        const $submit = Html.get('button[type=submit]', this.$form);
+        $submit.disable(true);
         this.sending = true;
         Html.all('div[data-role=form][data-field]', this.$form).forEach(($element) => {
             const element = Form.element($element);
             element.setError(false);
         });
-        const data = this.getData();
+        const data = is_raw === true ? new FormData(this.$form.getEl()) : this.getData();
         const results = await Ajax.post(url, data, params, is_retry);
         if (results.success == false && results.errors !== undefined) {
             for (const name in results.errors) {
@@ -94,18 +107,29 @@ class Form {
             }
         }
         this.sending = false;
+        $submit.enable();
         return results;
     }
     /**
      * 폼 객체를 초기화한다.
+     *
+     * @param {Dom} $form - 특정 Form 객체를 초기화할 경우
      */
-    static init() {
-        Html.all('form').forEach(($form) => {
+    static init($form = null) {
+        if ($form === null) {
+            Html.all('form').forEach(($form) => {
+                if (Form.forms.has($form.getEl()) == false) {
+                    Form.forms.set($form.getEl(), new Form($form));
+                }
+            });
+            $form = Html.get('body');
+        }
+        else {
             if (Form.forms.has($form.getEl()) == false) {
                 Form.forms.set($form.getEl(), new Form($form));
             }
-        });
-        Html.all('div[data-role=form]').forEach(($element) => {
+        }
+        Html.all('div[data-role=form]', $form).forEach(($element) => {
             Form.element($element).init();
         });
     }
@@ -120,7 +144,8 @@ class Form {
             return Form.forms.get($form.getEl());
         }
         else {
-            // @todo 초기화
+            Form.init($form);
+            return Form.forms.get($form.getEl());
         }
     }
     /**
@@ -148,6 +173,23 @@ class Form {
             }
         }
     }
+    /**
+     * INPUT 태그를 생성한다.
+     *
+     * @param {string} name - 필드명
+     * @param {string} type - 종류 (text, password, search 등)
+     * @return {FormElement.Input} element
+     */
+    static input(name, type = 'text') {
+        const $dom = Html.create('div', {
+            'data-role': 'form',
+            'data-type': 'field',
+            'data-field': 'input',
+            'data-name': name,
+        });
+        $dom.append(Html.create('input', { type: type, name: name }));
+        return new FormElement.Input($dom);
+    }
 }
 var FormElement;
 (function (FormElement) {
@@ -155,6 +197,7 @@ var FormElement;
         static $absolutes;
         $dom;
         helpText;
+        value = null;
         /**
          * 폼 엘리먼트를 초기화한다.
          *
@@ -182,6 +225,16 @@ var FormElement;
          */
         init() {
             Form.elements.set(this.$dom.getEl(), this);
+        }
+        /**
+         * 폼필드 값을 지정한다.
+         *
+         * @param {any} value
+         * @return {FormElement.Base}
+         */
+        setValue(value) {
+            this.value = value;
+            return this;
         }
         /**
          * 확장영역 출력을 위한 절대위치 DOM 객체를 가져온다.
@@ -238,6 +291,14 @@ var FormElement;
                 this.$dom.removeClass('error');
             }
         }
+        /**
+         * 폼필드 DOM 객체를 반환한다.
+         *
+         * @return {Dom} $dom
+         */
+        getLayout() {
+            return this.$dom;
+        }
     }
     FormElement.Base = Base;
     class Input extends FormElement.Base {
@@ -246,12 +307,30 @@ var FormElement;
          * UI 를 초기화한다.
          */
         init() {
-            const $input = Html.get('input', this.$dom);
-            $input.on('input', () => {
+            this.$getInput().on('input', () => {
                 if (this.hasError() == true) {
                     this.setError(false);
                 }
             });
+        }
+        /**
+         * INPUT DOM 객체를 가져온다.
+         *
+         * @returns {Dom} $input
+         */
+        $getInput() {
+            return Html.get('input', this.$dom);
+        }
+        /**
+         * 폼필드 값을 지정한다.
+         *
+         * @param {any} value
+         * @return {FormElement.Input}
+         */
+        setValue(value) {
+            this.$getInput().setValue(value);
+            super.setValue(value);
+            return this;
         }
     }
     FormElement.Input = Input;
