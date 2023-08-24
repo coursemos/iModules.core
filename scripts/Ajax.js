@@ -71,7 +71,7 @@ class Ajax {
      * 전송할 데이터는 JSON 방식으로 전송된다.
      *
      * @param {string} url - 요청주소
-     * @param {Ajax.Data} data - 전송할 데이터
+     * @param {Ajax.Data|FormData} data - 전송할 데이터
      * @param {Ajax.Params} params - GET 데이터
      * @param {boolean|number} is_retry - 재시도여부
      * @return {Promise<Ajax.Results>} results - 요청결과
@@ -88,15 +88,22 @@ class Ajax {
         }
         url = requestUrl.toString();
         let retry = (is_retry === false ? 10 : is_retry);
+        const headers = {};
+        headers['Accept-Language'] = iModules.getLanguage();
+        headers['Accept'] = 'application/json';
+        let body;
+        if (data instanceof FormData) {
+            body = data;
+        }
+        else {
+            headers['Content-Type'] = 'application/json; charset=utf-8';
+            body = JSON.stringify(data);
+        }
         try {
             const response = (await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Accept-Language': iModules.getLanguage(),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
-                body: JSON.stringify(data),
+                headers: headers,
+                body: body,
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch((error) => {
