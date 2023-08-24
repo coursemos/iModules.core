@@ -119,13 +119,18 @@ class Cache
      *
      * @param string $name 캐시파일명
      * @param int $lifetime 캐시유지시간(초)
-     * @return mixed $data
+     * @param bool $is_raw RAW 데이터 여부
+     * @return mixed $data 캐시데이터 (NULL 인 경우 캐시가 존재하지 않음)
      */
-    public static function get(string $name, int $lifetime = 0): mixed
+    public static function get(string $name, int $lifetime = 0, bool $is_raw = false): mixed
     {
-        if (self::has($name, $lifetime) == true) {
-            $data = File::read(Configs::cache() . '/' . $name . '.cache');
-            return $data === false ? null : unserialize($data);
+        if (self::has($name, $lifetime, $is_raw) == true) {
+            if ($is_raw === false) {
+                $name .= '.cache';
+            }
+
+            $data = File::read(Configs::cache() . '/' . $name);
+            return $is_raw === true ? $data : unserialize($data);
         } else {
             return null;
         }
@@ -154,6 +159,7 @@ class Cache
         if ($lifetime > 0 && filemtime(Configs::cache() . '/' . $name) < time() - $lifetime) {
             return false;
         }
+
         return true;
     }
 
