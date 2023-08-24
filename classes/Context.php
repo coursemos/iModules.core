@@ -261,6 +261,18 @@ class Context
     }
 
     /**
+     * 컨텍스트 코드를 변경한다.
+     *
+     * @param string $context
+     * @return Context $this
+     */
+    public function setContext(string $context): Context
+    {
+        $this->_context = $context;
+        return $this;
+    }
+
+    /**
      * 컨텍스트 코드를 가져온다.
      *
      * @return ?object $context
@@ -278,6 +290,18 @@ class Context
     public function getLayout(): ?string
     {
         return $this->_layout;
+    }
+
+    /**
+     * 컨텍스트를 표현할 사이트 테마의 레이아웃명을 지정한다.
+     *
+     * @param string $layout
+     * @return Context $this
+     */
+    public function setLayout(string $layout): Context
+    {
+        $this->_layout = $layout;
+        return $this;
     }
 
     /**
@@ -369,9 +393,9 @@ class Context
         $content = '';
         switch ($this->_type) {
             case 'CHILD':
-                $children = $this->getChildren();
+                $children = $this->getChildren(false);
                 if (count($children) == 0) {
-                    return ErrorHandler::print('NOT_FOUND_PAGE');
+                    return ErrorHandler::print(Router::error('NOT_FOUND_URL'));
                 }
 
                 Header::location($children[0]->getUrl());
@@ -581,6 +605,7 @@ class Context
 
         $this->_children = [];
         $path = $this->getPath() == '/' ? '' : str_replace('/', '\\/', $this->getPath());
+
         $contexts = Contexts::all($this->getSite());
         foreach ($contexts as $context) {
             if (preg_match('/^' . $path . '\/[^\/]+$/', $context->getPath()) == true) {
