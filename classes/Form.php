@@ -26,6 +26,19 @@ class Form
     }
 
     /**
+     * 날짜 태그를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $format 날짜포맷
+     * @return \FormElement\Date $element
+     */
+    public static function date(string $name, string $format = ''): \FormElement\Date
+    {
+        $element = new \FormElement\Date($name, $format);
+        return $element;
+    }
+
+    /**
      * 체크박스 태그를 생성한다.
      *
      * @param string $name 필드명
@@ -40,7 +53,7 @@ class Form
     }
 
     /**
-     * 체크박스 태그를 생성한다.
+     * 선택폼 태그를 생성한다.
      *
      * @param string $name 필드명
      * @param string $options 선택항목 [VALUE=>DISPLAY, ...]

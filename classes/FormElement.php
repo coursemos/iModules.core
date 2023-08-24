@@ -18,9 +18,9 @@ class Base
     protected string $_name;
 
     /**
-     * @var string $_name 필드값
+     * @var mixed $_name 필드값
      */
-    protected string $_value = '';
+    protected mixed $_value = null;
 
     /**
      * @var string[] $_arributes 태그속성
@@ -76,7 +76,7 @@ class Base
      * @param string $value 필드값
      * @return this $this
      */
-    public function value(string $value): self
+    public function value(mixed $value): self
     {
         $this->_value = $value;
         return $this;
@@ -153,7 +153,48 @@ class Input extends \FormElement\Base
      */
     protected function getField(): string
     {
+        if ($this->_value !== null) {
+            $this->_attributes['value'] = \Format::string($this->_value, 'input');
+        }
+
         return \Html::element('input', $this->_attributes);
+    }
+}
+
+class Date extends \FormElement\Base
+{
+    /**
+     * @var string $_format 날짜포맷
+     */
+    private string $_format;
+
+    /**
+     * 폼 필드를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $format 날짜포맷
+     */
+    public function __construct(string $name, string $format)
+    {
+        $this->_name = $name;
+        $this->_format = $format;
+        $this->_attributes['type'] = 'input';
+        $this->_attributes['name'] = $name;
+    }
+
+    /**
+     * 실제 폼필드 태그를 가져온다.
+     *
+     * @return string $field
+     */
+    protected function getField(): string
+    {
+        // @todo 달력표시
+        return \Html::tag(
+            \Html::element('input', $this->_attributes),
+            \Html::element('button', ['type' => 'button', 'tabindex' => '-1'], '<i></i>'),
+            \Html::element('input', ['type' => 'date'])
+        );
     }
 }
 
@@ -165,10 +206,16 @@ class Check extends \FormElement\Base
     private string $_boxLabel;
 
     /**
+     * @var bool $checked 선택여부
+     */
+    private bool $_checked = false;
+
+    /**
      * 폼 필드를 생성한다.
      *
      * @param string $name 필드명
-     * @param string $type 필드타입
+     * @param string $value 체크시 전송될 값
+     * @param string $boxLabel 박스라벨
      */
     public function __construct(string $name, string $value, string $boxLabel = '')
     {
@@ -180,12 +227,27 @@ class Check extends \FormElement\Base
     }
 
     /**
+     * 필드값을 설정한다.
+     *
+     * @param bool $checked 체크여부
+     * @return this $this
+     */
+    public function checked(bool $checked): self
+    {
+        $this->_checked = $checked;
+        return $this;
+    }
+
+    /**
      * 실제 폼필드 태그를 가져온다.
      *
      * @return string $field
      */
     protected function getField(): string
     {
+        if ($this->_checked === true) {
+            $this->_attributes['checked'] = 'checked';
+        }
         return \Html::element('label', [], \Html::element('input', $this->_attributes) . ($this->_boxLabel ?? ''));
     }
 }
@@ -259,6 +321,6 @@ class Textarea extends \FormElement\Base
      */
     protected function getField(): string
     {
-        return \Html::element('textarea', $this->_attributes, $this->_value);
+        return \Html::element('textarea', $this->_attributes, $this->_value ?? '');
     }
 }
