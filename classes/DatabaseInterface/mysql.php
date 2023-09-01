@@ -477,6 +477,12 @@ class mysql extends DatabaseInterface
             $loop++;
         }
 
+        /**
+         * 테이블 설명을 추가한다.
+         */
+        if (isset($schema->comment) == true) {
+            $this->query('ALTER TABLE `' . $table . '` COMMENT="' . $schema->comment . '"')->execute();
+        }
         return true;
     }
 
@@ -915,7 +921,7 @@ class mysql extends DatabaseInterface
      * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
-    public function where(string $whereProp, mixed $whereValue = null, ?string $operator = null): DatabaseInterface
+    public function where(string $whereProp, mixed $whereValue = false, ?string $operator = null): DatabaseInterface
     {
         if ($this->_checkWhere($whereProp, $whereValue, $operator) == true) {
             if ($operator) {
@@ -934,7 +940,7 @@ class mysql extends DatabaseInterface
      * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
-    public function orWhere(string $whereProp, $whereValue = null, ?string $operator = null): DatabaseInterface
+    public function orWhere(string $whereProp, $whereValue = false, ?string $operator = null): DatabaseInterface
     {
         if ($this->_checkWhere($whereProp, $whereValue, $operator) == true) {
             if ($operator) {
@@ -954,7 +960,7 @@ class mysql extends DatabaseInterface
      * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
-    public function having($havingProp, $havingValue = null, ?string $operator = null): DatabaseInterface
+    public function having($havingProp, $havingValue = false, ?string $operator = null): DatabaseInterface
     {
         if ($this->_checkWhere($havingProp, $havingProp, $operator) == true) {
             if ($operator) {
@@ -974,7 +980,7 @@ class mysql extends DatabaseInterface
      * @param ?string $operator 조건 (=, !=, IN, NOT IN, LIKE 등)
      * @return DatabaseInterface $this
      */
-    public function orHaving(string $havingProp, $havingValue = null, ?string $operator = null): DatabaseInterface
+    public function orHaving(string $havingProp, $havingValue = false, ?string $operator = null): DatabaseInterface
     {
         if ($this->_checkWhere($havingProp, $havingProp, $operator) == true) {
             if ($operator) {
@@ -1307,8 +1313,8 @@ class mysql extends DatabaseInterface
         $this->_buildJoin();
         //		if (empty($this->_tableDatas) == false) $this->_buildTableData($this->_tableDatas);
         $this->_buildWhere();
-        //		$this->_buildGroupBy();
-        //		$this->_buildHaving();
+        $this->_buildGroupBy();
+        $this->_buildHaving();
         $this->_buildOrderBy();
         $this->_buildLimit();
         $this->_lastQuery = $this->_replacePlaceHolders();
@@ -1475,6 +1481,10 @@ class mysql extends DatabaseInterface
                 $this->_query .= $wKey;
             }
 
+            if ($wValue === false) {
+                continue;
+            }
+
             if (is_array($wValue) == false) {
                 $wValue = ['=' => $wValue];
             }
@@ -1540,6 +1550,115 @@ class mysql extends DatabaseInterface
                     $this->_bindParam($keylist);
                     $this->_query .= $comparison;
 
+                    break;
+                default:
+                    $this->_query .= $this->_buildPair($key, $val);
+            }
+        }
+    }
+
+    /**
+     * GROUP 절을 생성한다.
+     */
+    private function _buildGroupBy(): void
+    {
+        if (empty($this->_groupBy) == true) {
+            return;
+        }
+
+        $this->_query .= ' GROUP BY ';
+        foreach ($this->_groupBy as $value) {
+            $this->_query .= $value . ',';
+        }
+        $this->_query = rtrim($this->_query, ',') . ' ';
+    }
+
+    /**
+     * HAVING 절을 생성한다.
+     */
+    private function _buildHaving(): void
+    {
+        if (empty($this->_having) == true) {
+            return;
+        }
+        $this->_query .= ' HAVING ';
+        $this->_having[0][0] = '';
+
+        foreach ($this->_having as $index => &$condition) {
+            list($concat, $wValue, $wKey) = $condition;
+
+            if ($wKey == '(') {
+                $this->_query .= ' ' . $concat . ' ';
+                if (isset($this->_having[$index + 1]) == true) {
+                    $this->_having[$index + 1][0] = '';
+                }
+            } elseif ($wKey != ')') {
+                $this->_query .= ' ' . $concat . ' ';
+            }
+
+            if (
+                is_array($wValue) == false ||
+                (strtolower(key($wValue)) != 'inset' && strtolower(key($wValue)) != 'fulltext')
+            ) {
+                $this->_query .= $wKey;
+            }
+
+            if ($wValue === false) {
+                continue;
+            }
+
+            if (is_array($wValue) == false) {
+                $wValue = ['=' => $wValue];
+            }
+
+            $key = key($wValue);
+            $val = $wValue[$key];
+            if ($val === null) {
+                $key = $key == '=' ? 'is_null' : 'is_not_null';
+            }
+
+            switch (strtolower($key)) {
+                case '0':
+                    $this->_bindParams($wValue);
+                    break;
+                case 'not in':
+                case 'in':
+                    $comparison = ' ' . $key . ' (';
+                    if (is_object($val) == true) {
+                        $comparison .= $this->_buildPair('', $val);
+                    } else {
+                        foreach ($val as $v) {
+                            $comparison .= ' ?,';
+                            $this->_bindParam($v);
+                        }
+                    }
+                    $this->_query .= rtrim($comparison, ',') . ' ) ';
+                    break;
+                case 'inset':
+                    $comparison = ' FIND_IN_SET (?,' . $wKey . ')';
+                    $this->_bindParam($val);
+
+                    $this->_query .= $comparison;
+                    break;
+                case 'is_null':
+                    $this->_query .= ' IS NULL';
+                    break;
+                case 'is_not_null':
+                    $this->_query .= ' IS NOT NULL';
+                    break;
+                case 'not between':
+                case 'between':
+                    $this->_query .= " $key ? AND ? ";
+                    $this->_bindParams($val);
+                    break;
+                case 'not exists':
+                case 'exists':
+                    $this->_query .= $key . $this->_buildPair('', $val);
+                    break;
+                case 'not like':
+                case 'like':
+                    $this->_query .= " $key ? ";
+                    $this->_bindParam($val);
                     break;
                 default:
                     $this->_query .= $this->_buildPair($key, $val);
