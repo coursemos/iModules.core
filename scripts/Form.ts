@@ -14,6 +14,7 @@ class Form {
     $form: Dom;
     sending: boolean = false;
     loading: boolean = false;
+    submitFunction: (form: Form) => void = null;
 
     /**
      * 폼을 초기화한다.
@@ -29,14 +30,23 @@ class Form {
      *
      * @param {Function} submit - 전송이벤트리스너
      */
-    onSubmit(submit: Function = null): void {
+    onSubmit(submit: (form: Form) => void = null): void {
+        this.submitFunction = submit;
         this.$form.on('submit', (e: SubmitEvent) => {
-            if (typeof submit == 'function' && this.sending == false && this.loading == false) {
-                submit(e);
-            }
-
+            submit(this);
             e.preventDefault();
         });
+    }
+
+    /**
+     * submit 이벤트리스너가 등록되어 있다면 해당 이벤트리스너를 통해 폼을 전송한다.
+     *
+     * @param {Dom} $summiter 전송버튼
+     */
+    async requestSubmit(): Promise<void> {
+        if (this.submitFunction !== null) {
+            await this.submitFunction(this);
+        }
     }
 
     /**
@@ -214,6 +224,52 @@ class Form {
 
         return new FormElement.Input($dom);
     }
+
+    /**
+     * 체크박스 태그를 생성한다.
+     *
+     * @param {string} name - 필드명
+     * @param {string} type - 종류 (text, password, search 등)
+     * @return {FormElement.Input} element
+     */
+    static check(name: string, value: string, boxLabel: string = null): FormElement.Check {
+        const $dom = Html.create('div', {
+            'data-role': 'form',
+            'data-type': 'field',
+            'data-field': 'check',
+            'data-name': name,
+        });
+
+        $dom.append(
+            Html.create('label').html('<input type="checkbox" name="' + name + '" value="' + value + '">' + boxLabel)
+        );
+
+        return new FormElement.Check($dom);
+    }
+
+    /**
+     * 선택폼 태그를 생성한다.
+     *
+     * @param {string} name - 필드명
+     * @param {Object} options - 선택값
+     * @return {FormElement.Select} element
+     */
+    static select(name: string, options: { [value: string]: string }): FormElement.Select {
+        const $dom = Html.create('div', {
+            'data-role': 'form',
+            'data-type': 'field',
+            'data-field': 'select',
+            'data-name': name,
+        });
+
+        const $select = Html.create('select', { name: name });
+        for (const value in options) {
+            $select.append(Html.create('option', { value: value }, options[value]));
+        }
+        $dom.append($select);
+
+        return new FormElement.Select($dom);
+    }
 }
 
 namespace FormElement {
@@ -377,12 +433,33 @@ namespace FormElement {
          * UI 를 초기화한다.
          */
         init(): void {
-            const $input = Html.get('input', this.$dom);
-            $input.on('change', () => {
+            this.$getInput().on('change', () => {
                 if (this.hasError() == true) {
                     this.setError(false);
                 }
             });
+        }
+
+        /**
+         * INPUT DOM 객체를 가져온다.
+         *
+         * @returns {Dom} $input
+         */
+        $getInput(): Dom {
+            return Html.get('input', this.$dom);
+        }
+
+        /**
+         * 폼필드 값을 지정한다.
+         *
+         * @param {any} value
+         * @return {FormElement.Input}
+         */
+        setValue(value: any): FormElement.Check {
+            this.$getInput().setValue(value);
+            super.setValue(value);
+
+            return this;
         }
     }
 
