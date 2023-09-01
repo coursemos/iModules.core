@@ -2,6 +2,6 @@
     font-family: 'SUIT';
     font-weight: 100 900;
     font-style: normal;
-    src: url('./SUIT.woff2') format('woff2-variations');
+    src: url('./SUIT.woff2?v=1.2.5') format('woff2-variations');
     font-display: block;
 }
