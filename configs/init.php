@@ -33,9 +33,6 @@ Configs::init($_CONFIGS);
  *
  * __IM__ : 아이모듈 코어에 의해 PHP 파일이 실행되었는지 여부를 확인하는 상수
  * __IM_VERSION__ : 아이모듈 버전을 정의하는 상수. 빌드날짜는 포함되지 않음
- * __IM_DB_PREFIX__ : 아이모듈에서 생성되는 모든 DB 테이블앞에 붙는 PREFIX를 정의하는 상수
- * __IM_PATH__ : 아이모듈이 설치되어 있는 서버상의 경로 (./configs/configs.php 파일에 의해 정의)
- * __IM_DIR__ : 아이모듈이 설치되어 있는 웹브라우저상의 경로 (./configs/configs.php 파일에 의해 정의)
  */
 define('__IM__', true);
 define('__IM_VERSION__', '4.0.0');
@@ -54,6 +51,8 @@ AutoLoader::register('/vendor', '/src');
  */
 ErrorHandler::init();
 
+iModules::session_start();
+
 /**
  * 사이트 헤더 설정
  * 기본적인 HTTP보안설정 및 언어셋을 선언한다.
@@ -63,7 +62,5 @@ header('X-UA-Compatible: IE=Edge');
 header('X-XSS-Protection: 1');
 header('Expires: 0');
 header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-header('Cache-Control: no-store, no-cache, must-revalidate');
-header('Cache-Control: pre-check=0, post-check=0, max-age=0');
+header('Cache-Control: no-cache, pre-check=0, post-check=0, max-age=0');
 header('Pragma: no-cache');
-?>
