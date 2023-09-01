@@ -509,9 +509,9 @@ class Cache
 
         $modified = filemtime(Configs::cache() . '/' . $name);
 
-        header('Expires: ' . gmdate('D, d M Y H:i:s', $modified + 3600) . ' GMT');
-        header('Cache-Control: max-age=3600');
-        header('Pragma: public');
+        header('Expires: ' . gmdate('D, d M Y H:i:s', $modified + 3600) . ' GMT', true);
+        header('Cache-Control: max-age=3600', true);
+        header('Pragma: public', true);
 
         readfile(Configs::cache() . '/' . $name);
         exit();
