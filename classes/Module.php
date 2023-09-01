@@ -376,7 +376,7 @@ abstract class Module extends Component
         $db->displayError(false);
         $databases = $this->getPackage()->getDatabases();
         foreach ($databases as $table => $schema) {
-            if ($db->compare($this->table($table), $schema) == false) {
+            if ($db->compare($this->table($table), $schema, true) == false) {
                 $success = $db->create($this->table($table), $schema);
                 if ($success !== true) {
                     return $this->getErrorText('DATABASE_TABLE_CREATE_ERROR', [
