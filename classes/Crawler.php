@@ -12,24 +12,24 @@
 class Crawler
 {
     /**
-     * @var string $agent 사용자 에이전트
+     * @var string $_agent 사용자 에이전트
      */
-    private string $agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36';
+    private string $_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36';
 
     /**
-     * @var ?string $referer HTTP_REFERER 주소
+     * @var ?string $_referer HTTP_REFERER 주소
      */
-    private ?string $referer = null;
+    private ?string $_referer = null;
 
     /**
-     * @var ?string $cookies 쿠키데이터
+     * @var ?string $_cookies 쿠키데이터
      */
-    private ?string $cookies = null;
+    private ?string $_cookies = null;
 
     /**
-     * @var int $timeout 타임아웃(초)
+     * @var int $_timeout 타임아웃(초)
      */
-    private int $timeout = 30;
+    private int $_timeout = 60;
 
     /**
      * HTTP_REFERER 를 설정한다.
@@ -39,7 +39,7 @@ class Crawler
      */
     public function setReferer(?string $referer): Crawler
     {
-        $this->referer = $referer;
+        $this->_referer = $referer;
         return $this;
     }
 
@@ -51,8 +51,18 @@ class Crawler
      */
     public function setAgent(string $agent): Crawler
     {
-        $this->agent = $agent;
+        $this->_agent = $agent;
         return $this;
+    }
+
+    /**
+     * 쿠키데이터를 가져온다.
+     *
+     * @return ?string $cookies
+     */
+    public function getCookies(): ?string
+    {
+        return $this->_cookies;
     }
 
     /**
@@ -61,9 +71,15 @@ class Crawler
      * @param ?string $cookies
      * @return $this
      */
-    public function setCookies(?string $cookies): Crawler
+    public function setCookies(?string $cookies = null): Crawler
     {
-        $this->cookies = $cookies;
+        $this->_cookies = $cookies;
+        return $this;
+    }
+
+    public function setTimeout(int $timeout = 60): Crawler
+    {
+        $this->_timeout = $timeout;
         return $this;
     }
 
@@ -80,29 +96,23 @@ class Crawler
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->_agent);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_REFERER, $url);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $cinfo = curl_getinfo($ch);
         $data = curl_exec($ch);
         curl_close($ch);
 
-        $success = $cinfo['http_code'] == 200;
-        if ($success == true) {
-            if (preg_match_all('|Set-Cookie: (.*);|U', $data, $matches) == true) {
-                $this->cookies = implode('; ', $matches[1]);
-            } else {
-                $this->cookies = null;
-                return false;
-            }
+        if (preg_match_all('/Set-Cookie: (.*);/i', $data, $matches) == true) {
+            $this->_cookies = implode('; ', $matches[1]);
         } else {
-            $this->cookies = null;
+            $this->_cookies = null;
+            return false;
         }
 
-        return $success;
+        return true;
     }
 
     /**
@@ -116,14 +126,14 @@ class Crawler
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, false);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);
-        if ($this->referer != null) {
-            curl_setopt($ch, CURLOPT_REFERER, $this->referer);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->_agent);
+        if ($this->_referer != null) {
+            curl_setopt($ch, CURLOPT_REFERER, $this->_referer);
         }
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if ($this->cookies !== null) {
-            curl_setopt($ch, CURLOPT_COOKIE, $this->cookies);
+        if ($this->_cookies !== null) {
+            curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $buffer = curl_exec($ch);
@@ -149,14 +159,14 @@ class Crawler
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);
-        if ($this->referer != null) {
-            curl_setopt($ch, CURLOPT_REFERER, $this->referer);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->_agent);
+        if ($this->_referer != null) {
+            curl_setopt($ch, CURLOPT_REFERER, $this->_referer);
         }
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if ($this->cookies !== null) {
-            curl_setopt($ch, CURLOPT_COOKIE, $this->cookies);
+        if ($this->_cookies !== null) {
+            curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $buffer = curl_exec($ch);
@@ -182,14 +192,14 @@ class Crawler
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, false);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);
-        if ($this->referer != null) {
-            curl_setopt($ch, CURLOPT_REFERER, $this->referer);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->_agent);
+        if ($this->_referer != null) {
+            curl_setopt($ch, CURLOPT_REFERER, $this->_referer);
         }
         curl_setopt($ch, CURLOPT_TIMEOUT, 3600);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if ($this->cookies !== null) {
-            curl_setopt($ch, CURLOPT_COOKIE, $this->cookies);
+        if ($this->_cookies !== null) {
+            curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $buffer = curl_exec($ch);
