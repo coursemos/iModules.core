@@ -314,9 +314,9 @@ class Request
      *
      * @param string $name 변수명
      * @param bool $is_required 필수여부 (기본값 : false)
-     * @return ?array $value
+     * @return ?object $value
      */
-    public static function file(string $name, bool $is_required = false): ?array
+    public static function file(string $name, bool $is_required = false): ?object
     {
         $value = isset($_FILES[$name]) == true ? $_FILES[$name] : null;
         if (
@@ -333,7 +333,7 @@ class Request
 
         $_FILES[$name]['name'] = Format::normalizer($_FILES[$name]['name']);
 
-        return $_FILES[$name];
+        return (object) $_FILES[$name];
     }
 
     /**
@@ -455,7 +455,8 @@ class Request
     public static function languages(bool $is_primary_only = false): array|string
     {
         if (count(self::$_languages) == 0) {
-            $languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            $accept = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) == true ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : 'ko';
+            $languages = explode(',', $accept);
             foreach ($languages as &$language) {
                 $language = substr($language, 0, 2);
             }
