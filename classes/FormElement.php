@@ -189,6 +189,10 @@ class Date extends \FormElement\Base
      */
     protected function getField(): string
     {
+        if ($this->_value !== null) {
+            $this->_attributes['value'] = $this->_value;
+        }
+
         // @todo 달력표시
         return \Html::tag(
             \Html::element('input', $this->_attributes),
