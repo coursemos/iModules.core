@@ -115,6 +115,19 @@ class ErrorHandler
             ob_end_clean();
         }
 
+        if (isset($_SERVER['SSH_CONNECTION']) == true) {
+            echo '[ERROR]' . PHP_EOL;
+            print_r($code);
+            echo PHP_EOL;
+            if ($message !== null) {
+                echo $message;
+                echo PHP_EOL;
+            }
+            print_r($details);
+            echo PHP_EOL;
+            exit();
+        }
+
         if (Header::type() == 'json') {
             $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
 
