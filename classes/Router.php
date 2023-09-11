@@ -121,11 +121,12 @@ class Router
             $matcher = str_replace('*', '(.*?)', $matcher);
             $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
 
-            if (
-                preg_match('/^' . $matcher . '$/', $match, $matches) == true ||
-                preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true
-            ) {
+            if (preg_match('/^' . $matcher . '$/', $match, $matches) == true) {
                 if ($matched === null || count(explode('/', $matched)) <= count(explode('/', $path))) {
+                    $matched = $path;
+                }
+            } elseif (preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true) {
+                if ($matched === null || count(explode('/', $matched)) <= count(explode('/', $path)) - 1) {
                     $matched = $path;
                 }
             }
