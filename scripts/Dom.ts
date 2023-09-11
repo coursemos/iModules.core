@@ -100,7 +100,12 @@ class Dom {
      * @return {any} value - 값
      */
     getData(key: string): any {
-        return (this.dataValues[key] === undefined ? this.element.dataset[key] : this.dataValues[key]) ?? null;
+        const camelKey = key.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+        return (
+            (this.dataValues[key] === undefined
+                ? this.element.dataset[camelKey] ?? this.element.dataset[camelKey]
+                : this.dataValues[key]) ?? null
+        );
     }
 
     /**
