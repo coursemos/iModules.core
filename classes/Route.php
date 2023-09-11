@@ -84,7 +84,7 @@ class Route
             $path .= $this->getSubPath();
         }
 
-        return $path;
+        return $path == '' ? '/' : $path;
     }
 
     /**

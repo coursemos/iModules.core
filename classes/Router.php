@@ -115,6 +115,7 @@ class Router
     {
         $match = $path ?? self::getPath();
         $paths = array_keys(self::$_routes);
+        $matched = null;
         foreach ($paths as $path) {
             $matcher = str_replace('/', '\/', $path);
             $matcher = str_replace('*', '(.*?)', $matcher);
@@ -124,11 +125,12 @@ class Router
                 preg_match('/^' . $matcher . '$/', $match, $matches) == true ||
                 preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true
             ) {
-                return self::$_routes[$path];
+                if ($matched === null || count(explode('/', $matched)) <= count(explode('/', $path))) {
+                    $matched = $path;
+                }
             }
         }
-
-        return null;
+        return $matched !== null ? self::$_routes[$matched] : null;
     }
 
     /**
