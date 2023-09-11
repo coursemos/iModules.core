@@ -60,7 +60,12 @@ class Contexts
                 foreach ($contexts as $context) {
                     Router::add($context->getPath(), $language, 'context', [$context, 'getContent']);
                     if ($context->isRouting() == true || $context->getType() == 'MODULE') {
-                        Router::add($context->getPath() . '/*', $language, 'context', [$context, 'getContent']);
+                        Router::add(
+                            $context->getPath() . ($context->getPath() !== '/' ? '/' : '') . '*',
+                            $language,
+                            'context',
+                            [$context, 'getContent']
+                        );
                     }
                 }
             }
