@@ -430,7 +430,7 @@ class mysql extends DatabaseInterface
                         } elseif ($type == 'unique') {
                             $alters[] = 'ADD UNIQUE(' . $columns . ')';
                         } elseif ($type == 'fulltext') {
-                            $alters[] = 'ADD FULLTEXT(' . $columns . ')'; // @todo ngram 고민을 해보자 WITH PARSER ngram';
+                            $alters[] = 'ADD FULLTEXT(' . $columns . ') WITH PARSER ngram'; // @todo ngram 고민을 해보자 WITH PARSER ngram';
                         } else {
                             $alters[] = 'ADD INDEX(' . $columns . ')';
                         }
