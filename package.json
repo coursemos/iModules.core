@@ -306,6 +306,50 @@
                 "name": "primary_key"
             },
             "comment": "아이모듈 모듈 관리"
+        },
+        "crons": {
+            "columns": {
+                "date": {
+                    "type": "date",
+                    "comment": "실행일자"
+                },
+                "type": {
+                    "type": "enum",
+                    "length": "'HOURLY','DAILY'",
+                    "comment": "반복주기"
+                },
+                "hour": {
+                    "type": "int",
+                    "comment": "실행시각"
+                },
+                "component_type": {
+                    "type": "varchar",
+                    "length": 10,
+                    "comment": "파일을 첨부한 컴포넌트종류"
+                },
+                "component_name": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "파일을 첨부한 컴포넌트명"
+                },
+                "started_at": {
+                    "type": "bigint",
+                    "comment": "시작시각(ms)"
+                },
+                "runtime": {
+                    "type": "int",
+                    "comment": "동작시간(ms)"
+                },
+                "logs": {
+                    "type": "longtext",
+                    "is_null": true,
+                    "comment": "동작기록"
+                }
+            },
+            "indexes": {
+                "date,type,hour,component_type,component_name": "primary_key"
+            },
+            "comment": "아이모듈 자동화 실행기록"
         }
     }
 }
