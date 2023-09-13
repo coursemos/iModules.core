@@ -448,7 +448,18 @@ class iModules
          */
         Html::print(Html::header(), $layout, Html::footer());
 
-        Html::print('<!-- Powered By iModules v' . __IM_VERSION__ . ' -->');
+        Html::print(
+            Html::tag(
+                '<!--',
+                'Powered By : ',
+                '  _ __  __           _       _           ',
+                ' (_)  \\/  | ___   __| |_   _| | ___  ___ ',
+                ' | | |\\/| |/ _ \\ / _` | | | | |/ _ \\/ __|',
+                ' | | |  | | (_) | (_| | |_| | |  __/\\__ \\',
+                ' |_|_|  |_|\\___/ \\__,_|\\__,_|_|\\___||___/  v' . __IM_VERSION__,
+                '-->'
+            )
+        );
         if (Configs::debug() == true) {
             if (count(self::$_loadingTime) > 0) {
                 foreach (self::loadingTimes() as $time) {

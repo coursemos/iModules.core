@@ -14,6 +14,17 @@ class Header
     private static string $_type = 'html';
 
     /**
+     * 기본헤더를 초기화한다.
+     */
+    public static function init(): void
+    {
+        header('X-Powered-By: iModules (https://www.imodules.io)', true);
+        header('X-XSS-Protection: 1; mode=block', true);
+
+        self::cache(0);
+    }
+
+    /**
      * 모든 HTTP 요청 헤더를 가져온다.
      *
      * @return array $headers
@@ -73,7 +84,43 @@ class Header
             414 => 'URI Too Long',
         ];
 
-        header('HTTP/1.1 ' . $code . ' ' . $codes[$code]);
+        header($_SERVER['SERVER_PROTOCOL'] . ' ' . $code . ' ' . $codes[$code], true);
+    }
+
+    /**
+     * 캐시설정을 지정한다.
+     *
+     * @param int $age 캐시유지시간
+     * @param ?int $modified 수정시각
+     */
+    public static function cache(int $age = 0, ?int $modified = null): void
+    {
+        if ($age == 0) {
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT', true);
+            header('Cache-Control: no-cache, pre-check=0, post-check=0, max-age=0', true);
+            header('Expires: 0', true);
+        } else {
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified ?? time()) . ' GMT', true);
+            header('Cache-Control: max-age=' . $age, true);
+            header('Expires: ' . gmdate('D, d M Y H:i:s', ($modified ?? time()) + $age) . ' GMT', true);
+        }
+    }
+
+    /**
+     * 다운로드를 위한 헤더를 지정한다.
+     *
+     * @param string $name 다운로드될 파일명
+     */
+    public static function attachment(string $name): void
+    {
+        header(
+            'Content-Disposition: attachment; filename="' .
+                rawurlencode($name) .
+                '"; filename*=UTF-8\'\'' .
+                rawurlencode($name),
+            true
+        );
+        header('Content-Transfer-Encoding: binary', true);
     }
 
     /**
@@ -128,6 +175,23 @@ class Header
                         $charset = 'utf-8';
                         break;
 
+                    case 'javascript':
+                    case 'css':
+                        $mime = 'text/' . $type;
+                        $charset = 'utf-8';
+                        break;
+
+                    case 'jpg':
+                        $mime = 'images/jpeg';
+                        break;
+
+                    case 'webp':
+                    case 'gif':
+                    case 'png':
+                    case 'jpeg':
+                        $mime = 'images/' . $type;
+                        break;
+
                     default:
                         $mime = $type;
                 }
@@ -143,5 +207,15 @@ class Header
 
             return false;
         }
+    }
+
+    /**
+     * 콘텐츠 크기를 지정한다.
+     *
+     * @param int $length
+     */
+    public static function length(int $length): void
+    {
+        header('Content-Length: ' . $length, true);
     }
 }

@@ -499,19 +499,17 @@ class Cache
 
         switch ($match[1]) {
             case 'js':
-                header('Content-Type: text/javascript; charset=utf-8');
+                \Header::type('javascript');
                 break;
 
             case 'css':
-                header('Content-Type: text/css; charset=utf-8');
+                \Header::type('css');
                 break;
         }
 
         $modified = filemtime(Configs::cache() . '/' . $name);
 
-        header('Expires: ' . gmdate('D, d M Y H:i:s', $modified + 3600) . ' GMT', true);
-        header('Cache-Control: max-age=3600', true);
-        header('Pragma: public', true);
+        Header::cache(3600, $modified);
 
         readfile(Configs::cache() . '/' . $name);
         exit();
