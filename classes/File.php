@@ -7,10 +7,24 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 7. 4.
+ * @modified 2023. 9. 11.
  */
 class File
 {
+    /**
+     * 파일쓰기 가능여부를 확인한다.
+     *
+     * @param bool $writable
+     */
+    public static function writable(string $path): bool
+    {
+        if (is_file($path) === true) {
+            return is_writable($path);
+        } else {
+            return is_writable(dirname($path));
+        }
+    }
+
     /**
      * 파일에 데이터를 기록한다.
      *
@@ -21,14 +35,8 @@ class File
      */
     public static function write(string $path, mixed $data = '', bool $is_append = false): bool
     {
-        if (is_file($path) == true) {
-            if (is_writable($path) == false) {
-                return false;
-            }
-        } else {
-            if (is_writable(dirname($path)) == false) {
-                return false;
-            }
+        if (self::writable($path) == false) {
+            return false;
         }
 
         if ($is_append == true) {
