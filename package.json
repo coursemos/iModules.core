@@ -80,6 +80,7 @@
                 },
                 "description": {
                     "type": "text",
+                    "is_null": true,
                     "comment": "사이트설명"
                 },
                 "theme": {
@@ -155,6 +156,7 @@
                 },
                 "description": {
                     "type": "text",
+                    "is_null": true,
                     "comment": "설명"
                 },
                 "image": {
