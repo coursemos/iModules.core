@@ -58,8 +58,10 @@ class Cron
         $insert['component_type'] = $me->getType();
         $insert['component_name'] = $me->getName();
 
+        $is_ssh = isset($_SERVER['SSH_CLIENT']) == true;
+
         // @todo 데일리 작업 동작시간 환경설정
-        if (isset($_SERVER['SSH_CLIENT']) === true || $hour == 4) {
+        if ($is_ssh === true || $hour == 4) {
             if (is_file($component->getPath() . '/crons/daily.php') == true) {
                 if (isset($_SERVER['SSH_CLIENT']) === true) {
                     include $component->getPath() . '/crons/daily.php';
@@ -85,7 +87,7 @@ class Cron
         }
 
         if (is_file($component->getPath() . '/crons/hourly.php') == true) {
-            if (isset($_SERVER['SSH_CLIENT']) === true) {
+            if ($is_ssh === true) {
                 include $component->getPath() . '/crons/hourly.php';
             } else {
                 $start = Format::microtime(3) * 1000;
