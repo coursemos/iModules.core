@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2023. 9. 13.
  */
 class Language {
     static observer: MutationObserver;
@@ -30,7 +30,7 @@ class Language {
      * @param {string} url - 언어팩주소
      * @return {Promise<Response>} fetch
      */
-    static fetch(url: string): Promise<{ [key: string]: string | object }> {
+    static async fetch(url: string): Promise<{ [key: string]: string | object }> {
         if (Language.promises.has(url) === true) {
             return Language.promises.get(url);
         }
@@ -42,7 +42,9 @@ class Language {
                 headers: {
                     'Accept': 'application/json',
                 },
-            }).then((response: Response) => response.json())
+            }).then((response: Response) => {
+                return response.json();
+            })
         );
 
         return Language.promises.get(url);
@@ -64,6 +66,7 @@ class Language {
 
         try {
             const text: { [key: string]: string | object } = await Language.fetch(url);
+            console.log('load', url, text);
             Language.texts.set(url, text);
             return Language.texts.get(url);
         } catch (e) {
@@ -132,7 +135,7 @@ class Language {
         codes: string[] = null
     ): Promise<string | object> {
         paths ??= ['/'];
-        codes ??= [Html.get('html').getAttr('lang')];
+        codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
         const keys: string[] = text.split('.');
 
         let string = null;
