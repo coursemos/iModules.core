@@ -441,7 +441,7 @@ class Configs
             ];
 
             if (
-                is_writable($path . '/configs/configs.php') == false ||
+                File::writable($path . '/configs/configs.php') == false ||
                 file_put_contents($path . '/configs/configs.php', implode("\n", $file)) == false
             ) {
                 $results->success = false;
