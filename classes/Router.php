@@ -114,23 +114,35 @@ class Router
     public static function has(string $path = null): ?Route
     {
         $match = $path ?? self::getPath();
+        if ($match == '/' && isset(self::$_routes['/']) == false) {
+            Sites::get()->getIndex();
+        }
         $paths = array_keys(self::$_routes);
         $matched = null;
+        $matchedCount = 0;
         foreach ($paths as $path) {
             $matcher = str_replace('/', '\/', $path);
             $matcher = str_replace('*', '(.*?)', $matcher);
             $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
 
-            if (preg_match('/^' . $matcher . '$/', $match, $matches) == true) {
-                if ($matched === null || count(explode('/', $matched)) <= count(explode('/', $path))) {
+            if (
+                preg_match('/^' . $matcher . '$/', $match, $matches) == true ||
+                preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true
+            ) {
+                $statics = array_filter(
+                    explode('/', preg_replace('/^\/' . self::getLanguage() . '\//', '', $path)),
+                    function ($p) {
+                        return $p !== '*';
+                    }
+                );
+
+                if ($matched === null || $matchedCount <= count($statics)) {
                     $matched = $path;
-                }
-            } elseif (preg_match('/^' . $matcher . '$/', '/' . self::getLanguage() . $match, $matches) == true) {
-                if ($matched === null || count(explode('/', $matched)) <= count(explode('/', $path)) - 1) {
-                    $matched = $path;
+                    $matchedCount = count($statics);
                 }
             }
         }
+
         return $matched !== null ? self::$_routes[$matched] : null;
     }
 
