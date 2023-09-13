@@ -15,7 +15,13 @@ if (isset($_SERVER['SHELL']) == false) {
     exit();
 }
 
-$_SERVER['DOCUMENT_ROOT'] = str_replace('/crons/index.php', '', $_SERVER['SCRIPT_FILENAME']);
+if (strpos($_SERVER['SCRIPT_FILENAME'], '/') === 0) {
+    $path = $_SERVER['SCRIPT_FILENAME'];
+} else {
+    $path = $_SERVER['PWD'] . preg_replace('/^\.\//', '/', $_SERVER['SCRIPT_FILENAME']);
+}
+
+$_SERVER['DOCUMENT_ROOT'] = str_replace('/crons/index.php', '', $path);
 if (is_file($_SERVER['DOCUMENT_ROOT'] . '/configs/configs.php') == false) {
     echo 'NOT INSTALLED!';
     exit();
