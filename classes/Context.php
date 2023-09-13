@@ -42,9 +42,9 @@ class Context
     private ?string $_image;
 
     /**
-     * @var string $_icon 컨텍스트 설명
+     * @var ?string $_icon 컨텍스트 설명
      */
-    private string $_description;
+    private ?string $_description;
 
     /**
      * @var string $_type 컨텍스트 종류
@@ -227,7 +227,7 @@ class Context
      */
     public function getDescription(): string
     {
-        return $this->_description;
+        return $this->_description ?? '';
     }
 
     /**

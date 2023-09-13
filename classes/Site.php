@@ -34,7 +34,7 @@ class Site
     /**
      * @var string $_description 사이트설명
      */
-    private string $_description;
+    private ?string $_description;
 
     /**
      * @var Theme $_theme 사이트 테마 객체
@@ -144,7 +144,7 @@ class Site
      */
     public function getDescription(): string
     {
-        return $this->_description;
+        return $this->_description ?? '';
     }
 
     /**
@@ -298,7 +298,6 @@ class Site
                     'path' => '/',
                     'title' => 'INDEX',
                     'type' => 'EMPTY',
-                    'description' => '',
                     'target' => '',
                     'context' => '',
                     'context_configs' => '{}',
