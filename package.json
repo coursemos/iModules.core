@@ -87,6 +87,12 @@
                     "type": "json",
                     "comment": "테마설정"
                 },
+                "color": {
+                    "type": "char",
+                    "length": 7,
+                    "default": "#0077be",
+                    "comment": "테마컬러"
+                },
                 "logo": {
                     "type": "char",
                     "length": 36,

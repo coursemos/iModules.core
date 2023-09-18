@@ -50,7 +50,6 @@ class Language {
         }
         try {
             const text = await Language.fetch(url);
-            console.log('load', url, text);
             Language.texts.set(url, text);
             return Language.texts.get(url);
         }

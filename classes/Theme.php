@@ -122,23 +122,21 @@ class Theme
         /**
          * 테마 설정에서 css value 가 존재하는 경우 css 를 생성한다.
          */
-        $cssValues = [];
+        $cssValues = ['--theme-color: ' . Sites::get()->getColor() . ';'];
         foreach ($this->getConfigs() as $key => $value) {
             if (strpos($key, '--') === 0) {
                 $cssValues[] = $key . ': ' . $value . ';';
             }
         }
 
-        if (count($cssValues) > 0) {
-            if (Cache::has($this->getCacheName('values.css'), 3600, true) == false) {
-                Cache::store(
-                    $this->getCacheName('values.css'),
-                    ':root {' . "\n" . '    ' . implode("\n    ", $cssValues) . "\n" . '}',
-                    true
-                );
-            }
-            Cache::style($this->getCacheName(), Configs::cache() . '/' . $this->getCacheName('values.css'));
+        if (Cache::has($this->getCacheName('values.css'), 3600, true) == false) {
+            Cache::store(
+                $this->getCacheName('values.css'),
+                ':root {' . "\n" . '    ' . implode("\n    ", $cssValues) . "\n" . '}',
+                true
+            );
         }
+        Cache::style($this->getCacheName(), Configs::cache() . '/' . $this->getCacheName('values.css'));
 
         /**
          * 테마의 package.json 에 styles 나 scripts 가 설정되어 있다면, 해당 파일을 불러온다.

@@ -66,7 +66,6 @@ class Language {
 
         try {
             const text: { [key: string]: string | object } = await Language.fetch(url);
-            console.log('load', url, text);
             Language.texts.set(url, text);
             return Language.texts.get(url);
         } catch (e) {

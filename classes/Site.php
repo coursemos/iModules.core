@@ -42,6 +42,11 @@ class Site
     private Theme $_theme;
 
     /**
+     * @var string $_color 사이트 테마 색상
+     */
+    private string $_color;
+
+    /**
      * @var ?\modules\attachment\dto\Attachment $_logo 사이트 로고객체
      */
     private ?\modules\attachment\dto\Attachment $_logo;
@@ -93,6 +98,7 @@ class Site
         $this->_language = $site->language;
         $this->_title = $site->title;
         $this->_description = $site->description;
+        $this->_color = $site->color;
         $this->_header = json_decode($site->header ?? '');
         $this->_footer = json_decode($site->footer ?? '');
     }
@@ -160,6 +166,16 @@ class Site
 
         $this->_theme = new Theme(json_decode($this->_site->theme));
         return $this->_theme;
+    }
+
+    /**
+     * 사이트 테마색상을 가져온다.
+     *
+     * @return string $color
+     */
+    public function getColor(): string
+    {
+        return $this->_color;
     }
 
     /**

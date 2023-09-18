@@ -237,6 +237,11 @@ class iModules
         $site = Sites::get();
 
         /**
+         * 테마색상을 추가한다.
+         */
+        Html::head('meta', ['name' => 'theme-color', 'content' => $site->getColor()]);
+
+        /**
          * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
          */
         if ($site->getEmblem() !== null) {
