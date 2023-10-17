@@ -64,6 +64,24 @@ class DomList {
     }
 
     /**
+     * 목록에서 forEach() 함수를 실행한다.
+     *
+     * @param {Function} callback - forEach 함수
+     */
+    some(callback: (dom: Dom, index?: number, domList?: Dom[]) => void | boolean): void {
+        this.domList.some(callback);
+    }
+
+    /**
+     * 목록에서 forEach() 함수를 실행한다.
+     *
+     * @param {Function} callback - forEach 함수
+     */
+    every(callback: (dom: Dom, index?: number, domList?: Dom[]) => void | boolean): void {
+        this.domList.every(callback);
+    }
+
+    /**
      * 목록의 모든 HTML 엘리먼트의 Attribute 값을 설정한다.
      *
      * @param {string} key - 설정할 Attribute키
