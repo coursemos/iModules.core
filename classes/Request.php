@@ -340,9 +340,9 @@ class Request
      * SESSION 변수데이터를 가져온다.
      *
      * @param string $name 변수명
-     * @return ?string $value
+     * @return mixed $value
      */
-    public static function session(string $name): ?string
+    public static function session(string $name): mixed
     {
         $value = isset($_SESSION[$name]) == true ? $_SESSION[$name] : null;
         if ($value === null) {
@@ -356,10 +356,10 @@ class Request
      * SESSION 값을 저장한다.
      *
      * @param string $name 변수명
-     * @param ?string $value 저장할 값 (NULL 인 경우 세션을 삭제한다.)
+     * @param mixed $value 저장할 값 (NULL 인 경우 세션을 삭제한다.)
      * @return bool $success
      */
-    public static function setSession(string $name, ?string $value = null): bool
+    public static function setSession(string $name, mixed $value = null): bool
     {
         if (defined('IM_SESSION_STARTED') == false) {
             if (headers_sent() == true) {
