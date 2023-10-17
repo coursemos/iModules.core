@@ -129,7 +129,7 @@ class Domain
     public function getSites(): array
     {
         if (isset($this->_sites) == true) {
-            return array_values($this->_sites);
+            return $this->_sites;
         }
 
         $this->_sites = [];
@@ -138,7 +138,7 @@ class Domain
             $this->_sites[$site->getLanguage()] = $site;
         }
 
-        return array_values($this->_sites);
+        return $this->_sites;
     }
 
     /**
