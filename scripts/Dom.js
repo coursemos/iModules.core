@@ -161,22 +161,40 @@ class Dom {
         return -1;
     }
     /**
-     * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
+     * HTML 엘리먼트가 특정 쿼리셀렉터에 일치하는지 확인한다.
      *
-     * @param {string|Dom} querySelector - 일치할지 확인할 DOM 쿼리셀럭터 또는 DOM 객체
+     * @param {string} querySelector - 일치할지 확인할 쿼리셀럭터
      * @return {boolean} is_equal
      */
     is(querySelector) {
         if (this.element == null) {
             return false;
         }
-        if (querySelector instanceof Dom) {
-            if (querySelector.element == null) {
-                return false;
-            }
-            return this.element.isEqualNode(querySelector.element);
-        }
         return this.element.matches(querySelector);
+    }
+    /**
+     * HTML 엘리먼트가 특정 DOM과 동일한지 확인한다.
+     *
+     * @param {Dom} dom - 동일한지 여부를 확인할 DOM
+     * @return {boolean} is_equal
+     */
+    isEqual(dom) {
+        if (this.element == null || dom.getEl() == null) {
+            return false;
+        }
+        return this.element.isEqualNode(dom.getEl());
+    }
+    /**
+     * HTML 엘리먼트가 특정 DOM과 일치하는지 확인한다.
+     *
+     * @param {Dom} dom - 동일한지 여부를 확인할 DOM
+     * @return {boolean} is_equal
+     */
+    isSame(dom) {
+        if (this.element == null || dom.getEl() == null) {
+            return false;
+        }
+        return this.element.isSameNode(dom.getEl());
     }
     /**
      * 스타일시트 등을 통해 현재 HTML 엘리먼트에 적용된 스타일을 가져온다.

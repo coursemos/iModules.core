@@ -181,25 +181,45 @@ class Dom {
     }
 
     /**
-     * HTML 엘리먼트가 특정 노드와 일치하는지 확인한다.
+     * HTML 엘리먼트가 특정 쿼리셀렉터에 일치하는지 확인한다.
      *
-     * @param {string|Dom} querySelector - 일치할지 확인할 DOM 쿼리셀럭터 또는 DOM 객체
+     * @param {string} querySelector - 일치할지 확인할 쿼리셀럭터
      * @return {boolean} is_equal
      */
-    is(querySelector: string | Dom): boolean {
+    is(querySelector: string): boolean {
         if (this.element == null) {
             return false;
         }
 
-        if (querySelector instanceof Dom) {
-            if (querySelector.element == null) {
-                return false;
-            }
+        return this.element.matches(querySelector);
+    }
 
-            return this.element.isEqualNode(querySelector.element);
+    /**
+     * HTML 엘리먼트가 특정 DOM과 동일한지 확인한다.
+     *
+     * @param {Dom} dom - 동일한지 여부를 확인할 DOM
+     * @return {boolean} is_equal
+     */
+    isEqual(dom: Dom): boolean {
+        if (this.element == null || dom.getEl() == null) {
+            return false;
         }
 
-        return this.element.matches(querySelector);
+        return this.element.isEqualNode(dom.getEl());
+    }
+
+    /**
+     * HTML 엘리먼트가 특정 DOM과 일치하는지 확인한다.
+     *
+     * @param {Dom} dom - 동일한지 여부를 확인할 DOM
+     * @return {boolean} is_equal
+     */
+    isSame(dom: Dom): boolean {
+        if (this.element == null || dom.getEl() == null) {
+            return false;
+        }
+
+        return this.element.isSameNode(dom.getEl());
     }
 
     /**
