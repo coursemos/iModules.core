@@ -231,6 +231,24 @@ abstract class Module extends Component
     }
 
     /**
+     * 모듈의 컨텍스트 제목을 가져온다.
+     *
+     * @param string $name 컨텍스트명
+     * @param string $title 컨텍스트제목
+     */
+    public function getContextTitle(string $name): string
+    {
+        $contexts = $this->getContexts();
+        foreach ($contexts as $context) {
+            if ($context['name'] == $name) {
+                return $context['title'];
+            }
+        }
+
+        return $name;
+    }
+
+    /**
      * 모듈의 컨텍스트 설정필드를 가져온다.
      * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getContextConfigsFields() 메소드를 재정의하여야 한다.
      * 모듈클래스에서 getContextConfigsFields() 메소드가 정의되어 있지 않다면, 이 메소드가 호출되며,
