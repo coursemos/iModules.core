@@ -269,11 +269,10 @@ class Format
      */
     public static function random(int $length = 6): string
     {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-        $charactersLength = strlen($characters);
+        $characters = str_split('0123456789abcdefghijklmnopqrstuvwxyz');
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
+            $randomString .= $characters[array_rand($characters)];
         }
         return $randomString;
     }
