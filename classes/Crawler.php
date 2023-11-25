@@ -102,6 +102,8 @@ class Crawler
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $data = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
@@ -139,6 +141,8 @@ class Crawler
             curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $buffer = curl_exec($ch);
         $cinfo = curl_getinfo($ch);
         curl_close($ch);
@@ -172,6 +176,8 @@ class Crawler
             curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $buffer = curl_exec($ch);
         $cinfo = curl_getinfo($ch);
         curl_close($ch);
@@ -205,6 +211,8 @@ class Crawler
             curl_setopt($ch, CURLOPT_COOKIE, $this->_cookies);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $buffer = curl_exec($ch);
         $cinfo = curl_getinfo($ch);
         curl_close($ch);
