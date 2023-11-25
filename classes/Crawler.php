@@ -88,9 +88,9 @@ class Crawler
      *
      * @param string $url 로그인이 처리되는 주소 (예 : http://domain.com/login.php)
      * @param array $params 로그인에 필요한 변수 (예 : array('user_id'=>'아이디','password'=>'패스워드')
-     * @return bool $success
+     * @return bool|object $success
      */
-    public function login(string $url, array $params = []): bool
+    public function login(string $url, array $params = []): bool|object
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -103,16 +103,19 @@ class Crawler
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $data = curl_exec($ch);
+        $info = curl_getinfo($ch);
         curl_close($ch);
 
         if (preg_match_all('/Set-Cookie: (.*);/i', $data, $matches) == true) {
             $this->_cookies = implode('; ', $matches[1]);
+            return true;
         } else {
             $this->_cookies = null;
-            return false;
+            $success = new stdClass();
+            $success->body = $data;
+            $success->info = $info;
+            return $success;
         }
-
-        return true;
     }
 
     /**
