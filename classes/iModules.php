@@ -161,7 +161,7 @@ class iModules
             'domain' => Configs::get('session_domain'),
             'secure' => Request::isHttps() == true,
             'httponly' => true,
-            'samesite' => 'None',
+            'samesite' => Request::isHttps() == true ? 'None' : 'Lax',
         ];
 
         session_name('IM_SESSION_ID');
