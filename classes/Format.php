@@ -379,6 +379,31 @@ class Format
     }
 
     /**
+     * 닉네임이 형식에 맞는지 확인한다.
+     *
+     * @param ?string $nickname 닉네임
+     * @return bool $isValid
+     */
+    public static function checkNickname(?string $nickname = null): bool
+    {
+        if ($nickname === null) {
+            return false;
+        }
+        if (
+            preg_match(
+                '/[~!@#\$%\^&\*\(\)\-_\+\=\[\]\<\>\/\?\'":;\{\}\x{25a0}-\x{25ff}\x{2600}-\x{26ff}[:space:]]+/u',
+                $nickname
+            ) == true
+        ) {
+            return false;
+        }
+        if (mb_strlen($nickname, 'utf-8') < 2 || mb_strlen($nickname, 'utf-8') > 12) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 패스워드가 형식에 맞는지 확인한다.
      *
      * @param ?string $password 패스워드
