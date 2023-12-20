@@ -529,22 +529,6 @@ class Context
     }
 
     /**
-     * 현재 컨텍스트를 포함한 모든 자식 컨텍스트를 배열로 가져온다.
-     *
-     * @return Context[] $tree
-     */
-    public function getTree(): array
-    {
-        $tree = [$this];
-        $children = $this->getChildren(false);
-        foreach ($children as $child) {
-            $tree = array_merge($tree, $child->getTree());
-        }
-
-        return $tree;
-    }
-
-    /**
      * 최상위 부모부터 직전 부모까지 전체 부모를 가져온다.
      *
      * @return Context[] $parents
@@ -595,9 +579,10 @@ class Context
      * 자식 컨텍스트를 가져온다.
      *
      * @param bool $is_sitemap 사이트맵에 포함된 자식 컨텍스트만 가져올지 여부
+     * @param bool $hasPermission 접근권한이 존재하는 자식 컨텍스트만 가져올지 여부
      * @return Context[] $children
      */
-    public function getChildren(bool $is_sitemap = true): array
+    public function getChildren(bool $is_sitemap = true, bool $hasPermission = true): array
     {
         if (isset($this->_children) == true) {
             return $this->_children;
@@ -610,7 +595,7 @@ class Context
         foreach ($contexts as $context) {
             if (preg_match('/^' . $path . '\/[^\/]+$/', $context->getPath()) == true) {
                 if ($is_sitemap === false || $context->isSitemap() == true) {
-                    if ($context->hasPermission() == true) {
+                    if ($hasPermission === false || $context->hasPermission() == true) {
                         $this->_children[] = $context;
                     }
                 }
