@@ -11,6 +11,14 @@
 class iModules {
     static language;
     /**
+     * 지정된 시간만큼 자바스크립트를 지연시킨다.
+     *
+     * @param {number} ms - 지연될 ms
+     */
+    static async sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+    }
+    /**
      * 현재 언어코드를 가져온다.
      *
      * @return {string} language
