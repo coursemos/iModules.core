@@ -35,6 +35,8 @@
         "NOT_FOUND_THEME_LAYOUT": "사이트테마에서 레이아웃파일을 찾을 수 없습니다.",
         "NOT_FOUND_THEME_PAGE": "사이트테마에서 문서파일을 찾을 수 없습니다.",
         "INVALID_THEME_LAYOUT": "사이트테마의 현재 레이아웃이 잘못 구성되었습니다.",
+        "INVALID_EMAIL": "이메일주소가 올바르지 않습니다.",
+        "INVALID_NICKNAME": "닉네임에 포함될 수 없는 문자열이 있거나, 닉네임길이가 너무 짧거나 깁니다.",
         "TEMPLATE_ERROR": "템플릿 에러가 발생하였습니다.",
         "NOT_FOUND_TEMPLATE": "템플릿을 찾을 수 없습니다.",
         "NOT_FOUND_TEMPLATE_FILE": "템플릿 파일을 찾을 수 없습니다.",
