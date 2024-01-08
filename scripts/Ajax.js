@@ -116,6 +116,7 @@ class Ajax {
             if (results.success == false && results.message !== undefined) {
                 // @todo 에러메시지
             }
+            Ajax.fetchs.delete(uuid);
             return results;
         }
         catch (e) {

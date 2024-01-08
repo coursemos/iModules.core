@@ -146,6 +146,8 @@ class Ajax {
                 // @todo 에러메시지
             }
 
+            Ajax.fetchs.delete(uuid);
+
             return results;
         } catch (e) {
             Ajax.fetchs.delete(uuid);
