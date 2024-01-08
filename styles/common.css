@@ -3,7 +3,7 @@
  *
  * 아이모듈 공통 스타일시트를 정의한다.
  * 
- * @file /styles/common.scss
+ * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @modified 2023. 6. 23.
@@ -15,10 +15,10 @@
     --color-text-400: #222;
     --color-text-500: #000;
 
-    --color-background-100: #d0d0d0; // grayscale-400
-    --color-background-200: #dadada; // grayscale-300
-    --color-background-300: #e6e6e6; // grayscale-200
-    --color-background-400: #f7f7f7; // grayscale-100
+    --color-background-100: #d0d0d0;
+    --color-background-200: #dadada;
+    --color-background-300: #e6e6e6;
+    --color-background-400: #f7f7f7;
     --color-background-500: #fff;
 
     --color-primary-300: #66acfb;
