@@ -170,8 +170,10 @@ class Domain
      *
      * @return string $url
      */
-    public function getUrl(): string
+    public function getUrl(bool $include_dir = false): string
     {
-        return ($this->isHttps() == true ? 'https://' : 'http://') . $this->getHost();
+        return ($this->isHttps() == true ? 'https://' : 'http://') .
+            $this->getHost() .
+            ($include_dir == true ? Configs::dir() : '');
     }
 }
