@@ -99,7 +99,7 @@ class Router
     {
         $route = self::has($path);
         if ($route === null) {
-            ErrorHandler::print(self::error('NOT_FOUND_URL'));
+            ErrorHandler::print('NOT_FOUND_URL');
         }
 
         return $route;
@@ -178,34 +178,5 @@ class Router
     {
         $route = preg_replace('/^\/?(.*?)(\/)?$/', '\1', $route);
         return $route ? explode('/', $route) : [];
-    }
-
-    /**
-     * 경로 관련 에러를 처리한다.
-     *
-     * @param string $code 에러코드
-     * @param ?string $message 에러메시지
-     * @param ?object $details 에러와 관련된 추가정보
-     * @return ErrorData $error
-     */
-    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
-    {
-        switch ($code) {
-            case 'NOT_FOUND_CONTEXT':
-                $error = ErrorHandler::data();
-                $error->message = ErrorHandler::getText($code);
-                $error->suffix = $message;
-                $error->stacktrace = ErrorHandler::trace('Contexts');
-                return $error;
-
-            case 'NOT_FOUND_URL':
-                $error = ErrorHandler::data();
-                $error->message = ErrorHandler::getText($code);
-                $error->suffix = Request::url();
-                return $error;
-
-            default:
-                return iModules::error($code, $message, $details);
-        }
     }
 }
