@@ -460,28 +460,27 @@ class Modules
      */
     public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
     {
-        $error = ErrorHandler::data();
-
         switch ($code) {
             case 'NOT_FOUND_MODULE':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code, ['module' => $message]);
                 $error->suffix = Request::url();
-                break;
+                return $error;
 
             case 'NOT_FOUND_MODULE_PROCESS':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code, ['module' => $message]);
                 $error->suffix = Request::url();
-                break;
+                return $error;
 
             case 'NOT_FOUND_MODULE_PROCESS_FILE':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
-                break;
+                return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
-
-        return $error;
     }
 }

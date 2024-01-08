@@ -469,28 +469,28 @@ class Template
     {
         switch ($code) {
             case 'NOT_FOUND_TEMPLATE':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
                 $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLATE');
                 $error->suffix = $message;
                 return $error;
 
             case 'NOT_FOUND_TEMPLATE_FILE':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
                 $error->message = ErrorHandler::getText('NOT_FOUND_TEMPLATE_FILE');
                 $error->suffix = $message;
                 return $error;
 
             case 'NOT_FOUND_FILE':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->prefix = ErrorHandler::getText('TEMPLATE_ERROR');
                 $error->message = ErrorHandler::getText('NOT_FOUND_FILE');
                 $error->suffix = $message;
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
     }
 }

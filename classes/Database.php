@@ -60,7 +60,7 @@ class Database
         }
 
         if ($interface === null) {
-            ErrorHandler::print('DATABASE_CONNECT_ERROR', $connector->type . ' is not supported.');
+            ErrorHandler::print(ErrorHandler::error('DATABASE_CONNECT_ERROR', $connector->type . ' is not supported.'));
         }
 
         /**

@@ -99,7 +99,7 @@ class Router
     {
         $route = self::has($path);
         if ($route === null) {
-            ErrorHandler::print('NOT_FOUND_URL');
+            ErrorHandler::print(ErrorHandler::error('NOT_FOUND_URL'));
         }
 
         return $route;

@@ -1824,7 +1824,7 @@ class mysql extends DatabaseInterface
 
         $this->reset();
         if ($this->_displayError == true) {
-            ErrorHandler::print('DATABASE_ERROR', $message, $details);
+            ErrorHandler::print(ErrorHandler::error('DATABASE_ERROR', $message, $details));
         }
     }
 

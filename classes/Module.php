@@ -365,7 +365,7 @@ abstract class Module extends Component
     {
         switch ($code) {
             case 'NOT_FOUND_CONTEXT_METHOD':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code, $this);
                 $error->message = ErrorHandler::getText($code, ['module' => $this->getName()]);
                 $error->suffix =
                     '$context : ' .
@@ -375,7 +375,7 @@ abstract class Module extends Component
                 return $error;
 
             default:
-                return Modules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details, $this);
         }
     }
 

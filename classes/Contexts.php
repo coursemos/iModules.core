@@ -277,14 +277,14 @@ class Contexts
     {
         switch ($code) {
             case 'NOT_FOUND_CONTEXT':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
                 $error->stacktrace = ErrorHandler::trace('Contexts');
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
     }
 }

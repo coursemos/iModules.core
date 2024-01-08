@@ -347,7 +347,6 @@ class ErrorHandler
                 $error->message = $message;
                 $error->stacktrace = self::trace('Database');
                 $error->debugModeOnly = true;
-
                 break;
 
             case 'NOT_FOUND_URL':

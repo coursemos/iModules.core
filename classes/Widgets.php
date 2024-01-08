@@ -176,26 +176,27 @@ class Widgets
      */
     public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
     {
-        $error = ErrorHandler::data();
-
         switch ($code) {
             case 'NOT_FOUND_WIDGET':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code, ['widget' => $message]);
                 $error->suffix = Request::url();
                 break;
 
             case 'NOT_FOUND_WIDGET_PROCESS':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code, ['widget' => $message]);
                 $error->suffix = Request::url();
                 break;
 
             case 'NOT_FOUND_WIDGET_PROCESS_FILE':
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
                 break;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
 
         return $error;

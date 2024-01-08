@@ -117,13 +117,14 @@ class Sites
     {
         switch ($code) {
             case 'NOT_FOUND_SITE':
-                $error = ErrorHandler::data();
+                Header::code(404);
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
     }
 }

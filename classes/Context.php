@@ -395,7 +395,7 @@ class Context
             case 'CHILD':
                 $children = $this->getChildren(false);
                 if (count($children) == 0) {
-                    return ErrorHandler::print(Router::error('NOT_FOUND_URL'));
+                    return ErrorHandler::print(ErrorHandler::error('NOT_FOUND_URL'));
                 }
 
                 Header::location($children[0]->getUrl());

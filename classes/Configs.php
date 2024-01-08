@@ -80,7 +80,7 @@ class Configs
     {
         $package = new Package('/package.json');
         if ($package->exists() == false) {
-            ErrorHandler::print('PACKAGE_FILE_ERROR');
+            ErrorHandler::print(ErrorHandler::error('PACKAGE_FILE_ERROR'));
         }
 
         return $package;

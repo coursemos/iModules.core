@@ -516,7 +516,7 @@ class Theme
     {
         switch ($code) {
             case 'NOT_FOUND_THEME':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->prefix = ErrorHandler::getText('THEME_ERROR');
                 $error->message = ErrorHandler::getText('NOT_FOUND_THEME');
                 $error->suffix = $message;
@@ -526,14 +526,14 @@ class Theme
             case 'NOT_FOUND_THEME_PAGE':
             case 'NOT_FOUND_FILE':
             case 'INVALID_THEME_LAYOUT':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->prefix = ErrorHandler::getText('THEME_ERROR');
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
     }
 }

@@ -115,14 +115,14 @@ class Domains
     {
         switch ($code) {
             case 'NOT_FOUND_DOMAIN':
-                $error = ErrorHandler::data();
+                $error = ErrorHandler::data($code);
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
 
                 return $error;
 
             default:
-                return iModules::error($code, $message, $details);
+                return ErrorHandler::error($code, $message, $details);
         }
     }
 }

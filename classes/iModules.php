@@ -218,7 +218,7 @@ class iModules
          * 기본 스타일시트 및 폰트를 불러온다.
          */
         Html::font('moimz');
-        Cache::style('core', '/styles/common.scss');
+        Cache::style('core', '/styles/common.css');
         Html::style(Cache::style('core'), 1);
 
         /**
@@ -531,20 +531,5 @@ class iModules
     public static function doBlob(Route $route): void
     {
         $route->printContent();
-    }
-
-    /**
-     * 에러페이지를 출력하기 위한 데이터를 가공한다.
-     *
-     * @param string $code 에러코드
-     * @param ?string $message 에러메시지
-     * @param ?object $details 에러와 관련된 추가정보
-     * @return ErrorData $error
-     */
-    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
-    {
-        $error = ErrorHandler::data();
-
-        return $error;
     }
 }
