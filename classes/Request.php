@@ -46,18 +46,16 @@ class Request
     {
         $uri = explode('?', isset($_SERVER['REQUEST_URI']) == true ? $_SERVER['REQUEST_URI'] : '/');
         $url = $uri[0];
-        if ($query === true && count($uri) == 2) {
-            $url .= '?' . $uri[1];
-        } elseif (is_array($query) == true) {
-            $queries = [];
-            foreach ($query as $key) {
-                if (Request::get($key) !== null) {
-                    $queries[] = $key . '=' . Request::get($key);
-                }
+        $queryString = isset($uri[1]) == true ? '?' . $uri[1] : '';
+        if (preg_match('/(&|\?)route=/', $queryString) == true) {
+            if (is_bool($query) == true) {
+                $query = [];
             }
-            if (count($queries) > 0) {
-                $url .= '?' . implode('&', $queries);
-            }
+            $query['route'] = Request::get('route');
+        }
+
+        if ($query !== false) {
+            $url .= self::query($query === true ? [] : $query, '?');
         }
 
         return $url;
@@ -66,28 +64,37 @@ class Request
     /**
      * GET 으로 전달되는 QUERY_STRING(URL의 ? 이하부분)중 일부 파라매터값을 변경하고, 비어있거나 불필요한 QUERY_STRING 삭제한다.
      *
-     * @param string[] $replacements array('GET 파라매터 KEY'=>'변경할 값, 해당값이 없으면 GET 파라매터를 지운다.')
-     * @return string $queryString 정리된 GET 파라매터
+     * @param string[] $replacements array('GET 파라매터 KEY'=>'변경할 값, 해당값이 NULL 인 경우 GET 파라매터를 지운다.')
+     * @param bool|string $is_string 문자로 반환할지 여부 (true : 문자로 반환, false : 배열로 반환, bool 이 아닌 경우 해당 문자열을 앞에 포함하여 반환(예 : ?))
+     * @return string|array $queryString 정리된 GET 파라매터
      */
-    public static function query(array $replacements = []): string
+    public static function query(array $replacements = [], bool|string $is_string = true): string|array
     {
-        $queryString = $_SERVER['QUERY_STRING'];
-        $replacements['route'] = '';
+        $uri = explode('?', isset($_SERVER['REQUEST_URI']) == true ? $_SERVER['REQUEST_URI'] : '/');
+        $queryString = isset($uri[1]) == true ? $uri[1] : '';
+        if (isset($replacements['route']) === false) {
+            $replacements['route'] = null;
+        }
         $queries = strlen($queryString) > 0 ? explode('&', $queryString) : [];
 
-        $queryStrings = [];
+        $origins = [];
         foreach ($queries as $query) {
             list($key, $value) = explode('=', $query);
-            if (isset($replacements[$key]) == true) {
-                $value = $replacements[$key];
-            }
-
-            if (strlen($value) > 0) {
-                $queryStrings[] = $key . '=' . $value;
-            }
+            $origins[$key] = $value;
         }
 
-        return implode('&', $queryStrings);
+        $queryStrings = array_filter(array_merge($origins, $replacements));
+
+        if ($is_string === false) {
+            return $queryStrings;
+        } else {
+            $queryString = str_replace('%2F', '/', http_build_query($queryStrings, '', '&'));
+            if ($is_string === true || strlen($queryString) === 0) {
+                return $queryString;
+            } else {
+                return $is_string . $queryString;
+            }
+        }
     }
 
     /**
@@ -117,7 +124,7 @@ class Request
         $value = isset($_GET[$name]) == true ? $_GET[$name] : null;
         if ($value === null) {
             if ($is_required == true) {
-                ErrorHandler::print('REQUIRED', $name);
+                ErrorHandler::print(ErrorHandler::error('REQUIRED', $name));
             }
             return null;
         }
@@ -205,7 +212,7 @@ class Request
         $value = isset($_POST[$name]) == true ? $_POST[$name] : null;
         if ($value === null) {
             if ($is_required == true) {
-                ErrorHandler::print('REQUIRED', $name);
+                ErrorHandler::print(ErrorHandler::error('REQUIRED', $name));
             }
             return null;
         }
@@ -293,7 +300,7 @@ class Request
         $value = isset($_REQUEST[$name]) == true ? $_REQUEST[$name] : null;
         if ($value === null) {
             if ($is_required == true) {
-                ErrorHandler::print('REQUIRED', $name);
+                ErrorHandler::print(ErrorHandler::error('REQUIRED', $name));
             }
             return null;
         }
@@ -326,7 +333,7 @@ class Request
             is_file($_FILES[$name]['tmp_name']) == false
         ) {
             if ($is_required == true) {
-                ErrorHandler::print('REQUIRED', $name);
+                ErrorHandler::print(ErrorHandler::error('REQUIRED', $name));
             }
             return null;
         }
