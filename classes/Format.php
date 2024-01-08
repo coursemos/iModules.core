@@ -183,10 +183,8 @@ class Format
      * @param bool $is_moment momentjs 용 태그를 생성할 지 여부 (@see http://momentjs.com)
      * @return string $time 변환된 시각
      */
-    public static function time(string $format, ?int $time = null, bool $is_moment = true): string
+    public static function date(int $time, string $format, bool $is_moment = true): string
     {
-        $time = $time === null ? time() : $time;
-
         /**
          * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
          */
