@@ -50,17 +50,15 @@ class ErrorHandler
     /**
      * 에러메시지를 가져온다.
      *
-     * @param string|ErrorData $code 에러코드 또는 에러 객체
-     * @param ?string $message 에러메시지
-     * @param ?object $details 에러와 관련된 추가정보
+     * @param ErrorData $error 에러코드 또는 에러 객체
      * @return string $html
      */
-    public static function get(string|ErrorData $code, ?string $message = null, ?object $details = null): string
+    public static function get(ErrorData $error): string
     {
-        $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
-        $error->debugMode = Configs::debug();
+        $error->title ??= self::getText('TITLE');
+        $error->message ??= self::getText('DESCRIPTION');
 
-        Html::style(Configs::dir() . '/styles/error.scss');
+        Html::style(Configs::dir() . '/styles/error.css');
 
         /**
          * $error->stacktrace 가 NULL 인 경우
@@ -105,11 +103,11 @@ class ErrorHandler
     /**
      * 모든 작업을 중단하고, 에러메시지를 출력한다.
      *
-     * @param string|object $code 에러코드 또는 에러 객체
+     * @param ErrorData $error 에러코드 또는 에러 객체
      * @param ?string $message 에러메시지
      * @param ?object $details 에러와 관련된 추가정보
      */
-    public static function print(string|ErrorData $code, ?string $message = null, ?object $details = null): void
+    public static function print(ErrorData $error): void
     {
         if (ob_get_length() !== false) {
             ob_end_clean();
@@ -117,20 +115,18 @@ class ErrorHandler
 
         if (isset($_SERVER['SSH_CONNECTION']) == true) {
             echo '[ERROR]' . PHP_EOL;
-            print_r($code);
+            print_r($error->code);
             echo PHP_EOL;
-            if ($message !== null) {
-                echo $message;
+            if ($error->message !== null) {
+                echo $error->message;
                 echo PHP_EOL;
             }
-            print_r($details);
+            print_r($error->details);
             echo PHP_EOL;
             exit();
         }
 
         if (Header::type() == 'json') {
-            $error = is_string($code) == true ? self::error($code, $message, $details) : $code;
-
             $json = new stdClass();
             $json->success = false;
             $json->message = [];
@@ -170,7 +166,7 @@ class ErrorHandler
 
             exit(Format::toJson($json));
         } else {
-            $error = self::get($code, $message, $details);
+            $error = self::get($error);
 
             Html::title(self::getText('TITLE'));
             Html::body('data-type', 'error');
@@ -243,11 +239,13 @@ class ErrorHandler
     /**
      * 빈 에러데이터 객체를 가져온다.
      *
+     * @param string $code 에러코드
+     * @param ?Component $component 에러가 발생된 컴포넌트
      * @return ErrorData $error
      */
-    public static function data(): ErrorData
+    public static function data(string $code, ?Component $component = null): ErrorData
     {
-        $error = new ErrorData(self::getText('TITLE'), self::getText('DESCRIPTION'));
+        $error = new ErrorData($code, $component);
         return $error;
     }
 
@@ -257,11 +255,16 @@ class ErrorHandler
      * @param string $code 에러코드
      * @param ?string $message 에러메시지
      * @param ?object $details 에러와 관련된 추가정보
+     * @param ?Component $component 에러가 발생된 컴포넌트
      * @return ErrorData $error
      */
-    public static function error(string $code, ?string $message = null, ?object $details = null): ErrorData
-    {
-        $error = self::data();
+    public static function error(
+        string $code,
+        ?string $message = null,
+        ?object $details = null,
+        ?Component $component = null
+    ): ErrorData {
+        $error = self::data($code, $component);
 
         switch ($code) {
             case 'PHP_ERROR':
@@ -347,12 +350,31 @@ class ErrorHandler
 
                 break;
 
+            case 'NOT_FOUND_URL':
+                Header::code(404);
+                $error->message = ErrorHandler::getText($code);
+                $error->suffix = Request::url(true);
+                break;
+
+            case 'NOT_FOUND_CONTEXT':
+                $error->message = ErrorHandler::getText($code);
+                $error->suffix = $message;
+                $error->stacktrace = ErrorHandler::trace('Contexts');
+                break;
+
             default:
                 if ($message === null) {
-                    $error->prefix = null;
-                    $error->message = self::getText($code);
+                    if ($component === null) {
+                        $error->message = ErrorHandler::getText($code);
+                    } else {
+                        $error->message = $component->getErrorText($code);
+                    }
+
+                    if ($message == 'errors.' . $code) {
+                        $error->message = ErrorHandler::getText('DESCRIPTION');
+                        $error->suffix = $code;
+                    }
                 } else {
-                    $error->prefix = self::getText($code);
                     $error->message = $message;
                 }
         }
@@ -412,7 +434,7 @@ class ErrorHandler
         $details->file = $errfile;
         $details->line = $errline;
 
-        self::print('PHP_ERROR', $errstr, $details);
+        self::print(self::error('PHP_ERROR', $errstr, $details));
         return true;
     }
 }

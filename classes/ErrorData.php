@@ -7,52 +7,67 @@
  * @file /classes/ErrorData.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2024. 1. 8.
  */
 class ErrorData
 {
     /**
-     * @public string $title 에러명
+     * @var string $code 에러코드
      */
-    public string $title;
+    public string $code;
 
     /**
-     * @public string $message 에러메시지
+     * @var ?string $title 에러제목
      */
-    public string $message;
+    public ?string $title = null;
 
     /**
-     * @public ?string $prefix 에러메시지 상단 내용
+     * @var ?string $message 에러메시지
+     */
+    public ?string $message = null;
+
+    /**
+     * @var ?string $prefix 에러메시지 상단 내용
      */
     public ?string $prefix = null;
 
     /**
-     * @public ?string $suffix 에러메시지 하단 상세내용
+     * @var ?string $suffix 에러메시지 하단 상세내용
      */
     public ?string $suffix = null;
 
     /**
-     * @public ?string $file 에러가 발생한 파일명
+     * @var ?string $file 에러가 발생한 파일명
      */
     public ?string $file = null;
 
     /**
-     * @public ?int $line 에러가 발생한 LINE
+     * @var ?int $line 에러가 발생한 LINE
      */
     public ?int $line = null;
 
     /**
-     * @public ?array $stacktrace 에러발생 추적데이터
+     * @var ?array $stacktrace 에러발생 추적데이터
      */
     public ?array $stacktrace = null;
 
     /**
-     * @public bool $debugModeOnly 디버그모드에서만 상세 에러메시지를 보여줄지 여부
+     * @var ?object $details 에러와 관련된 추가정보
+     */
+    public ?object $details = null;
+
+    /**
+     * @var ?Component $component 에러가 발생된 컴포넌트
+     */
+    public ?Component $component = null;
+
+    /**
+     * @var bool $debugModeOnly 디버그모드에서만 상세 에러메시지를 보여줄지 여부
      */
     public bool $debugModeOnly = false;
 
     /**
-     * @public bool $debugMode 현재 디버그모드인지 여부
+     * @var bool $debugMode 현재 디버그모드인지 여부
      */
     public bool $debugMode = false;
 
@@ -62,10 +77,10 @@ class ErrorData
      * @param string $title 에러명
      * @param ?string $message 에러메시지
      */
-    public function __construct(string $title, ?string $message = null)
+    public function __construct(string $code, ?Component $component = null)
     {
-        $this->title = $title;
-        $this->message = $message;
+        $this->code = $code;
+        $this->component = $component;
         $this->debugMode = Configs::debug();
     }
 }
