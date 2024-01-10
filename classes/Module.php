@@ -334,8 +334,8 @@ abstract class Module extends Component
         define('__IM_PROCESS__', true);
 
         $results = new stdClass();
-        if (is_file($this->getPath() . '/process/' . $process . '.' . $method . '.php') == true) {
-            File::include($this->getPath() . '/process/' . $process . '.' . $method . '.php', [
+        if (is_file($this->getPath() . '/processes/' . $process . '.' . $method . '.php') == true) {
+            File::include($this->getPath() . '/processes/' . $process . '.' . $method . '.php', [
                 'me' => &$this,
                 'results' => &$results,
                 'path' => $path,
@@ -345,7 +345,7 @@ abstract class Module extends Component
             ErrorHandler::print(
                 $this->error(
                     'NOT_FOUND_MODULE_PROCESS_FILE',
-                    $this->getPath() . '/process/' . $process . '.' . $method . '.php'
+                    $this->getPath() . '/processes/' . $process . '.' . $method . '.php'
                 )
             );
         }
