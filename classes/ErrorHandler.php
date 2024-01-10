@@ -58,8 +58,6 @@ class ErrorHandler
         $error->title ??= self::getText('TITLE');
         $error->message ??= self::getText('DESCRIPTION');
 
-        Html::style(Configs::dir() . '/styles/error.css');
-
         /**
          * $error->stacktrace 가 NULL 인 경우
          */
@@ -82,16 +80,11 @@ class ErrorHandler
         }
 
         /**
-         * 기본 자바스크립트파일을 불러온다.
-         * 사용되는 모든 스크립트 파일을 캐시를 이용해 압축한다.
+         * 기본 리소스를 불러온다.
          */
-        Cache::script('common', '/scripts/Html.js');
-        Cache::script('common', '/scripts/Dom.js');
-        Cache::script('common', '/scripts/DomList.js');
-        Html::script(Cache::script('common'), 1);
-
+        iModules::resources();
+        Html::style('/styles/error.css');
         Html::font('Pretendard');
-        Html::font('moimz');
 
         ob_start();
         include Configs::path() . '/includes/error.html';
@@ -369,7 +362,7 @@ class ErrorHandler
                         $error->message = $component->getErrorText($code);
                     }
 
-                    if ($message == 'errors.' . $code) {
+                    if ($error->message == 'errors.' . $code) {
                         $error->message = ErrorHandler::getText('DESCRIPTION');
                         $error->suffix = $code;
                     }
