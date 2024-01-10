@@ -218,8 +218,7 @@ class iModules
          * 기본 스타일시트 및 폰트를 불러온다.
          */
         Html::font('moimz');
-        Cache::style('core', '/styles/common.css');
-        Html::style(Cache::style('core'), 1);
+        Html::style('/styles/common.css', 1);
 
         /**
          * 모듈의 스타일시트파일을 불러온다.
