@@ -47,24 +47,24 @@ class Site
     private string $_color;
 
     /**
-     * @var ?\modules\attachment\dto\Attachment $_logo 사이트 로고객체
+     * @var ?\modules\attachment\dtos\Attachment $_logo 사이트 로고객체
      */
-    private ?\modules\attachment\dto\Attachment $_logo;
+    private ?\modules\attachment\dtos\Attachment $_logo;
 
     /**
-     * @var ?\modules\attachment\dto\Attachment $_favicon 사이트 Favicon
+     * @var ?\modules\attachment\dtos\Attachment $_favicon 사이트 Favicon
      */
-    private ?\modules\attachment\dto\Attachment $_favicon;
+    private ?\modules\attachment\dtos\Attachment $_favicon;
 
     /**
-     * @var ?\modules\attachment\dto\Attachment $_emblem 사이트 엠블럼
+     * @var ?\modules\attachment\dtos\Attachment $_emblem 사이트 엠블럼
      */
-    private ?\modules\attachment\dto\Attachment $_emblem;
+    private ?\modules\attachment\dtos\Attachment $_emblem;
 
     /**
-     * @var ?\modules\attachment\dto\Attachment $_image 사이트 대표이미지
+     * @var ?\modules\attachment\dtos\Attachment $_image 사이트 대표이미지
      */
-    private ?\modules\attachment\dto\Attachment $_image;
+    private ?\modules\attachment\dtos\Attachment $_image;
 
     /**
      * @var object $_header 사이트 헤더설정
@@ -181,9 +181,9 @@ class Site
     /**
      * 사이트 로고이미지를 가져온다.
      *
-     * @return ?\modules\attachment\dto\Attachment $logo
+     * @return ?\modules\attachment\dtos\Attachment $logo
      */
-    public function getLogo(): ?\modules\attachment\dto\Attachment
+    public function getLogo(): ?\modules\attachment\dtos\Attachment
     {
         if (isset($this->_logo) == true) {
             return $this->_logo;
@@ -201,9 +201,9 @@ class Site
     /**
      * 사이트 패비콘을 가져온다.
      *
-     * @return ?\modules\attachment\dto\Attachment $favicon
+     * @return ?\modules\attachment\dtos\Attachment $favicon
      */
-    public function getFavicon(): ?\modules\attachment\dto\Attachment
+    public function getFavicon(): ?\modules\attachment\dtos\Attachment
     {
         if (isset($this->_favicon) == true) {
             return $this->_favicon;
@@ -221,9 +221,9 @@ class Site
     /**
      * 사이트 엠블럼을 가져온다.
      *
-     * @return ?\modules\attachment\dto\Attachment $emblem
+     * @return ?\modules\attachment\dtos\Attachment $emblem
      */
-    public function getEmblem(): ?\modules\attachment\dto\Attachment
+    public function getEmblem(): ?\modules\attachment\dtos\Attachment
     {
         if (isset($this->_emblem) == true) {
             return $this->_emblem;
@@ -241,9 +241,9 @@ class Site
     /**
      * 사이트 대표이미지를 가져온다.
      *
-     * @return ?\modules\attachment\dto\Attachment $image
+     * @return ?\modules\attachment\dtos\Attachment $image
      */
-    public function getImage(): ?\modules\attachment\dto\Attachment
+    public function getImage(): ?\modules\attachment\dtos\Attachment
     {
         if (isset($this->_image) == true) {
             return $this->_image;
