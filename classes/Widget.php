@@ -36,11 +36,13 @@ abstract class Widget extends Component
      *
      * @param string $name 템플릿명
      * @param array $configs 템플릿설정
+     * @return Widget $widget
      */
-    final public function setTemplate(string $name, array $configs = []): void
+    final public function setTemplate(string $name, array $configs = []): Widget
     {
         $template = (object) ['name' => $name, 'configs' => (object) $configs];
         $this->_template = new Template($this, $template);
+        return $this;
     }
 
     /**
