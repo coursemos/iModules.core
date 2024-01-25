@@ -101,20 +101,20 @@ class Ajax {
                 body: body,
                 cache: 'no-store',
                 redirect: 'follow',
-            }).catch((error) => {
+            }).catch(async () => {
                 Ajax.fetchs.delete(uuid);
                 if (retry <= 3) {
+                    await iModules.sleep(500);
                     return Ajax.#call(method, url, params, data, ++retry);
                 }
                 else {
-                    // @todo 에러메시지
-                    console.error(error);
+                    iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('CONNECT_FAILED'));
                     return { success: false };
                 }
             }));
             const results = (await response.json());
             if (results.success == false && results.message !== undefined) {
-                // @todo 에러메시지
+                iModules.Modal.show(await Language.getErrorText('TITLE'), results.message);
             }
             Ajax.fetchs.delete(uuid);
             return results;
