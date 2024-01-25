@@ -199,6 +199,7 @@ class iModules
         Cache::script('core', '/scripts/iModules.js');
         Cache::script('core', '/scripts/Ajax.js');
         Cache::script('core', '/scripts/Modules.js');
+        Cache::script('core', '/scripts/Component.js');
         Cache::script('core', '/scripts/Module.js');
         Cache::script('core', '/scripts/Format.js');
         Cache::script('core', '/scripts/Language.js');
