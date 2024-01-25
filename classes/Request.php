@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 8. 2.
+ * @modified 2024. 1. 26.
  */
 class Request
 {
@@ -29,11 +29,12 @@ class Request
     /**
      * 현재 요청방식을 가져온다.
      *
-     * @return string $method (GET, POST)
+     * @return string $method (GET, POST, PUT, DELETE, PATCH)
      */
     public static function method(): string
     {
-        return isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET';
+        return Header::get('X-Method') ??
+            (isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET');
     }
 
     /**
