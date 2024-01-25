@@ -7,7 +7,7 @@
  * @file /classes/Widgets.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 25.
+ * @modified 2024. 1. 26.
  */
 class Widgets
 {
@@ -143,19 +143,13 @@ class Widgets
         $route->setLanguage($language);
         $method = strtolower(Request::method());
 
-        if ($method == 'post') {
-            $input = new Input(file_get_contents('php://input'), $_SERVER['CONTENT_TYPE']);
-        } else {
-            $input = new Input(null);
-        }
-
         $paths = explode('/', $path);
         $process = array_shift($paths);
         $path = implode('/', $paths);
 
         if (self::isInstalled($name) == true) {
             $mWidget = self::get($name);
-            $results = call_user_func_array([$mWidget, 'doProcess'], [$method, $process, $path, $input]);
+            $results = call_user_func_array([$mWidget, 'doProcess'], [$method, $process, $path]);
             if (isset($results->success) == false) {
                 ErrorHandler::print(self::error('NOT_FOUND_WIDGET_PROCESS', $name));
             }
