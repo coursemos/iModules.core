@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2024. 1. 26.
  */
 abstract class Module extends Component
 {
@@ -327,9 +327,8 @@ abstract class Module extends Component
      * @param string $method 요청방법
      * @param string $process 요청명
      * @param string $path 요청경로
-     * @param Input $input INPUT 데이터
      */
-    public function doProcess(string $method, string $process, string $path, Input $input = null): object
+    public function doProcess(string $method, string $process, string $path): object
     {
         define('__IM_PROCESS__', true);
 
@@ -339,7 +338,6 @@ abstract class Module extends Component
                 'me' => &$this,
                 'results' => &$results,
                 'path' => $path,
-                'input' => $input,
             ]);
         } else {
             ErrorHandler::print(
