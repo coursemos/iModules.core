@@ -32,8 +32,8 @@ class iModules {
      *
      * @return {string} baseUrl
      */
-    static getBase() {
-        return Html.get('body').getAttr('data-base');
+    static getDir() {
+        return Html.get('body').getAttr('data-dir');
     }
     /**
      * 프로세스 URL 경로를 가져온다.
@@ -46,7 +46,7 @@ class iModules {
     static getProcessUrl(type, name, path) {
         const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
         const route = '/' + type + '/' + name + '/process/' + path;
-        return iModules.getBase() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+        return iModules.getDir() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
     }
     /**
      * 모바일 디바이스인지 확인한다.

@@ -35,8 +35,8 @@ class iModules {
      *
      * @return {string} baseUrl
      */
-    static getBase(): string {
-        return Html.get('body').getAttr('data-base');
+    static getDir(): string {
+        return Html.get('body').getAttr('data-dir');
     }
 
     /**
@@ -50,7 +50,7 @@ class iModules {
     static getProcessUrl(type: string, name: string, path: string): string {
         const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
         const route = '/' + type + '/' + name + '/process/' + path;
-        return iModules.getBase() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+        return iModules.getDir() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
     }
 
     /**
