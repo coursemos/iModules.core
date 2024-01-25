@@ -12,9 +12,9 @@
 abstract class Component
 {
     /**
-     * @var \modules\admin\admin\Admin $_adminClass 관리자 클래스
+     * @var \modules\admin\admin\Component $_adminClass 관리자 클래스
      */
-    private static \modules\admin\admin\Admin $_adminClass;
+    private \modules\admin\admin\Component $_adminClass;
 
     /**
      * 컴포넌트 설정을 초기화한다.
@@ -297,18 +297,22 @@ abstract class Component
     /**
      * 컴포넌트의 관리자 클래스를 가져온다.
      *
-     * @return ?\modules\admin\admin\Admin $adminClass
+     * @return ?\modules\admin\admin\Component $adminClass
      */
-    public function getAdmin(): ?\modules\admin\admin\Admin
+    public function getAdmin(): ?\modules\admin\admin\Component
     {
-        if (isset(self::$_adminClass) == true) {
-            return self::$_adminClass;
+        if (isset($this->_adminClass) == true) {
+            return $this->_adminClass;
         }
 
-        /**
-         * @var \modules\admin\Admin $mAdmin
-         */
-        $mAdmin = Modules::get('admin');
-        return $mAdmin->getAdminClass($this);
+        $classPaths = explode('/', $this->getName());
+        $className = $a = ucfirst(end($classPaths));
+        $className = '\\' . $this->getType() . 's\\' . implode('\\', $classPaths) . '\\admin\\' . $className;
+        if (class_exists($className) == false) {
+            return null;
+        }
+
+        $this->_adminClass = new $className();
+        return $this->_adminClass;
     }
 }
