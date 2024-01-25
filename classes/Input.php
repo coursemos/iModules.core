@@ -7,26 +7,34 @@
  * @file /classes/Input.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2024. 1. 26.
  */
 class Input
 {
-    private mixed $input;
-    private mixed $values;
+    private static mixed $_input;
+    private static mixed $_values;
 
     /**
      * 컨텍스트 데이터 구조체를 정의한다.
      *
      * @param object $context 컨텍스트정보
      */
-    public function __construct(mixed $input, string $type = '')
+    public static function init(): void
     {
-        $this->input = $input;
+        if (isset(self::$_input) == false) {
+            if (in_array(Request::method(), ['GET', 'DELETE']) == true) {
+                self::$_input = null;
+            } else {
+                self::$_input = file_get_contents('php://input');
+            }
+        }
 
-        if (strpos(strtolower($type), 'json') !== false) {
-            $this->values = $this->normalizer(json_decode($this->input));
-        } else {
-            $this->values = null;
+        if (isset(self::$_values) == false) {
+            if (Header::type() == 'json' && self::$_input !== null) {
+                self::$_values = self::normalizer(json_decode(self::$_input));
+            } else {
+                self::$_values = null;
+            }
         }
     }
 
@@ -35,9 +43,25 @@ class Input
      *
      * @return mixed $values
      */
-    public function all(): mixed
+    public static function all(): mixed
     {
-        return $this->values;
+        self::init();
+        return self::$_values;
+    }
+
+    /**
+     * 로그기록용 전체 데이터를 가져온다.
+     *
+     * @return string $log
+     */
+    public static function log(): string
+    {
+        self::init();
+        if (self::$_values === null) {
+            return Header::type();
+        } else {
+            Format::toJson(self::$_input);
+        }
     }
 
     /**
@@ -45,9 +69,10 @@ class Input
      *
      * @return mixed $body
      */
-    public function body(): mixed
+    public static function body(): mixed
     {
-        return $this->input;
+        self::init();
+        return self::$_input;
     }
 
     /**
@@ -58,9 +83,10 @@ class Input
      * @param ?string $message 에러메시지 (NULL 인 경우 기본 메시지)
      * @return mixed $value
      */
-    public function get(string $key, array &$errors = null, ?string $message = null): mixed
+    public static function get(string $key, array &$errors = null, ?string $message = null): mixed
     {
-        $value = isset($this->values?->$key) == true ? $this->values->$key : null;
+        self::init();
+        $value = isset(self::$_values?->$key) == true ? self::$_values->$key : null;
         if ($value === null && $errors !== null) {
             $errors[$key] = $message ?? Language::getErrorText('REQUIRED');
             if (strlen($errors[$key]) == 0) {
@@ -76,13 +102,13 @@ class Input
      * @param string $string
      * @return string $string
      */
-    private function normalizer(mixed $data): mixed
+    private static function normalizer(mixed $data): mixed
     {
         if (is_string($data) == true) {
             return Format::normalizer($data);
         } elseif (is_iterable($data) == true) {
             foreach ($data as &$item) {
-                $item = $this->normalizer($item);
+                $item = self::normalizer($item);
             }
 
             return $data;
