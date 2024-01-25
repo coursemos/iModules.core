@@ -52,15 +52,15 @@ class Input
     /**
      * 로그기록용 전체 데이터를 가져온다.
      *
-     * @return string $log
+     * @return ?string $log
      */
-    public static function log(): string
+    public static function log(): ?string
     {
         self::init();
         if (self::$_values === null) {
-            return Header::type();
+            return in_array(Request::method(), ['GET', 'DELETE']) == true ? null : Header::type();
         } else {
-            Format::toJson(self::$_input);
+            return Format::toJson(self::$_input);
         }
     }
 
