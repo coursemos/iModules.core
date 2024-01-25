@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 30.
+ * @modified 2024. 1. 26.
  */
 class Modules
 {
@@ -427,19 +427,13 @@ class Modules
         $route->setLanguage($language);
         $method = strtolower(Request::method());
 
-        if ($method == 'post') {
-            $input = new Input(file_get_contents('php://input'), $_SERVER['CONTENT_TYPE']);
-        } else {
-            $input = new Input(null);
-        }
-
         $paths = explode('/', $path);
         $process = array_shift($paths);
         $path = implode('/', $paths);
 
         if (self::isInstalled($name) == true) {
             $mModule = self::get($name);
-            $results = call_user_func_array([$mModule, 'doProcess'], [$method, $process, $path, $input]);
+            $results = call_user_func_array([$mModule, 'doProcess'], [$method, $process, $path]);
             if (isset($results->success) == false) {
                 ErrorHandler::print(self::error('NOT_FOUND_MODULE_PROCESS', $name));
             }
