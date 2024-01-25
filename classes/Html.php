@@ -378,8 +378,8 @@ class Html
         });
         $header .= self::tag(...array_keys(self::$_heads));
 
-        if (isset(self::$_attributes['data-base']) == false) {
-            self::$_attributes['data-base'] = Configs::dir();
+        if (isset(self::$_attributes['data-dir']) == false) {
+            self::$_attributes['data-dir'] = Configs::dir();
         }
 
         if (isset(self::$_attributes['data-rewrite']) == false) {
