@@ -6,7 +6,7 @@
  * @file /scripts/Module.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2024. 1. 26.
  */
 class Module extends Component {
     /**
