@@ -7,7 +7,7 @@
  * @file /classes/Site.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2024. 1. 26.
  */
 class Site
 {
@@ -308,23 +308,27 @@ class Site
         $contexts = Contexts::all($this);
         if (isset($contexts['/']) == false) {
             iModules::db()
-                ->insert(iModules::table('contexts'), [
-                    'host' => $this->_host,
-                    'language' => $this->_language,
-                    'path' => '/',
-                    'title' => 'INDEX',
-                    'type' => 'EMPTY',
-                    'target' => '',
-                    'context' => '',
-                    'context_configs' => '{}',
-                    'layout' => 'index',
-                    'header' => null,
-                    'footer' => null,
-                    'permission' => 'true',
-                    'is_sitemap' => 'FALSE',
-                    'is_footer_menu' => 'FALSE',
-                    'sort' => 0,
-                ])
+                ->insert(
+                    iModules::table('contexts'),
+                    [
+                        'host' => $this->_host,
+                        'language' => $this->_language,
+                        'path' => '/',
+                        'title' => 'INDEX',
+                        'type' => 'EMPTY',
+                        'target' => '',
+                        'context' => '',
+                        'context_configs' => '{}',
+                        'layout' => 'index',
+                        'header' => null,
+                        'footer' => null,
+                        'permission' => 'true',
+                        'is_sitemap' => 'FALSE',
+                        'is_footer_menu' => 'FALSE',
+                        'sort' => 0,
+                    ],
+                    ['host', 'language']
+                )
                 ->execute();
 
             Cache::remove('contexts');
