@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 1. 26.
  */
 class Html
 {
@@ -210,6 +210,10 @@ class Html
             }
         } else {
             $priority = min(max(-1, $priority), 10);
+            if (strpos($path, '/caches') == false) {
+                $path = Configs::dir() . $path;
+            }
+
             if ($priority == -1 && isset(self::$_scripts[$path]) == true) {
                 unset(self::$_scripts[$path]);
             } else {
@@ -242,6 +246,10 @@ class Html
                 if ($path == null) {
                     return;
                 }
+            }
+
+            if (strpos($path, '/caches') == false) {
+                $path = Configs::dir() . $path;
             }
 
             if ($priority == -1 && isset(self::$_styles[$path]) == true) {
