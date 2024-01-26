@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 1. 26.
  */
 class Theme
 {
@@ -30,6 +30,11 @@ class Theme
      * @var string $_name 테마명 (테마 폴더명)
      */
     private string $_name;
+
+    /**
+     * @var string $_pathname 단축경로를 포함한 테마명
+     */
+    private string $_pathname;
 
     /**
      * @var Package $_name 테마 패키지 정보 (package.json)
