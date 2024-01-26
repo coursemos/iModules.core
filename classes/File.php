@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 9. 11.
+ * @modified 2024. 1. 26.
  */
 class File
 {
@@ -147,7 +147,7 @@ class File
         foreach ($paths as $name) {
             $current .= '/' . $name;
             if (is_dir($current) == false) {
-                if (mkdir($current) == false) {
+                if (@mkdir($current) == false) {
                     return false;
                 }
             }
