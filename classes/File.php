@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 1. 27.
  */
 class File
 {
@@ -138,19 +138,31 @@ class File
      * 디렉토리를 생성한다.
      *
      * @param string $path 생성할 경로
+     * @param int $permission 경로
      * @return bool $success
      */
-    public static function createDirectory($path): bool
+    public static function createDirectory(string $path, int $permission = 0707): bool
     {
         $paths = explode('/', $path);
+        if (count($paths) == 1) {
+            return false;
+        }
+
         $current = '';
+        $parent = null;
         foreach ($paths as $name) {
             $current .= '/' . $name;
             if (is_dir($current) == false) {
-                if (@mkdir($current) == false) {
+                if (
+                    $parent === null ||
+                    is_writable($parent) === false ||
+                    mkdir($current) === false ||
+                    chmod($current, $permission) === false
+                ) {
                     return false;
                 }
             }
+            $parent = $current;
         }
 
         return true;
