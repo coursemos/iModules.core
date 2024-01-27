@@ -7,7 +7,7 @@
  * @file /install/process/index.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 24.
+ * @modified 2024. 1. 28.
  */
 define('__IM__', true);
 
@@ -170,11 +170,15 @@ if ($action == 'install') {
                 $installable->success == false ||
                 version_compare($installable->exists, $results->requirement, '<') == true
             ) {
-                Configs::exit($results);
+                $results->status = 'upload';
+            } else {
+                $success = Modules::install($name, null, false);
+                $results->success = $success === true;
+                if ($success !== true) {
+                    $results->status = 'fail';
+                    $results->message = $success;
+                }
             }
-
-            $success = Modules::install($name, null, false);
-            $results->success = $success;
         }
 
         Configs::exit($results);

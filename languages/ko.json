@@ -55,7 +55,8 @@
         "REQUIRED": "필수항목이 누락되었습니다.",
         "DUPLICATED": "데이터가 중복됩니다.",
         "REQUIRED_LOGIN": "회원로그인이 필요합니다.",
-        "FORBIDDEN": "권한이 없습니다."
+        "FORBIDDEN": "권한이 없습니다.",
+        "CREATE_DIRECTORY_FAILED": "${name} 디렉토리를 생성하는데 실패하였습니다.<br>상위폴더의 퍼미션이 707 이상인지 확인하여 주십시오."
     },
     "buttons": {
         "ok": "확인",
