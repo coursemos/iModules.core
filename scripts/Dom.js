@@ -93,10 +93,14 @@ class Dom {
      * @return {any} value - 값
      */
     getData(key) {
-        const camelKey = key.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
-        return ((this.dataValues[key] === undefined
-            ? this.element.dataset[camelKey] ?? this.element.dataset[camelKey]
-            : this.dataValues[key]) ?? null);
+        if (this.dataValues[key] === undefined) {
+            return (this.element?.dataset[key] ??
+                this.element?.dataset[key.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_m, chr) => chr.toUpperCase())] ??
+                null);
+        }
+        else {
+            return this.dataValues[key] ?? null;
+        }
     }
     /**
      * HTML 엘리먼트의 부모요소를 가져온다.
