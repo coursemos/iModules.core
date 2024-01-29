@@ -168,7 +168,7 @@
                 },
                 "image": {
                     "type": "char",
-                    "length": 26,
+                    "length": 36,
                     "is_null": true,
                     "comment": "대표이미지"
                 },
