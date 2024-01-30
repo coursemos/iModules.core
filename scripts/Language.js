@@ -25,7 +25,6 @@ class Language {
         if (Language.promises.has(url) === true) {
             return Language.promises.get(url);
         }
-        console.log(url);
         Language.promises.set(url, fetch(url, {
             method: 'GET',
             headers: {

@@ -35,8 +35,6 @@ class Language {
             return Language.promises.get(url);
         }
 
-        console.log(url);
-
         Language.promises.set(
             url,
             fetch(url, {
