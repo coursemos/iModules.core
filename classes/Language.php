@@ -7,42 +7,57 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2024. 1. 30.
  */
 class Language
 {
     /**
-     * @var object[][] $_texts 언어팩이 저장될 객체
+     * @var ?object $_texts 언어팩이 저장될 객체
      */
-    private static array $_texts = [];
+    private static ?object $_texts = null;
+
+    /**
+     * @var ?object $_customize 커스덤마이즈 언어팩이 저장될 객체
+     */
+    private static ?object $_customize;
+
+    /**
+     * 언어팩을 초기화한다.
+     *
+     * @param object $customize 커스터마이즈 언어팩
+     */
+    public static function init(?object $customize): void
+    {
+        if (isset(self::$_customize) == false) {
+            self::$_customize = $customize;
+            Router::add('/{type}/{name}/language/{language}.json', '#', 'blob', ['Language', 'customize']);
+        }
+    }
 
     /**
      * 언어팩을 불러온다.
      *
      * @param string $path 언어팩을 탐색할 경로
-     * @param array $codes 언어팩을 탐색할 언어코드
+     * @param string $code 언어팩을 탐색할 언어코드
+     * @return ?object $texts 언어팩
      */
-    public static function load(string $path, string $code): array
+    public static function load(string $path, string $code): ?object
     {
-        if (isset(self::$_texts[$path]) == true && isset(self::$_texts[$path][$code]) == true) {
-            return self::$_texts[$path][$code];
+        if ((self::$_texts?->{$path}?->{$code} ?? null) === null) {
+            self::$_texts ??= new stdClass();
+            self::$_texts->{$path} ??= new stdClass();
+            if (is_dir(self::getPath($path)) == false) {
+                self::$_texts->{$path}->{$code} = false;
+            }
+
+            if (is_file(self::getPath($path) . '/' . $code . '.json') == false) {
+                self::$_texts->{$path}->{$code} = false;
+            } else {
+                self::$_texts->{$path}->{$code} = json_decode(File::read(self::getPath($path) . '/' . $code . '.json'));
+            }
         }
 
-        if (is_dir(self::getPath($path)) == false) {
-            return [];
-        }
-
-        self::$_texts[$path] ??= [];
-        if (is_file(self::getPath($path) . '/' . $code . '.json') == true) {
-            self::$_texts[$path][$code] = json_decode(
-                File::read(self::getPath($path) . '/' . $code . '.json'),
-                JSON_OBJECT_AS_ARRAY
-            );
-
-            return self::$_texts[$path][$code];
-        }
-
-        return [];
+        return self::$_texts->{$path}->{$code} === false ? null : self::$_texts->{$path}->{$code};
     }
 
     /**
@@ -89,14 +104,14 @@ class Language
      * @param ?array $placeHolder 치환자
      * @param ?array $paths 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
      * @param ?array $codes 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @return array|string|null $message 치환된 메시지
+     * @return string|object $message 치환된 메시지
      */
     public static function getText(
         string $text,
         ?array $placeHolder = null,
         ?array $paths = null,
         ?array $codes = null
-    ): string|array {
+    ): string|object {
         $paths ??= ['/'];
         $codes ??= array_unique([Router::has()?->getLanguage() ?? Request::languages(true), ...Request::languages()]);
         $keys = explode('.', $text);
@@ -104,12 +119,16 @@ class Language
         foreach ($paths as $path) {
             foreach ($codes as $code) {
                 $string = self::load($path, $code);
+                $customize = self::$_customize?->{$path}?->{$code} ?? null;
                 foreach ($keys as $key) {
-                    if (isset($string[$key]) == false) {
-                        $string = null;
-                        break;
-                    }
-                    $string = $string[$key];
+                    $customize = $customize?->{$key} ?? null;
+                    $string = $string?->{$key} ?? null;
+                }
+
+                if ($customize !== null) {
+                    return is_string($customize) == true
+                        ? self::replacePlaceHolder($customize, $placeHolder)
+                        : $customize;
                 }
 
                 if ($string !== null) {
@@ -146,5 +165,21 @@ class Language
         } else {
             return $error;
         }
+    }
+
+    /**
+     * 커스터마이즈된 언어팩을 자바스크립트에서 불러오기 위한 라우터를 설정한다.
+     *
+     * @param \Route $route 라우트객체
+     * @param string $type 컴포넌트타입
+     * @param string $name 컴포넌트명
+     * @param string $code 언어코드
+     */
+    public static function customize(\Route $route, string $type, string $name, string $code): void
+    {
+        Header::type('json');
+
+        $component = '/' . $type . 's/' . $name;
+        exit(Format::toJson(self::$_customize->{$component}?->{$code} ?? new stdClass()));
     }
 }

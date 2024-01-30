@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 9. 13.
+ * @modified 2024. 1. 30.
  */
 class Language {
     static observer;
@@ -25,6 +25,7 @@ class Language {
         if (Language.promises.has(url) === true) {
             return Language.promises.get(url);
         }
+        console.log(url);
         Language.promises.set(url, fetch(url, {
             method: 'GET',
             headers: {
@@ -78,7 +79,7 @@ class Language {
      * @return string $path 루트폴더를 포함한 언어팩 탐색 경로
      */
     static getPath(path) {
-        return Language.getBase() + (path == '/' ? '' : path) + '/languages';
+        return Language.getBase() + (path == '/' ? '' : path);
     }
     /**
      * 문자열 템플릿에서 치환자를 실제 데이터로 변환한다.
@@ -107,7 +108,7 @@ class Language {
      * @return {string|Object} message - 치환된 메시지
      */
     static async getText(text, placeHolder = null, paths = null, codes = null) {
-        paths ??= ['/'];
+        paths ??= ['/languages'];
         codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
         const keys = text.split('.');
         let string = null;

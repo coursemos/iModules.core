@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 8. 2.
+ * @modified 2024. 1. 30.
  */
 class iModules
 {
@@ -56,6 +56,11 @@ class iModules
          * 캐시를 초기화한다.
          */
         Cache::init();
+
+        /**
+         * 언어팩을 초기화한다.
+         */
+        Language::init(self::getLanguageCustomize());
 
         /**
          * 모듈을 초기화한다.
@@ -275,6 +280,39 @@ class iModules
         }
         $this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
         */
+    }
+
+    /**
+     * 커스터마이즈 언어팩을 불러온다.
+     *
+     * @return object $customize
+     */
+    public static function getLanguageCustomize(): object
+    {
+        // @todo 캐시적용
+        $customize = new stdClass();
+        $languages = iModules::db()
+            ->select()
+            ->from(iModules::table('languages'))
+            ->get();
+        foreach ($languages as $language) {
+            $component = '/' . $language->component_type . 's/' . $language->component_name;
+            $customize->{$component} ??= new stdClass();
+            $customize->{$component}->{$language->language} ??= new stdClass();
+            $paths = explode('.', $language->path);
+
+            $current = $customize->{$component}->{$language->language};
+            while ($path = array_shift($paths)) {
+                if (empty($paths) == true) {
+                    $current->{$path} = $language->text;
+                } else {
+                    $current->{$path} ??= new stdClass();
+                    $current = $current->{$path};
+                }
+            }
+        }
+
+        return $customize;
     }
 
     /**

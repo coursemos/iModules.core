@@ -334,12 +334,12 @@
                 "component_type": {
                     "type": "varchar",
                     "length": 10,
-                    "comment": "파일을 첨부한 컴포넌트종류"
+                    "comment": "자동화를 요청한 컴포넌트종류"
                 },
                 "component_name": {
                     "type": "varchar",
                     "length": 50,
-                    "comment": "파일을 첨부한 컴포넌트명"
+                    "comment": "자동화를 요청한 컴포넌트명"
                 },
                 "started_at": {
                     "type": "bigint",
@@ -359,6 +359,40 @@
                 "date,type,hour,component_type,component_name": "primary_key"
             },
             "comment": "아이모듈 자동화 실행기록"
+        },
+        "languages": {
+            "columns": {
+                "component_type": {
+                    "type": "varchar",
+                    "length": 10,
+                    "comment": "원본 언어팩 컴포넌트종류"
+                },
+                "component_name": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "원본 언어팩 컴포넌트명"
+                },
+                "language": {
+                    "type": "char",
+                    "length": 2,
+                    "comment": "언어코드"
+                },
+                "path": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "원본 언어팩 JSON 경로"
+                },
+                "text": {
+                    "type": "varchar",
+                    "length": 255,
+                    "comment": "언어"
+                }
+            },
+            "indexes": {
+                "component_type,component_name,path,language": "primary_key",
+                "component_type,component_name": "index"
+            },
+            "comment": "아이모듈 사용자정의 언어팩"
         }
     }
 }

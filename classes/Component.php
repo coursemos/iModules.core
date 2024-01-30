@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2024. 1. 30.
  */
 abstract class Component
 {
@@ -110,9 +110,9 @@ abstract class Component
      *
      * @param string $text 코드
      * @param ?array $placeHolder 치환자
-     * @return string|array $message 치환된 메시지
+     * @return string|object $message 치환된 메시지
      */
-    public static function getText(string $text, ?array $placeHolder = null): string|array
+    public static function getText(string $text, ?array $placeHolder = null): string|object
     {
         return Language::getText($text, $placeHolder, [self::getBase(), '/']);
     }

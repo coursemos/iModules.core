@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 9. 13.
+ * @modified 2024. 1. 30.
  */
 class Language {
     static observer: MutationObserver;
@@ -34,6 +34,8 @@ class Language {
         if (Language.promises.has(url) === true) {
             return Language.promises.get(url);
         }
+
+        console.log(url);
 
         Language.promises.set(
             url,
@@ -95,7 +97,7 @@ class Language {
      * @return string $path 루트폴더를 포함한 언어팩 탐색 경로
      */
     static getPath(path: string): string {
-        return Language.getBase() + (path == '/' ? '' : path) + '/languages';
+        return Language.getBase() + (path == '/' ? '' : path);
     }
 
     /**
@@ -133,7 +135,7 @@ class Language {
         paths: string[] = null,
         codes: string[] = null
     ): Promise<string | object> {
-        paths ??= ['/'];
+        paths ??= ['/languages'];
         codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
         const keys: string[] = text.split('.');
 
