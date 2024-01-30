@@ -119,7 +119,9 @@ class Language
         foreach ($paths as $path) {
             foreach ($codes as $code) {
                 $string = self::load($path, $code);
-                $customize = self::$_customize?->{$path}?->{$code} ?? null;
+
+                $customize = isset(self::$_customize) == true ? self::$_customize : null;
+                $customize = $customize?->{$path}?->{$code} ?? null;
                 foreach ($keys as $key) {
                     $customize = $customize?->{$key} ?? null;
                     $string = $string?->{$key} ?? null;
