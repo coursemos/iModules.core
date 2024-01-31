@@ -43,11 +43,7 @@ class Component {
      * @return {string|Object} message 치환된 메시지
      */
     async getText(text, placeHolder = null) {
-        const paths = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.getText(text, placeHolder, paths);
     }
     /**
@@ -58,11 +54,7 @@ class Component {
      * @return {string} message 치환된 메시지
      */
     async getErrorText(error, placeHolder = null) {
-        const paths = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.getErrorText(error, placeHolder, paths);
     }
     /**
@@ -74,11 +66,7 @@ class Component {
      * @return {string} message - 치환된 메시지
      */
     printText(text, placeHolder = null) {
-        const paths = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.printText(text, placeHolder, paths);
     }
     /**
@@ -90,11 +78,7 @@ class Component {
      * @return {string} message - 치환된 메시지
      */
     printErrorText(error, placeHolder = null) {
-        const paths = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.printErrorText(error, placeHolder, paths);
     }
     /**

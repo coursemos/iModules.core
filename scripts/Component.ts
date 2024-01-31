@@ -47,11 +47,7 @@ class Component {
      * @return {string|Object} message 치환된 메시지
      */
     async getText(text: string, placeHolder: { [key: string]: string } = null): Promise<string | Object> {
-        const paths: string[] = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths: string[] = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.getText(text, placeHolder, paths);
     }
 
@@ -63,11 +59,7 @@ class Component {
      * @return {string} message 치환된 메시지
      */
     async getErrorText(error: string, placeHolder: { [key: string]: string } = null): Promise<string> {
-        const paths: string[] = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths: string[] = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.getErrorText(error, placeHolder, paths);
     }
 
@@ -80,11 +72,7 @@ class Component {
      * @return {string} message - 치환된 메시지
      */
     printText(text: string, placeHolder: { [key: string]: string } = null): string {
-        const paths: string[] = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths: string[] = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.printText(text, placeHolder, paths);
     }
 
@@ -97,11 +85,7 @@ class Component {
      * @return {string} message - 치환된 메시지
      */
     printErrorText(error: string, placeHolder: { [key: string]: string } = null): string {
-        const paths: string[] = [
-            '/' + this.type + '/' + this.name + '/language',
-            '/' + this.type + 's/' + this.name + '/languages',
-            '/languages',
-        ];
+        const paths: string[] = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.printErrorText(error, placeHolder, paths);
     }
 

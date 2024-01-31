@@ -30,7 +30,7 @@ class Language
     {
         if (isset(self::$_customize) == false) {
             self::$_customize = $customize;
-            Router::add('/{type}/{name}/language/{language}.json', '#', 'blob', ['Language', 'customize']);
+            Router::add('/{type}/{name}/language/{language}.json', '#', 'blob', ['Language', 'doJavascript']);
         }
     }
 
@@ -169,19 +169,63 @@ class Language
         }
     }
 
+    private static function replaceText(?object $texts = null, ?object $customize = null): object
+    {
+        if ($texts === null) {
+            return $customize ?? new stdClass();
+        }
+
+        if ($customize === null) {
+            return $texts;
+        }
+
+        foreach ($customize as $key => $text) {
+            if (($texts?->{$key} ?? null) === null) {
+                $texts->{$key} = $text;
+                continue;
+            }
+
+            if (is_string($texts->$key) == true) {
+                $texts->$key = $text;
+                continue;
+            }
+
+            if (is_object($texts->$key) == true) {
+                $texts->$key = Language::replaceText($texts->$key, $customize->$key);
+            }
+        }
+
+        return $texts;
+    }
+
     /**
-     * 커스터마이즈된 언어팩을 자바스크립트에서 불러오기 위한 라우터를 설정한다.
+     * 언어팩을 자바스크립트에서 불러오기 위한 라우터를 설정한다.
      *
      * @param \Route $route 라우트객체
      * @param string $type 컴포넌트타입
      * @param string $name 컴포넌트명
      * @param string $code 언어코드
      */
-    public static function customize(\Route $route, string $type, string $name, string $code): void
+    public static function doJavascript(\Route $route, string $type, string $name, string $code): void
     {
         Header::type('json');
 
+        $pack = null;
+        if ($type == 'module') {
+            $pack = \Modules::get($name)->getPath() . '/languages/' . $code . '.json';
+        }
+
+        if ($pack !== null && is_file($pack) == true) {
+            $texts = json_decode(file_get_contents($pack));
+        } else {
+            $texts = null;
+        }
+
         $component = '/' . $type . 's/' . $name;
-        exit(Format::toJson(self::$_customize->{$component}?->{$code} ?? new stdClass()));
+        $customize = self::$_customize->{$component}?->{$code} ?? null;
+
+        $texts = Language::replaceText($texts, $customize);
+
+        exit(Format::toJson($texts ?? new \stdClass()));
     }
 }
