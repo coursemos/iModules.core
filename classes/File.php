@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 27.
+ * @modified 2024. 1. 31.
  */
 class File
 {
@@ -113,6 +113,26 @@ class File
     {
         $content = md5_file($path);
         return sha1(filesize($path) . '\0' . $content);
+    }
+
+    /**
+     * 파일을 이동한다.
+     *
+     * @param string $path 파일경로
+     * @param string $to 이동할 경로
+     * @return bool $success
+     */
+    public static function move(string $path, string $to): bool
+    {
+        if (is_file($path) == false) {
+            return true;
+        }
+
+        if (is_writable($path) == true) {
+            return rename($path, $to);
+        }
+
+        return false;
     }
 
     /**
