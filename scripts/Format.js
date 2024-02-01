@@ -79,7 +79,9 @@ class Format {
         format = format.replace(reg, (match) => {
             return replacements[match];
         });
-        return moment(timestamp).locale(locale).format(format);
+        const datetime = moment(timestamp).format();
+        const formatted = moment(timestamp).locale(locale).format(format);
+        return '<time datetime="' + datetime + '">' + formatted + '</time>';
     }
     /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.

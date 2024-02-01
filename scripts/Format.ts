@@ -85,7 +85,10 @@ class Format {
             return replacements[match];
         });
 
-        return moment(timestamp).locale(locale).format(format);
+        const datetime = moment(timestamp).format();
+        const formatted = moment(timestamp).locale(locale).format(format);
+
+        return '<time datetime="' + datetime + '">' + formatted + '</time>';
     }
 
     /**
