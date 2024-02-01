@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 8. 2.
+ * @modified 2024. 2. 2.
  */
 class Format {
     /**
@@ -284,7 +284,7 @@ class Format {
     }
 
     /**
-     * 두개의 형식 및 데이터가 동일한지 비교한다.
+     * 두개의 데이터가 동일한지 비교한다.
      *
      * @param {any} left
      * @param {any} right
@@ -357,5 +357,114 @@ class Format {
         }
 
         return left === right;
+    }
+
+    /**
+     * 주어진 데이터가 필터조건에 해당하는지 확인한다.
+     *
+     * @param {Object} data - 필터조건에 일치하는지 확인할 데이터
+     * @param {Object} filters - 필터조건
+     * @param {'OR'|'AND'} filterMode - 필터모드 (OR, AND)
+     * @returns {boolean} matched - 필터조건만족여부
+     */
+    static filter(
+        data: Object,
+        filters: { [field: string]: { value: any; operator: string } },
+        filterMode: 'OR' | 'AND' = 'AND'
+    ): boolean {
+        let matched = true;
+        for (const field in filters) {
+            const filter = filters[field];
+            const value = data[field] ?? null;
+
+            let passed = true;
+            switch (filter.operator) {
+                case '=':
+                    if (value !== filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case '!=':
+                    if (value === filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case '>=':
+                    if (value < filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case '>':
+                    if (value <= filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case '<=':
+                    if (value > filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case '<':
+                    if (value >= filter.value) {
+                        passed = false;
+                    }
+                    break;
+
+                case 'in':
+                    if (
+                        Array.isArray(filter.value) == false ||
+                        Array.isArray(value) == true ||
+                        filter.value.includes(value) == false
+                    ) {
+                        passed = false;
+                    }
+                    break;
+
+                case 'inset':
+                    if (
+                        Array.isArray(value) == false ||
+                        Array.isArray(filter.value) == true ||
+                        value.includes(filter.value) == false
+                    ) {
+                        passed = false;
+                    }
+                    break;
+
+                case 'like':
+                    if (value === null || value.search(filter.value) == -1) {
+                        passed = false;
+                    }
+                    break;
+
+                case 'likecode':
+                    const keycode = Format.keycode(filter.value);
+                    const valuecode = value === null ? null : Format.keycode(value);
+
+                    if (valuecode === null || valuecode.search(keycode) == -1) {
+                        passed = false;
+                    }
+                    break;
+
+                default:
+                    passed = false;
+            }
+
+            if (filterMode == 'AND') {
+                matched = matched && passed;
+            } else {
+                matched = passed;
+            }
+
+            if ((filterMode == 'AND' && matched == false) || (filterMode == 'OR' && matched == true)) {
+                break;
+            }
+        }
+
+        return matched;
     }
 }
