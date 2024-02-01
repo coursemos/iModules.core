@@ -22,6 +22,66 @@ class Format {
         return number.toLocaleString(locale ?? iModules.getLanguage());
     }
     /**
+     * 날짜 포맷을 변경한다.
+     *
+     * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
+     * @param {number} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
+     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     * @return {string} formatted
+     */
+    static date(format, timestamp = null, locale = null) {
+        timestamp ??= moment().unix();
+        timestamp = timestamp * 1000;
+        locale ??= iModules.getLanguage();
+        /**
+         * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
+         */
+        const replacements = {
+            'd': 'DD',
+            'D': 'ddd',
+            'j': 'D',
+            'l': 'dddd',
+            'N': 'E',
+            'S': 'o',
+            'w': 'e',
+            'z': 'DDD',
+            'W': 'W',
+            'F': 'MMMM',
+            'm': 'MM',
+            'M': 'MMM',
+            'n': 'M',
+            't': '',
+            'L': '',
+            'o': 'YYYY',
+            'Y': 'YYYY',
+            'y': 'YY',
+            'a': 'a',
+            'A': 'A',
+            'B': '',
+            'g': 'h',
+            'G': 'H',
+            'h': 'hh',
+            'H': 'HH',
+            'i': 'mm',
+            's': 'ss',
+            'u': 'SSS',
+            'e': 'zz',
+            'I': '',
+            'O': '',
+            'P': '',
+            'T': '',
+            'Z': '',
+            'c': '',
+            'r': '',
+            'U': 'X',
+        };
+        const reg = new RegExp(Object.keys(replacements).join('|'), 'g');
+        format = format.replace(reg, (match) => {
+            return replacements[match];
+        });
+        return moment(timestamp).locale(locale).format(format);
+    }
+    /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.
      *
      * @param {(number|string)} size - 파일크기

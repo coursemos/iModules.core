@@ -24,6 +24,71 @@ class Format {
     }
 
     /**
+     * 날짜 포맷을 변경한다.
+     *
+     * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
+     * @param {number} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
+     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     * @return {string} formatted
+     */
+    static date(format: string, timestamp: number = null, locale: string = null): string {
+        timestamp ??= moment().unix();
+        timestamp = timestamp * 1000;
+
+        locale ??= iModules.getLanguage();
+
+        /**
+         * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
+         */
+        const replacements = {
+            'd': 'DD',
+            'D': 'ddd',
+            'j': 'D',
+            'l': 'dddd',
+            'N': 'E',
+            'S': 'o',
+            'w': 'e',
+            'z': 'DDD',
+            'W': 'W',
+            'F': 'MMMM',
+            'm': 'MM',
+            'M': 'MMM',
+            'n': 'M',
+            't': '', // no equivalent
+            'L': '', // no equivalent
+            'o': 'YYYY',
+            'Y': 'YYYY',
+            'y': 'YY',
+            'a': 'a',
+            'A': 'A',
+            'B': '', // no equivalent
+            'g': 'h',
+            'G': 'H',
+            'h': 'hh',
+            'H': 'HH',
+            'i': 'mm',
+            's': 'ss',
+            'u': 'SSS',
+            'e': 'zz', // deprecated since version 1.6.0 of moment.js
+            'I': '', // no equivalent
+            'O': '', // no equivalent
+            'P': '', // no equivalent
+            'T': '', // no equivalent
+            'Z': '', // no equivalent
+            'c': '', // no equivalent
+            'r': '', // no equivalent
+            'U': 'X',
+        };
+
+        const reg = new RegExp(Object.keys(replacements).join('|'), 'g');
+        format = format.replace(reg, (match) => {
+            return replacements[match];
+        });
+
+        return moment(timestamp).locale(locale).format(format);
+    }
+
+    /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.
      *
      * @param {(number|string)} size - 파일크기

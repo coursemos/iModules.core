@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 7. 4.
+ * @modified 2024. 2. 2.
  */
 class Format
 {
@@ -179,12 +179,14 @@ class Format
      * UNIXTIMESTAMP 를 주어진 포맷에 따라 변환한다.
      *
      * @param string $format 변환할 포맷 (@see http://php.net/manual/en/function.date.php)
-     * @param int $time UNIXTIMESTAMP (없을 경우 현재시각)
+     * @param ?int $time UNIXTIMESTAMP (없을 경우 현재시각)
      * @param bool $is_moment momentjs 용 태그를 생성할 지 여부 (@see http://momentjs.com)
      * @return string $time 변환된 시각
      */
-    public static function date(int $time, string $format, bool $is_moment = true): string
+    public static function date(string $format, int $time = null, bool $is_moment = true): string
     {
+        $time ??= time();
+
         /**
          * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
          */
