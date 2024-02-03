@@ -7,7 +7,7 @@
  * @file /classes/Progress.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2024. 2. 3.
  */
 class Progress
 {
@@ -26,6 +26,8 @@ class Progress
         $this->_total = $total;
         $this->_progress = 0;
 
+        session_write_close();
+
         if (headers_sent() == false) {
             set_time_limit(0);
             @ini_set('memory_limit', -1);
@@ -40,7 +42,8 @@ class Progress
 
             header('Content-Encoding: none');
             header('X-Accel-Buffering: no');
-            header('Content-Length: ' . $this->_buffer * 100);
+            header('Content-Type: text');
+            header('Content-Length: ' . $this->_buffer * 200);
             header('X-Progress-Total:' . $this->_total);
         }
     }
@@ -65,7 +68,11 @@ class Progress
      */
     public function progress(int $current, array|object $datas = null): void
     {
-        $progress = round(($current / $this->_total) * 100);
+        if ($this->_total == 0) {
+            $progress = 199;
+        } else {
+            $progress = min(199, round(($current / $this->_total) * 200));
+        }
         if ($progress != $this->_progress) {
             $output = new stdClass();
             $output->current = $current;
@@ -75,10 +82,6 @@ class Progress
             $this->_latest = $output;
 
             for ($i = $this->_progress; $i < $progress; $i++) {
-                if ($i >= 99) {
-                    $this->end();
-                    return;
-                }
                 echo $this->pad($this->_latest);
                 $this->_progress = $i + 1;
                 flush();
@@ -86,19 +89,36 @@ class Progress
         }
     }
 
-    public function end(): void
+    /**
+     * 프로그래스를 종료한다.
+     *
+     * @param bool $is_exit PHP 실행도 함께 중단할 지 여부
+     */
+    public function end(bool $is_exit = false): void
     {
-        for ($i = $this->_progress; $i < 99; $i++) {
-            $this->_latest->end = true;
+        if (isset($this->_latest) == false) {
+            $output = new stdClass();
+            $output->current = 0;
+            $output->total = $this->_total;
+            $output->datas = null;
+            $this->_latest = $output;
+        }
+
+        for ($i = $this->_progress; $i < 199; $i++) {
             echo $this->pad($this->_latest);
-            $this->_progress = $i + 1;
             flush();
         }
 
+        $this->_progress = 200;
+
         $end = $this->_latest;
         $end->current = $this->_total;
-        $end->last = true;
+        $end->end = true;
         echo $this->pad($end, true);
         flush();
+
+        if ($is_exit == true) {
+            exit();
+        }
     }
 }

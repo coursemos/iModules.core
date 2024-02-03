@@ -6,7 +6,7 @@
  * @file /scripts/Progress.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 1. 26.
+ * @modified 2024. 2. 3.
  */
 class Progress {
     bytesTotal: number;
@@ -15,6 +15,17 @@ class Progress {
     current: number;
     latests: object;
     chunks: Uint8Array[];
+    controller: AbortController;
+    signal: AbortSignal;
+
+    static init(): Progress {
+        return new Progress();
+    }
+
+    constructor() {
+        this.controller = new AbortController();
+        this.signal = this.controller.signal;
+    }
 
     /**
      * 멀티바이트 문자열의 정확한 크기(Bytes) 계산한다.
@@ -36,9 +47,9 @@ class Progress {
     /**
      * 프로그래스바를 위한 데이터를 가져온다.
      *
-     * @return {Object} progress
+     * @return {Progress.Results} progress
      */
-    getProgressData(): { current: number; total: number; datas: object; progress: number } {
+    getProgressData(): Progress.Results {
         let chunksAll = new Uint8Array(this.bytesCurrent);
         let position = 0;
         for (const chunk of this.chunks) {
@@ -61,45 +72,144 @@ class Progress {
         if (data == null) {
             data = { current: 0, total: this.total, datas: null };
         }
-        data.progress = this.bytesCurrent / this.bytesTotal;
+
+        data.success = true;
+        data.percentage = (this.bytesCurrent / this.bytesTotal) * 100;
+        data.end ??= false;
 
         return data;
     }
 
     /**
-     * GET 요청을 프로그래스바 요청과 함께 가져온다.
+     * 실제 프로그래스바 요청을 처리한다.
      *
-     * @param {string} url - 요청 URL
-     * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+     * @param {method} method - 요청방식
+     * @param {string} url - 요청주소
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {Ajax.Data|FormData} data - 전송할 데이터
+     * @param {Function} callback - 프로그래스 콜백함수
      */
-    async get(
+    async #fetch(
+        method: string = 'GET',
         url: string,
-        callback: (progress: { current: number; total: number; datas: object; progress: number }) => void
+        params: Ajax.Params = {},
+        data: Ajax.Data | FormData = {},
+        callback: (results: Progress.Results) => void
     ): Promise<void> {
-        const response = await fetch(url);
-        const reader = response.body.getReader();
-        this.chunks = [];
-        this.bytesCurrent = 0;
-        this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '0', 10);
-        this.total = parseInt(response.headers.get('X-Progress-Total') ?? '0', 10);
+        const requestUrl = new URL(url, location.origin);
+        for (const name in params) {
+            if (params[name] === null) {
+                requestUrl.searchParams.delete(name);
+            } else {
+                requestUrl.searchParams.append(name, params[name].toString());
+            }
+        }
+        url = requestUrl.toString();
 
-        if (this.bytesTotal == 0 || this.total == 0) {
-            callback({ current: 0, total: 0, datas: null, progress: 0 });
-            return;
+        const headers = {
+            'X-Method': method,
+            'Accept-Language': iModules.getLanguage(),
+            'Accept': 'application/json',
+        };
+
+        let body: string | FormData = null;
+
+        if (method == 'POST' || method == 'PUT') {
+            if (data instanceof FormData) {
+                body = data;
+            } else {
+                headers['Content-Type'] = 'application/json; charset=utf-8';
+                body = JSON.stringify(data);
+            }
         }
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                callback(this.getProgressData());
-                break;
+        try {
+            const response: Response = (await fetch(url, {
+                signal: this.signal,
+                method: method,
+                headers: headers,
+                body: body,
+                cache: 'no-store',
+                redirect: 'follow',
+            }).catch(async (e) => {
+                callback({ success: false, current: 0, total: 0, datas: e, percentage: 0, end: true });
+            })) as Response;
+
+            const reader = response.body.getReader();
+            this.chunks = [];
+            this.bytesCurrent = 0;
+            this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '0', 10);
+            this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
+
+            if (this.bytesTotal == 0 || this.total == -1) {
+                callback({ success: false, current: 0, total: 0, datas: null, percentage: 0, end: true });
+                return;
             }
 
-            this.chunks.push(value);
-            this.bytesCurrent += value.length;
+            callback({ success: true, current: 0, total: this.total, datas: null, percentage: 0, end: false });
 
-            callback(this.getProgressData());
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    break;
+                }
+
+                this.chunks.push(value);
+                this.bytesCurrent += value.length;
+
+                callback(this.getProgressData());
+            }
+        } catch (e) {
+            callback({ success: false, current: 0, total: 0, datas: e, percentage: 0, end: true });
+            return;
         }
+    }
+
+    /**
+     * 프로그래스바 요청을 취소한다.
+     */
+    abort(): void {
+        this.controller.abort();
+    }
+
+    /**
+     * GET 요청을 프로그래스바 요청과 함께 가져온다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+     */
+    async get(url: string, params: Ajax.Params = {}, callback: (results: Progress.Results) => void): Promise<void> {
+        return await this.#fetch('GET', url, params, null, callback);
+    }
+
+    /**
+     * POST 요청을 프로그래스바 요청과 함께 가져온다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Data|FormData} data - 전송할 데이터
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+     */
+    async post(
+        url: string,
+        data: Ajax.Data | FormData = {},
+        params: Ajax.Params = {},
+        callback: (results: Progress.Results) => void
+    ): Promise<void> {
+        return await this.#fetch('POST', url, params, data, callback);
+    }
+
+    /**
+     * DELETE 요청을 프로그래스바 요청과 함께 가져온다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+     */
+    async delete(url: string, params: Ajax.Params = {}, callback: (results: Progress.Results) => void): Promise<void> {
+        return await this.#fetch('DELETE', url, params, null, callback);
     }
 
     /**
@@ -125,5 +235,16 @@ class Progress {
         }
 
         return false;
+    }
+}
+
+namespace Progress {
+    export interface Results {
+        success: boolean;
+        current: number;
+        total: number;
+        datas: object;
+        percentage: number;
+        end: boolean;
     }
 }
