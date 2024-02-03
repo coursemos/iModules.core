@@ -408,7 +408,7 @@ namespace FormElement {
         /**
          * INPUT DOM 객체를 가져온다.
          *
-         * @returns {Dom} $input
+         * @return {Dom} $input
          */
         $getInput(): Dom {
             return Html.get('input', this.$dom);
@@ -443,7 +443,7 @@ namespace FormElement {
         /**
          * INPUT DOM 객체를 가져온다.
          *
-         * @returns {Dom} $input
+         * @return {Dom} $input
          */
         $getInput(): Dom {
             return Html.get('input', this.$dom);

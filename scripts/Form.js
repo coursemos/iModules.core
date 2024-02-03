@@ -364,7 +364,7 @@ var FormElement;
         /**
          * INPUT DOM 객체를 가져온다.
          *
-         * @returns {Dom} $input
+         * @return {Dom} $input
          */
         $getInput() {
             return Html.get('input', this.$dom);
@@ -396,7 +396,7 @@ var FormElement;
         /**
          * INPUT DOM 객체를 가져온다.
          *
-         * @returns {Dom} $input
+         * @return {Dom} $input
          */
         $getInput() {
             return Html.get('input', this.$dom);

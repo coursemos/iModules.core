@@ -47,7 +47,7 @@ class Html {
      * HTML 코드를 Dom 객체로 변환한다.
      *
      * @param {string} html
-     * @returns {Dom} dom - 변환된 Dom 객체
+     * @return {Dom} dom - 변환된 Dom 객체
      */
     static html(html) {
         const element = document.createElement(null);

@@ -530,7 +530,7 @@ class Dom {
     /**
      * Dom 객체를 HTML 코드로 변환한다.
      *
-     * @returns {string} html
+     * @return {string} html
      */
     toHtml(is_inner_html = false) {
         if (is_inner_html === true) {
