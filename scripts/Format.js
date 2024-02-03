@@ -19,7 +19,7 @@ class Format {
         if (typeof number == 'string') {
             number = parseFloat(number);
         }
-        return number.toLocaleString(locale ?? iModules.getLanguage());
+        return number?.toLocaleString(locale ?? iModules.getLanguage()) ?? null;
     }
     /**
      * 날짜 포맷을 변경한다.
@@ -316,7 +316,7 @@ class Format {
      *
      * @param {any} left
      * @param {any} right
-     * @returns {boolean} is_equal - 동일한지 여부
+     * @return {boolean} is_equal - 동일한지 여부
      */
     static isEqual(left, right) {
         if (left === null || right === null) {
@@ -380,7 +380,7 @@ class Format {
      * @param {Object} data - 필터조건에 일치하는지 확인할 데이터
      * @param {Object} filters - 필터조건
      * @param {'OR'|'AND'} filterMode - 필터모드 (OR, AND)
-     * @returns {boolean} matched - 필터조건만족여부
+     * @return {boolean} matched - 필터조건만족여부
      */
     static filter(data, filters, filterMode = 'AND') {
         let matched = true;
