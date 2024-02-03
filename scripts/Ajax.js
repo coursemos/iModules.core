@@ -74,7 +74,7 @@ class Ajax {
                 requestUrl.searchParams.delete(name);
             }
             else {
-                requestUrl.searchParams.append(name, params[name]);
+                requestUrl.searchParams.append(name, params[name].toString());
             }
         }
         url = requestUrl.toString();
