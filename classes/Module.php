@@ -342,7 +342,7 @@ abstract class Module extends Component
         } else {
             ErrorHandler::print(
                 $this->error(
-                    'NOT_FOUND_MODULE_PROCESS_FILE',
+                    'NOT_FOUND_PROCESS_FILE',
                     $this->getPath() . '/processes/' . $process . '.' . $method . '.php'
                 )
             );

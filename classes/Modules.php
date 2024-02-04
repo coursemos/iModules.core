@@ -467,12 +467,6 @@ class Modules
                 $error->suffix = Request::url();
                 return $error;
 
-            case 'NOT_FOUND_MODULE_PROCESS_FILE':
-                $error = ErrorHandler::data($code);
-                $error->message = ErrorHandler::getText($code);
-                $error->suffix = $message;
-                return $error;
-
             default:
                 return ErrorHandler::error($code, $message, $details);
         }

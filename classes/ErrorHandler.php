@@ -348,6 +348,12 @@ class ErrorHandler
                 $error->suffix = Request::url(true);
                 break;
 
+            case 'NOT_FOUND_PROCESS_FILE':
+                Header::code(404);
+                $error->message = ErrorHandler::getText($code);
+                $error->suffix = $message;
+                break;
+
             case 'NOT_FOUND_CONTEXT':
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
