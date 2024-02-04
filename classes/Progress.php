@@ -65,9 +65,9 @@ class Progress
      * 프로그래스바를 위해 데이터를 출력한다.
      *
      * @param int $current 현재갯수
-     * @param array|object $datas 전달할 데이터
+     * @param array|object $data 전달할 데이터
      */
-    public function progress(int $current, array|object $datas = null): void
+    public function progress(int $current, array|object $data = null): void
     {
         if ($this->_total == 0) {
             $progress = 200;
@@ -78,7 +78,7 @@ class Progress
             $output = new stdClass();
             $output->current = $current;
             $output->total = $this->_total;
-            $output->datas = $datas;
+            $output->data = $data;
 
             $this->_latest = $output;
 
@@ -101,7 +101,7 @@ class Progress
             $output = new stdClass();
             $output->current = 0;
             $output->total = $this->_total;
-            $output->datas = null;
+            $output->data = null;
             $this->_latest = $output;
         }
 

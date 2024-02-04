@@ -200,7 +200,7 @@ class Ajax {
                 message: results?.message ?? null,
                 current: results?.current ?? 0,
                 total: results?.total ?? 0,
-                datas: results?.datas ?? null,
+                data: results?.data ?? null,
                 percentage: results?.percentage ?? 0,
                 end: results?.end ?? false,
             };
