@@ -9,6 +9,7 @@
  * @modified 2023. 6. 10.
  */
 class Ajax {
+    static errorHandler = null;
     static fetchs = new Map();
     /**
      * Fetch 요청의 UUID 값을 생성한다.
@@ -101,20 +102,17 @@ class Ajax {
                 body: body,
                 cache: 'no-store',
                 redirect: 'follow',
-            }).catch(async () => {
-                Ajax.fetchs.delete(uuid);
-                if (retry <= 3) {
-                    await iModules.sleep(500);
-                    return Ajax.#call(method, url, params, data, ++retry);
-                }
-                else {
-                    iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('CONNECT_FAILED'));
-                    return { success: false };
-                }
+            }).catch(async (e) => {
+                throw new Error(e);
             }));
             const results = (await response.json());
-            if (results.success == false && results.message !== undefined) {
-                iModules.Modal.show(await Language.getErrorText('TITLE'), results.message);
+            if (results.success == false) {
+                if (typeof Ajax.errorHandler == 'function') {
+                    await Ajax.errorHandler(results);
+                }
+                else {
+                    console.error(results);
+                }
             }
             Ajax.fetchs.delete(uuid);
             return results;
@@ -122,11 +120,13 @@ class Ajax {
         catch (e) {
             Ajax.fetchs.delete(uuid);
             if (retry <= 3) {
+                await iModules.sleep(1000);
                 return Ajax.#call(method, url, params, data, ++retry);
             }
             else {
-                // @todo 에러메시지
-                console.error(e);
+                if (typeof Ajax.errorHandler == 'function') {
+                    await Ajax.errorHandler(e);
+                }
                 return { success: false };
             }
         }
@@ -167,4 +167,206 @@ class Ajax {
     static async delete(url, params = {}, is_retry = true) {
         return Ajax.#call('DELETE', url, params, null, is_retry);
     }
+    static setErrorHandler(handler) {
+        Ajax.errorHandler = handler;
+    }
 }
+(function (Ajax) {
+    class Progress {
+        bytesTotal;
+        bytesCurrent;
+        total;
+        current;
+        latests;
+        chunks;
+        controller;
+        signal;
+        static init() {
+            return new Ajax.Progress();
+        }
+        constructor() {
+            this.controller = new AbortController();
+            this.signal = this.controller.signal;
+        }
+        /**
+         * 멀티바이트 문자열의 정확한 크기(Bytes) 계산한다.
+         *
+         * @param {string} text - 계산할 문자열
+         * @return {number} bytes - 문자열 크기(Bytes)
+         */
+        getByteLength(text) {
+            if (text != undefined && text != '') {
+                let bytes = 0;
+                let char;
+                for (let i = 0; (char = text.charCodeAt(i++)); bytes += char >> 11 ? 3 : char >> 7 ? 2 : 1)
+                    ;
+                return bytes;
+            }
+            else {
+                return 0;
+            }
+        }
+        /**
+         * 프로그래스바를 위한 데이터를 가져온다.
+         *
+         * @return {Ajax.Progress.Results} progress
+         */
+        getProgressData() {
+            let chunksAll = new Uint8Array(this.bytesCurrent);
+            let position = 0;
+            for (const chunk of this.chunks) {
+                chunksAll.set(chunk, position);
+                position += chunk.length;
+            }
+            let result = new TextDecoder('utf-8').decode(chunksAll);
+            const lines = result.split('\n');
+            let data = null;
+            while (lines.length > 0) {
+                let line = lines.pop();
+                try {
+                    data = JSON.parse(line.trim());
+                    if (typeof data == 'object')
+                        break;
+                }
+                catch (e) { }
+            }
+            if (data == null) {
+                data = { current: 0, total: this.total, datas: null };
+            }
+            data.success = true;
+            data.percentage = Math.max(100, (this.bytesCurrent / this.bytesTotal - 10000) * 100);
+            data.end ??= false;
+            return data;
+        }
+        /**
+         * 실제 프로그래스바 요청을 처리한다.
+         *
+         * @param {method} method - 요청방식
+         * @param {string} url - 요청주소
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Ajax.Data|FormData} data - 전송할 데이터
+         * @param {Function} callback - 프로그래스 콜백함수
+         */
+        async #fetch(method = 'GET', url, params = {}, data = {}, callback) {
+            const requestUrl = new URL(url, location.origin);
+            for (const name in params) {
+                if (params[name] === null) {
+                    requestUrl.searchParams.delete(name);
+                }
+                else {
+                    requestUrl.searchParams.append(name, params[name].toString());
+                }
+            }
+            url = requestUrl.toString();
+            const headers = {
+                'X-Method': method,
+                'Accept-Language': iModules.getLanguage(),
+                'Accept': 'application/json',
+            };
+            let body = null;
+            if (method == 'POST' || method == 'PUT') {
+                if (data instanceof FormData) {
+                    body = data;
+                }
+                else {
+                    headers['Content-Type'] = 'application/json; charset=utf-8';
+                    body = JSON.stringify(data);
+                }
+            }
+            try {
+                const response = (await fetch(url, {
+                    signal: this.signal,
+                    method: method,
+                    headers: headers,
+                    body: body,
+                    cache: 'no-store',
+                    redirect: 'follow',
+                }).catch(async (e) => {
+                    throw new Error(e);
+                }));
+                const reader = response.body.getReader();
+                this.chunks = [];
+                this.bytesCurrent = 0;
+                this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '0', 10);
+                this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
+                if (this.bytesTotal == 0 || this.total == -1) {
+                    callback({ success: false, current: 0, total: 0, datas: null, percentage: 0, end: true });
+                    return;
+                }
+                callback({ success: true, current: 0, total: this.total, datas: null, percentage: 0, end: false });
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    this.chunks.push(value);
+                    this.bytesCurrent += value.length;
+                    callback(this.getProgressData());
+                }
+            }
+            catch (e) {
+                callback({ success: false, current: 0, total: 0, datas: e, percentage: 0, end: true });
+                return;
+            }
+        }
+        /**
+         * 프로그래스바 요청을 취소한다.
+         */
+        abort() {
+            this.controller.abort();
+        }
+        /**
+         * GET 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         */
+        async get(url, params = {}, callback) {
+            return await this.#fetch('GET', url, params, null, callback);
+        }
+        /**
+         * POST 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Data|FormData} data - 전송할 데이터
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         */
+        async post(url, data = {}, params = {}, callback) {
+            return await this.#fetch('POST', url, params, data, callback);
+        }
+        /**
+         * DELETE 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         */
+        async delete(url, params = {}, callback) {
+            return await this.#fetch('DELETE', url, params, null, callback);
+        }
+        /**
+         * 프로그래스바 데이터가 정상적으로 종료되었는지 확인한다.
+         *
+         * @return {boolean} success
+         */
+        isSuccess() {
+            if (this.bytesCurrent != this.bytesTotal) {
+                return false;
+            }
+            let chunksAll = new Uint8Array(this.bytesCurrent);
+            let position = 0;
+            for (const chunk of this.chunks) {
+                chunksAll.set(chunk, position);
+                position += chunk.length;
+            }
+            let result = new TextDecoder('utf-8').decode(chunksAll);
+            if (result.split('\n').pop() == '@') {
+                return true;
+            }
+            return false;
+        }
+    }
+    Ajax.Progress = Progress;
+})(Ajax || (Ajax = {}));
