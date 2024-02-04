@@ -495,7 +495,7 @@ class Cache
             exit();
         }
 
-        session_write_close();
+        iModules::session_stop();
 
         switch ($match[1]) {
             case 'js':

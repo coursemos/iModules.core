@@ -157,6 +157,11 @@ class ErrorHandler
                 }
             }
 
+            $json = Format::toJson($json);
+            if (Header::length() !== null) {
+                exit(str_pad($json, Header::length()));
+            }
+
             exit(Format::toJson($json));
         } else {
             $error = self::get($error);

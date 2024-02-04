@@ -234,9 +234,10 @@ namespace Ajax {
     export namespace Progress {
         export interface Results {
             success: boolean;
+            message: string;
             current: number;
             total: number;
-            datas: object;
+            datas: { [key: string]: any };
             percentage: number;
             end: boolean;
         }
@@ -259,6 +260,34 @@ namespace Ajax {
         constructor() {
             this.controller = new AbortController();
             this.signal = this.controller.signal;
+        }
+
+        /**
+         * 프로그래스바 빈 결과객체를 가져온다.
+         *
+         * @param {Object} results - 일부 결과 데이터
+         * @return {Ajax.Progress.Results} - 전체 결과 데이터
+         */
+        getResults(
+            results: {
+                success?: boolean;
+                message?: string;
+                current?: number;
+                total?: number;
+                datas?: { [key: string]: any };
+                percentage?: number;
+                end?: boolean;
+            } = null
+        ): Ajax.Progress.Results {
+            return {
+                success: results?.success ?? false,
+                message: results?.message ?? null,
+                current: results?.current ?? 0,
+                total: results?.total ?? 0,
+                datas: results?.datas ?? null,
+                percentage: results?.percentage ?? 0,
+                end: results?.end ?? false,
+            };
         }
 
         /**
@@ -291,27 +320,27 @@ namespace Ajax {
                 position += chunk.length;
             }
 
-            let result = new TextDecoder('utf-8').decode(chunksAll);
-            const lines = result.split('\n');
+            let response = new TextDecoder('utf-8').decode(chunksAll);
+            const lines = response.split('\n');
 
-            let data = null;
+            let latest = null;
             while (lines.length > 0) {
                 let line = lines.pop();
                 try {
-                    data = JSON.parse(line.trim());
-                    if (typeof data == 'object') break;
+                    latest = JSON.parse(line.trim());
+                    if (typeof latest == 'object') break;
                 } catch (e) {}
             }
 
-            if (data == null) {
-                data = { current: 0, total: this.total, datas: null };
+            if (latest == null) {
+                return this.getResults();
             }
 
-            data.success = true;
-            data.percentage = Math.max(100, (this.bytesCurrent / this.bytesTotal - 10000) * 100);
-            data.end ??= false;
-
-            return data;
+            return this.getResults({
+                ...latest,
+                success: true,
+                percentage: Math.max(100, (this.bytesCurrent / this.bytesTotal - 10000) * 100),
+            });
         }
 
         /**
@@ -376,16 +405,26 @@ namespace Ajax {
                 this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
 
                 if (this.bytesTotal == 0 || this.total == -1) {
-                    callback({ success: false, current: 0, total: 0, datas: null, percentage: 0, end: true });
+                    callback(this.getResults());
                     return;
                 }
 
-                callback({ success: true, current: 0, total: this.total, datas: null, percentage: 0, end: false });
+                callback(this.getResults({ success: true, current: 0, total: this.total }));
 
                 while (true) {
                     const { done, value } = await reader.read();
-
                     if (done) {
+                        const success = this.isSuccess();
+                        if (success !== true) {
+                            callback(
+                                this.getResults({
+                                    success: false,
+                                    message: typeof success == 'boolean' ? null : success?.message,
+                                    end: true,
+                                })
+                            );
+                            return;
+                        }
                         break;
                     }
 
@@ -395,7 +434,7 @@ namespace Ajax {
                     callback(this.getProgressData());
                 }
             } catch (e) {
-                callback({ success: false, current: 0, total: 0, datas: e, percentage: 0, end: true });
+                callback(this.getResults({ end: true }));
                 return;
             }
         }
@@ -457,9 +496,9 @@ namespace Ajax {
         /**
          * 프로그래스바 데이터가 정상적으로 종료되었는지 확인한다.
          *
-         * @return {boolean} success
+         * @return {boolean|object} success
          */
-        isSuccess(): boolean {
+        isSuccess(): boolean | { [key: string]: any } {
             if (this.bytesCurrent != this.bytesTotal) {
                 return false;
             }
@@ -474,9 +513,13 @@ namespace Ajax {
             let result = new TextDecoder('utf-8').decode(chunksAll);
             if (result.split('\n').pop() == '@') {
                 return true;
+            } else {
+                try {
+                    return JSON.parse(result.trim());
+                } catch (e) {
+                    return false;
+                }
             }
-
-            return false;
         }
     }
 }

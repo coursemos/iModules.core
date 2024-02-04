@@ -26,7 +26,7 @@ class Progress
         $this->_total = $total;
         $this->_progress = 0;
 
-        session_write_close();
+        iModules::session_stop();
 
         if (headers_sent() == false) {
             set_time_limit(0);
@@ -40,10 +40,11 @@ class Progress
                 @apache_setenv('no-gzip', 1);
             }
 
+            Header::type('json');
+            Header::length($this->_buffer * 201);
+
             header('Content-Encoding: none');
             header('X-Accel-Buffering: no');
-            header('Content-Type: text');
-            header('Content-Length: ' . $this->_buffer * 201);
             header('X-Progress-Total:' . $this->_total);
         }
     }

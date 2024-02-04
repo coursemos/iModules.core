@@ -12,6 +12,7 @@
 class Header
 {
     private static string $_type = 'html';
+    private static ?int $_length = null;
 
     /**
      * 기본헤더를 초기화한다.
@@ -182,14 +183,14 @@ class Header
                         break;
 
                     case 'jpg':
-                        $mime = 'images/jpeg';
+                        $mime = 'image/jpeg';
                         break;
 
                     case 'webp':
                     case 'gif':
                     case 'png':
                     case 'jpeg':
-                        $mime = 'images/' . $type;
+                        $mime = 'image/' . $type;
                         break;
 
                     default:
@@ -213,9 +214,20 @@ class Header
      * 콘텐츠 크기를 지정한다.
      *
      * @param int $length
+     * @param ?int $length 설정할 콘텐츠 길이 (NULL 인 경우 현재 콘텐츠 길이를 가져온다.)
+     * @return ?int $length
      */
-    public static function length(int $length): void
+    public static function length(?int $length = null): ?int
     {
-        header('Content-Length: ' . $length, true);
+        if ($length === null) {
+            return self::$_length;
+        }
+
+        if (headers_sent() == false) {
+            self::$_length = $length;
+            header('Content-Length: ' . self::$_length, true);
+        }
+
+        return null;
     }
 }

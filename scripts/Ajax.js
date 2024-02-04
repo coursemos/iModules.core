@@ -189,6 +189,23 @@ class Ajax {
             this.signal = this.controller.signal;
         }
         /**
+         * 프로그래스바 빈 결과객체를 가져온다.
+         *
+         * @param {Object} results - 일부 결과 데이터
+         * @return {Ajax.Progress.Results} - 전체 결과 데이터
+         */
+        getResults(results = null) {
+            return {
+                success: results?.success ?? false,
+                message: results?.message ?? null,
+                current: results?.current ?? 0,
+                total: results?.total ?? 0,
+                datas: results?.datas ?? null,
+                percentage: results?.percentage ?? 0,
+                end: results?.end ?? false,
+            };
+        }
+        /**
          * 멀티바이트 문자열의 정확한 크기(Bytes) 계산한다.
          *
          * @param {string} text - 계산할 문자열
@@ -218,25 +235,26 @@ class Ajax {
                 chunksAll.set(chunk, position);
                 position += chunk.length;
             }
-            let result = new TextDecoder('utf-8').decode(chunksAll);
-            const lines = result.split('\n');
-            let data = null;
+            let response = new TextDecoder('utf-8').decode(chunksAll);
+            const lines = response.split('\n');
+            let latest = null;
             while (lines.length > 0) {
                 let line = lines.pop();
                 try {
-                    data = JSON.parse(line.trim());
-                    if (typeof data == 'object')
+                    latest = JSON.parse(line.trim());
+                    if (typeof latest == 'object')
                         break;
                 }
                 catch (e) { }
             }
-            if (data == null) {
-                data = { current: 0, total: this.total, datas: null };
+            if (latest == null) {
+                return this.getResults();
             }
-            data.success = true;
-            data.percentage = Math.max(100, (this.bytesCurrent / this.bytesTotal - 10000) * 100);
-            data.end ??= false;
-            return data;
+            return this.getResults({
+                ...latest,
+                success: true,
+                percentage: Math.max(100, (this.bytesCurrent / this.bytesTotal - 10000) * 100),
+            });
         }
         /**
          * 실제 프로그래스바 요청을 처리한다.
@@ -290,13 +308,22 @@ class Ajax {
                 this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '0', 10);
                 this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
                 if (this.bytesTotal == 0 || this.total == -1) {
-                    callback({ success: false, current: 0, total: 0, datas: null, percentage: 0, end: true });
+                    callback(this.getResults());
                     return;
                 }
-                callback({ success: true, current: 0, total: this.total, datas: null, percentage: 0, end: false });
+                callback(this.getResults({ success: true, current: 0, total: this.total }));
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) {
+                        const success = this.isSuccess();
+                        if (success !== true) {
+                            callback(this.getResults({
+                                success: false,
+                                message: typeof success == 'boolean' ? null : success?.message,
+                                end: true,
+                            }));
+                            return;
+                        }
                         break;
                     }
                     this.chunks.push(value);
@@ -305,7 +332,7 @@ class Ajax {
                 }
             }
             catch (e) {
-                callback({ success: false, current: 0, total: 0, datas: e, percentage: 0, end: true });
+                callback(this.getResults({ end: true }));
                 return;
             }
         }
@@ -349,7 +376,7 @@ class Ajax {
         /**
          * 프로그래스바 데이터가 정상적으로 종료되었는지 확인한다.
          *
-         * @return {boolean} success
+         * @return {boolean|object} success
          */
         isSuccess() {
             if (this.bytesCurrent != this.bytesTotal) {
@@ -365,7 +392,14 @@ class Ajax {
             if (result.split('\n').pop() == '@') {
                 return true;
             }
-            return false;
+            else {
+                try {
+                    return JSON.parse(result.trim());
+                }
+                catch (e) {
+                    return false;
+                }
+            }
         }
     }
     Ajax.Progress = Progress;
