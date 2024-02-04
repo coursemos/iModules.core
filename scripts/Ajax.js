@@ -307,7 +307,7 @@ class Ajax {
                 this.bytesCurrent = 0;
                 this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '-1', 10);
                 this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
-                if (this.bytesTotal >= 0 && this.total > 0) {
+                if (this.bytesTotal >= 0 && this.total >= 0) {
                     callback(this.getResults({ success: true, current: 0, total: this.total }));
                 }
                 while (true) {
@@ -326,7 +326,7 @@ class Ajax {
                     }
                     this.chunks.push(value);
                     this.bytesCurrent += value.length;
-                    if (this.bytesTotal >= 0 && this.total > 0) {
+                    if (this.bytesTotal >= 0 && this.total >= 0) {
                         callback(this.getProgressData());
                     }
                 }
