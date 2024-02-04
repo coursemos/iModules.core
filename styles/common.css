@@ -6,7 +6,7 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 2. 4.
  */
 :root {
     --color-text-100: #b4b4b4;
@@ -202,6 +202,10 @@ html {
     font-size: var(--font-size-root);
     font-family: var(--font-family-body);
     line-height: var(--line-height-default);
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 body[data-type='website'] {
