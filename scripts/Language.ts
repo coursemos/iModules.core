@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 30.
+ * @modified 2024. 2. 4.
  */
 class Language {
     static observer: MutationObserver;
@@ -76,6 +76,22 @@ class Language {
             } else {
                 return {};
             }
+        }
+    }
+
+    /**
+     * 이미 불러온 언어팩이 존재한다면 가져온다.
+     *
+     * @param {string} path - 불러올 언어팩 경로
+     * @param {string} code - 언어코드
+     * @return {Object|boolean} texts - 언어팩 (false 인 경우 불러온 언어팩이 존재하지 않음)
+     */
+    static has(path: string, code: string): { [key: string]: string | object } | boolean {
+        const url = Language.getPath(path) + '/' + code + '.json';
+        if (Language.texts.has(url) == true) {
+            return Language.texts.get(url);
+        } else {
+            return false;
         }
     }
 
@@ -203,10 +219,43 @@ class Language {
         paths: string[] = null,
         codes: string[] = null
     ): string {
-        const uuid = crypto.randomUUID();
-        Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
-        Language.observe();
-        return '<span data-language="' + uuid + '">...</span>';
+        paths ??= ['/languages'];
+        codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
+        const keys: string[] = text.split('.');
+
+        let string = null;
+        for (const path of paths) {
+            for (const code of codes) {
+                let string: any = Language.has(path, code);
+
+                if (string === false) {
+                    const uuid = crypto.randomUUID();
+                    Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
+                    Language.observe();
+                    return '<span data-language="' + uuid + '">...</span>';
+                } else {
+                    string = string as string | { [key: string]: string | object };
+                    keys.forEach((key) => {
+                        if (string === null || string[key] === undefined) {
+                            string = null;
+                            return false;
+                        }
+
+                        string = string[key];
+                    });
+
+                    if (string !== null) {
+                        return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : string;
+                    }
+                }
+            }
+        }
+
+        if (string === null) {
+            return text;
+        }
+
+        return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : string;
     }
 
     /**
@@ -250,12 +299,12 @@ class Language {
                         if (span !== null) {
                             dom.outerHTML = typeof string == 'string' ? string : JSON.stringify(string);
                         }
-                        //Language.prints.delete(dom.getAttribute('data-language'));
-                        //Language.disconnect();
+                        Language.prints.delete(dom.getAttribute('data-language'));
+                        Language.disconnect();
                     });
                 });
 
-                //Language.disconnect();
+                Language.disconnect();
             });
         }
 
@@ -272,14 +321,13 @@ class Language {
 
     /**
      * 옵저버를 중지한다.
-     *
+     */
     static disconnect(): void {
         if (Language.isObserve === true && Language.prints.size === 0) {
             Language.isObserve = false;
             Language.observer.disconnect();
         }
     }
-    */
 }
 
 Html.ready(() => {
