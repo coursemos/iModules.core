@@ -162,7 +162,7 @@ class ErrorHandler
                 exit(str_pad($json, Header::length()));
             }
 
-            exit(Format::toJson($json));
+            exit($json);
         } else {
             $error = self::get($error);
 
