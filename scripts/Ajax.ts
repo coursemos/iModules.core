@@ -401,15 +401,12 @@ namespace Ajax {
                 const reader = response.body.getReader();
                 this.chunks = [];
                 this.bytesCurrent = 0;
-                this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '0', 10);
+                this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '-1', 10);
                 this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
 
-                if (this.bytesTotal == 0 || this.total == -1) {
-                    callback(this.getResults());
-                    return;
+                if (this.bytesTotal >= 0 && this.total > 0) {
+                    callback(this.getResults({ success: true, current: 0, total: this.total }));
                 }
-
-                callback(this.getResults({ success: true, current: 0, total: this.total }));
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -431,7 +428,9 @@ namespace Ajax {
                     this.chunks.push(value);
                     this.bytesCurrent += value.length;
 
-                    callback(this.getProgressData());
+                    if (this.bytesTotal >= 0 && this.total > 0) {
+                        callback(this.getProgressData());
+                    }
                 }
             } catch (e) {
                 callback(this.getResults({ end: true }));
@@ -499,10 +498,6 @@ namespace Ajax {
          * @return {boolean|object} success
          */
         isSuccess(): boolean | { [key: string]: any } {
-            if (this.bytesCurrent != this.bytesTotal) {
-                return false;
-            }
-
             let chunksAll = new Uint8Array(this.bytesCurrent);
             let position = 0;
             for (const chunk of this.chunks) {
