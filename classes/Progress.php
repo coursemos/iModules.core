@@ -43,7 +43,7 @@ class Progress
             header('Content-Encoding: none');
             header('X-Accel-Buffering: no');
             header('Content-Type: text');
-            header('Content-Length: ' . $this->_buffer * 200);
+            header('Content-Length: ' . $this->_buffer * 201);
             header('X-Progress-Total:' . $this->_total);
         }
     }
@@ -69,9 +69,9 @@ class Progress
     public function progress(int $current, array|object $datas = null): void
     {
         if ($this->_total == 0) {
-            $progress = 199;
+            $progress = 200;
         } else {
-            $progress = min(199, round(($current / $this->_total) * 200));
+            $progress = min(200, round(($current / $this->_total) * 200));
         }
         if ($progress != $this->_progress) {
             $output = new stdClass();
@@ -104,10 +104,12 @@ class Progress
             $this->_latest = $output;
         }
 
-        for ($i = $this->_progress; $i < 199; $i++) {
+        for ($i = $this->_progress; $i < 200; $i++) {
             echo $this->pad($this->_latest);
             flush();
         }
+
+        sleep(1);
 
         $this->_progress = 200;
 
