@@ -465,6 +465,7 @@ body[data-type='website'] {
                     padding-top: calc(var(--modal-padding-vertical) / 2);
                     color: var(--modal-content-color);
                     box-sizing: border-box;
+                    word-break: break-all;
                 }
 
                 > div[data-role='buttons'] {

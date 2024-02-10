@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 2. 10.
  */
 class iModules {
     static language;
@@ -235,23 +235,32 @@ class iModules {
  * 아이모듈 페이지가 출력되었을 때 UI 이벤트를 등록한다.
  */
 Html.ready(() => {
-    Html.get('body').setAttr('data-device', iModules.isMobile() == true ? 'mobile' : 'desktop');
-    /**
-     * 폼 객체를 초기화한다.
-     */
-    Form.init();
-    /**
-     * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
-     */
-    Modules.init();
-    /**
-     * 스크롤바를 처리한다.
-     */
-    Scrollbar.init();
-    /**
-     * 리사이즈 이벤트를 처리한다.
-     */
-    new ResizeObserver(() => {
-        iModules.Absolute.close();
-    }).observe(document.body);
+    const $body = Html.get('body');
+    $body.setAttr('data-device', iModules.isMobile() == true ? 'mobile' : 'desktop');
+    if ($body.getAttr('data-type') == 'website') {
+        /**
+         * 폼 객체를 초기화한다.
+         */
+        Form.init();
+        /**
+         * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
+         */
+        Modules.init();
+        /**
+         * 스크롤바를 처리한다.
+         */
+        Scrollbar.init();
+        /**
+         * Ajax 에러핸들러를 등록한다.
+         */
+        Ajax.setErrorHandler(async (results) => {
+            iModules.Modal.show(await Language.getErrorText('TITLE'), results.message ?? (await Language.getErrorText('CONNECT_FAILED')));
+        });
+        /**
+         * 리사이즈 이벤트를 처리한다.
+         */
+        new ResizeObserver(() => {
+            iModules.Absolute.close();
+        }).observe(document.body);
+    }
 });
