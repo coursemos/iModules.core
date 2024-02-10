@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 2. 10.
  */
 class Form {
     static forms = new WeakMap();
@@ -37,12 +37,10 @@ class Form {
     }
     /**
      * submit 이벤트리스너가 등록되어 있다면 해당 이벤트리스너를 통해 폼을 전송한다.
-     *
-     * @param {Dom} $summiter 전송버튼
      */
     async requestSubmit() {
         if (this.submitFunction !== null) {
-            await this.submitFunction(this);
+            this.submitFunction(this);
         }
     }
     /**
@@ -54,19 +52,33 @@ class Form {
         let data = {};
         const input = new FormData(this.$form.getEl());
         Array.from(input.keys()).reduce((data, key) => {
-            if (key.search(/\[\]$/) === -1) {
-                if (typeof input.get(key) == 'string' && input.get(key).length > 0) {
-                    data[key] = input.get(key);
-                }
+            const $input = Html.get('*[name="' + key + '"]', this.$form);
+            if ($input.getAttr('data-role') == 'editor') {
+                data['_editor'] ??= [];
+                data['_editor'].push({
+                    id: $input.getAttr('data-id'),
+                    name: key,
+                    uploader: { id: $input.getAttr('data-uploader-id'), name: $input.getAttr('data-uploader-name') },
+                });
+                data[key] = input.get(key);
+                return data;
             }
-            else {
+            if ($input.getAttr('data-role') == 'uploader') {
+                data[key] = JSON.parse(input.get(key));
+                return data;
+            }
+            if (key.search(/\[\]$/) > -1) {
                 if (input.getAll(key).length > 0) {
                     data[key.replace(/\[\]$/, '')] = input.getAll(key);
                 }
+                return data;
+            }
+            if (typeof input.get(key) == 'string' && input.get(key).length > 0) {
+                data[key] = input.get(key);
+                return data;
             }
             return data;
         }, data);
-        // @todo 업로더 처리
         return data;
     }
     /**
@@ -83,16 +95,22 @@ class Form {
             return;
         }
         if (this.loading == true) {
-            iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'), [
-                {
-                    text: (await Language.getText('buttons.close')),
-                    class: 'confirm',
-                    handler: () => {
-                        iModules.Modal.close();
-                    },
-                },
-            ]);
+            iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'));
             return { success: false };
+        }
+        /**
+         * 폼에 포함된 업로더의 업로드 진행상황을 확인한다.
+         */
+        const $uploaders = Html.all('div[data-role=uploader]', this.$form).getList();
+        if ($uploaders.length > 0) {
+            const attachment = Modules.get('attachment');
+            for (const $uploader of $uploaders) {
+                const uploader = attachment.getUploader($uploader);
+                if (uploader.isUploading() == true) {
+                    iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('UPLOADING'));
+                    return { success: false };
+                }
+            }
         }
         const $submit = Html.get('button[type=submit]', this.$form);
         $submit.disable(true);
