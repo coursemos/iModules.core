@@ -303,16 +303,16 @@ Html.ready(() => {
     const $body = Html.get('body');
     $body.setAttr('data-device', iModules.isMobile() == true ? 'mobile' : 'desktop');
 
+    /**
+     * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
+     */
+    Modules.init();
+
     if ($body.getAttr('data-type') == 'website') {
         /**
          * 폼 객체를 초기화한다.
          */
         Form.init();
-
-        /**
-         * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
-         */
-        Modules.init();
 
         /**
          * 스크롤바를 처리한다.
