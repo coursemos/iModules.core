@@ -1,3 +1,13 @@
+/**
+ * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
+ *
+ * 아이모듈의 모듈의 자바스크립트 클래스를 관리하는 클래스를 정의한다.
+ *
+ * @file /scripts/Modules.ts
+ * @author Arzz <arzz@arzz.com>
+ * @license MIT License
+ * @modified 2024. 2. 14.
+ */
 class Modules {
     static modules = new Map();
     static classes = {};
@@ -16,14 +26,13 @@ class Modules {
             let namespace = window['modules'];
             for (const name of namespaces) {
                 if (namespace[name] === undefined) {
-                    console.log(namespace, name, '없다');
+                    console.warn('NOT_FOUND_NAMESPACE', namespace, name);
                     return null;
                 }
                 namespace = namespace[name];
             }
             const classname = namespaces.pop().replace(/^[a-z]/, (char) => char.toUpperCase());
             if (namespace[classname] === undefined) {
-                console.log(namespace, classname, '없다');
                 return null;
             }
             if (typeof namespace[classname] == 'function' && namespace[classname].prototype instanceof Module) {

@@ -6,14 +6,8 @@
  * @file /scripts/Modules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2024. 2. 14.
  */
-namespace Modules {
-    export interface ModuleConstructor {
-        new (name: string): Module;
-    }
-}
-
 class Modules {
     static modules: Map<string, Module> = new Map();
     static classes: { [key: string]: Module } = {};
@@ -34,14 +28,13 @@ class Modules {
             let namespace: Object | Modules.ModuleConstructor = window['modules'];
             for (const name of namespaces) {
                 if (namespace[name] === undefined) {
-                    console.log(namespace, name, '없다');
+                    console.warn('NOT_FOUND_NAMESPACE', namespace, name);
                     return null;
                 }
                 namespace = namespace[name];
             }
             const classname = namespaces.pop().replace(/^[a-z]/, (char: string) => char.toUpperCase());
             if (namespace[classname] === undefined) {
-                console.log(namespace, classname, '없다');
                 return null;
             }
 
@@ -63,5 +56,11 @@ class Modules {
         Html.all('*[data-role=module][data-module]').forEach(($dom: Dom) => {
             Modules.get($dom.getAttr('data-module'))?.init($dom);
         });
+    }
+}
+
+namespace Modules {
+    export interface ModuleConstructor {
+        new (name: string): Module;
     }
 }
