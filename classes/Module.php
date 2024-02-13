@@ -359,7 +359,7 @@ abstract class Module extends Component
      * @param ?object $details 에러와 관련된 추가정보
      * @return object $error
      */
-    protected function error(string $code, ?string $message = null, ?object $details = null): ErrorData
+    public function error(string $code, ?string $message = null, ?object $details = null): ErrorData
     {
         switch ($code) {
             case 'NOT_FOUND_CONTEXT_METHOD':
