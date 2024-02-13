@@ -26,7 +26,6 @@ class Modules {
             let namespace = window['modules'];
             for (const name of namespaces) {
                 if (namespace[name] === undefined) {
-                    console.warn('NOT_FOUND_NAMESPACE', namespace, name);
                     return null;
                 }
                 namespace = namespace[name];
