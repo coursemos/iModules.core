@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 2. 14.
  */
 class Html
 {
@@ -85,9 +85,8 @@ class Html
         $element .= $name;
         if ($attributes !== null) {
             foreach ($attributes as $key => $value) {
-                $element .= ' ' . $key;
                 if ($value !== null) {
-                    $element .= '="' . $value . '"';
+                    $element .= ' ' . $key . '="' . $value . '"';
                 }
             }
         }
