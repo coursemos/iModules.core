@@ -51,20 +51,25 @@ class Form {
     getData() {
         let data = {};
         const input = new FormData(this.$form.getEl());
+        const uploaders = [];
         Array.from(input.keys()).reduce((data, key) => {
             const $input = Html.get('*[name="' + key + '"]', this.$form);
             if ($input.getAttr('data-role') == 'editor') {
-                data['_editor'] ??= [];
-                data['_editor'].push({
-                    id: $input.getAttr('data-id'),
-                    name: key,
-                    uploader: { id: $input.getAttr('data-uploader-id'), name: $input.getAttr('data-uploader-name') },
-                });
-                data[key] = input.get(key);
+                const wysiwyg = Modules.get('wysiwyg');
+                const editor = wysiwyg.getEditor($input);
+                data[key] = {
+                    id: editor.getId(),
+                    content: editor.getContent(),
+                    attachments: editor.getAttachments(),
+                };
+                console.log('getAttachments', editor.getAttachments());
+                uploaders.push(editor.getUploader().getId());
                 return data;
             }
             if ($input.getAttr('data-role') == 'uploader') {
-                data[key] = JSON.parse(input.get(key));
+                if (uploaders.includes($input.getAttr('data-id')) == false) {
+                    data[key] = JSON.parse(input.get(key));
+                }
                 return data;
             }
             if (key.search(/\[\]$/) > -1) {
