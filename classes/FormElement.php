@@ -23,6 +23,11 @@ class Base
     protected mixed $_value = null;
 
     /**
+     * @var bool $_required 필수값 여부
+     */
+    protected bool $_required = false;
+
+    /**
      * @var string[] $_arributes 태그속성
      */
     protected array $_attributes = [];
@@ -79,6 +84,18 @@ class Base
     public function value(mixed $value): self
     {
         $this->_value = $value;
+        return $this;
+    }
+
+    /**
+     * 필드값을 설정한다.
+     *
+     * @param string $value 필드값
+     * @return this $this
+     */
+    public function required(bool $required): self
+    {
+        $this->_required = $required;
         return $this;
     }
 
@@ -155,6 +172,10 @@ class Input extends \FormElement\Base
     {
         if ($this->_value !== null) {
             $this->_attributes['value'] = \Format::string($this->_value, 'input');
+        }
+
+        if ($this->_required == true) {
+            $this->_attributes['required'] = 'required';
         }
 
         return \Html::element('input', $this->_attributes);
