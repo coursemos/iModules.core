@@ -11,7 +11,9 @@
 class Form {
     static forms = new WeakMap();
     static elements = new WeakMap();
+    static index = 0;
     $form;
+    name;
     sending = false;
     loading = false;
     submitFunction = null;
@@ -22,6 +24,7 @@ class Form {
      */
     constructor($form) {
         this.$form = $form;
+        this.name = this.$form.getAttr('name') ?? 'Form-' + ++Form.index;
     }
     /**
      * 폼 전송을 제어하는 이벤트를 등록한다.
@@ -44,25 +47,34 @@ class Form {
         }
     }
     /**
+     * 폼 이름을 가져온다.
+     *
+     * @return {string} name
+     */
+    getName() {
+        return this.name;
+    }
+    /**
      * 폼 데이터를 가져온다.
      *
+     * @param {boolean} is_autosave - 자동저장용 데이터인지 여부
      * @return {Object} data
      */
-    getData() {
+    getData(is_autosave = false) {
         let data = {};
         const input = new FormData(this.$form.getEl());
         const uploaders = [];
         Array.from(input.keys()).reduce((data, key) => {
             const $input = Html.get('*[name="' + key + '"]', this.$form);
+            if (is_autosave == true && $input.getAttr('type') == 'password') {
+                return data;
+            }
             if ($input.getAttr('data-role') == 'editor') {
                 const wysiwyg = Modules.get('wysiwyg');
                 const editor = wysiwyg.getEditor($input);
-                data[key] = {
-                    id: editor.getId(),
-                    content: editor.getContent(),
-                    attachments: editor.getAttachments(),
-                };
-                console.log('getAttachments', editor.getAttachments());
+                if (editor.getValue() !== null) {
+                    data[key] = editor.getValue();
+                }
                 uploaders.push(editor.getUploader().getId());
                 return data;
             }
@@ -84,7 +96,48 @@ class Form {
             }
             return data;
         }, data);
+        if (is_autosave == true && Object.keys(data).length == 0) {
+            return null;
+        }
         return data;
+    }
+    /**
+     * 폼 데이터를 지정한다.
+     *
+     * @param {Object} data - 지정할 데이터
+     * @param {boolean} is_autosave - 자동저장된 데이터인지 여부
+     * @return {boolean} loaded
+     */
+    setData(data, is_autosave = false) {
+        if (is_autosave === true) {
+            this.$form.setAttr('data-autosave-loaded', 'true');
+        }
+        for (const name in data) {
+            const $field = Html.get('*[name="' + name + '"]', this.$form);
+            if ($field.getEl() === null) {
+                continue;
+            }
+            const value = data[name] ?? null;
+            if ($field.getAttr('data-role') == 'editor') {
+                const mWysiwyg = Modules.get('wysiwyg');
+                const editor = mWysiwyg.getEditor($field);
+                editor.setValue(value);
+            }
+            else if ($field.getAttr('data-role') == 'uploader') {
+                //
+            }
+            else {
+                $field.setValue(value);
+            }
+        }
+    }
+    /**
+     * 자동저장된 데이터를 불러왔는지 여부를 가져온다.
+     *
+     * @return {boolean} loaded
+     */
+    isAutosaveLoaded() {
+        return this.$form.getAttr('data-autosave-loaded') == 'true';
     }
     /**
      * 폼을 전송한다.
@@ -260,6 +313,63 @@ class Form {
         }
         $dom.append($select);
         return new FormElement.Select($dom);
+    }
+    /**
+     * 자동저장을 사용하는 FORM 이 존재한다면, 자동저장을 활성화한다.
+     *
+     * @param {boolean} is_ready - DOM 이 처음 준비되었을때인지 여부
+     */
+    static async autosave(is_ready = false) {
+        const $forms = Html.all('form[autosave=true]');
+        if ($forms.getCount() == 0) {
+            return;
+        }
+        await iModules.sleep(100);
+        const autosave = iModules.storage('autosave') ?? {};
+        if (is_ready == true) {
+            let isLoadable = false;
+            $forms.forEach(($form) => {
+                const form = Form.get($form);
+                const data = autosave[location.href][form.getName()] ?? null;
+                if (form.isAutosaveLoaded() == false && data !== null) {
+                    isLoadable = true;
+                    iModules.Modal.show(Language.printText('info'), Language.printText('actions.autosave'), [
+                        {
+                            text: Language.printText('buttons.cancel'),
+                            handler: () => {
+                                autosave[location.href][form.getName()] = null;
+                                iModules.storage('autosave', autosave);
+                                form.setData(null, true);
+                                Form.autosave(true);
+                                iModules.Modal.close();
+                            },
+                        },
+                        {
+                            text: Language.printText('buttons.ok'),
+                            class: 'confirm',
+                            handler: () => {
+                                form.setData(data, true);
+                                Form.autosave(true);
+                                iModules.Modal.close();
+                            },
+                        },
+                    ]);
+                    return false;
+                }
+            });
+            if (isLoadable === false) {
+                Form.autosave(false);
+            }
+        }
+        else {
+            $forms.forEach(($form) => {
+                const form = Form.get($form);
+                autosave[location.href] ??= {};
+                autosave[location.href][form.getName()] = form.getData(true);
+            });
+            iModules.storage('autosave', autosave);
+            setTimeout(Form.autosave, 30000);
+        }
     }
 }
 var FormElement;

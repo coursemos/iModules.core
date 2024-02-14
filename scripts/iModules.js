@@ -282,6 +282,7 @@ Html.ready(() => {
          * 폼 객체를 초기화한다.
          */
         Form.init();
+        Form.autosave(true);
         /**
          * 스크롤바를 처리한다.
          */
