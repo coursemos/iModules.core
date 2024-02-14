@@ -13,7 +13,8 @@
         "wait": "잠시만 기다려주시기 바랍니다.",
         "waiting_retry": "요청사항을 처리하고 있습니다.<br>잠시후 다시 시도하여 주시기 바랍니다.",
         "saving_status": "저장중",
-        "loading_status": "불러오는중"
+        "loading_status": "불러오는중",
+        "autosave": "자동저장된 내역이 있습니다.<br>해당 내역을 불러오시겠습니까?"
     },
     "errors": {
         "TITLE": "문제가 발생하였습니다.",
