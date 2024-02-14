@@ -44,6 +44,7 @@ class Form {
     async requestSubmit() {
         if (this.submitFunction !== null) {
             this.submitFunction(this);
+            this.removeAutosaveData();
         }
     }
     /**
@@ -140,6 +141,22 @@ class Form {
         return this.$form.getAttr('data-autosave-loaded') == 'true';
     }
     /**
+     * 자동저장된 데이터를 삭제한다.
+     */
+    removeAutosaveData() {
+        if (this.$form.getAttr('autosave') == 'false') {
+            return;
+        }
+        const autosave = iModules.storage('autosave') ?? {};
+        autosave[location.href] ??= {};
+        autosave[location.href][this.getName()] ??= {};
+        delete autosave[location.href][this.getName()];
+        if (Object.keys(autosave[location.href]).length == 0) {
+            delete autosave[location.href];
+        }
+        iModules.storage('autosave', autosave);
+    }
+    /**
      * 폼을 전송한다.
      *
      * @param {string} url - 전송할주소
@@ -191,6 +208,9 @@ class Form {
             if ($error.getEl() !== null) {
                 $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+        }
+        if (results.success == true) {
+            this.removeAutosaveData();
         }
         this.sending = false;
         $submit.enable();
@@ -337,8 +357,7 @@ class Form {
                         {
                             text: Language.printText('buttons.cancel'),
                             handler: () => {
-                                autosave[location.href][form.getName()] = null;
-                                iModules.storage('autosave', autosave);
+                                form.removeAutosaveData();
                                 form.setData(null, true);
                                 Form.autosave(true);
                                 iModules.Modal.close();
