@@ -266,28 +266,12 @@ body[data-type='website'] {
         max-width: var(--container-max-width);
     }
 
-    button[data-role='button'],
-    a[data-role='button'] {
-        line-height: var(--button-line-height);
-        font-size: var(--button-font-size);
-        font-weight: var(--button-font-weight);
-        padding: var(--button-padding-vertical) var(--button-padding-horizontal);
-        background: var(--button-cancel-background-default);
-        color: var(--button-cancel-color-default);
-        border: 1px solid var(--button-cancel-border-color-default);
-        border-radius: var(--button-border-radius);
+    button,
+    a {
+        display: inline-block;
         cursor: pointer;
 
-        &:hover {
-            background: var(--button-cancel-background-hover);
-            color: var(--button-cancel-color-hover);
-            border-color: var(--button-cancel-border-color-hover);
-        }
-
         &[disabled] {
-            background: var(--button-cancel-background-disabled);
-            color: var(--button-color-cancel-disabled);
-            border-color: var(--button-cancel-border-color-disabled);
             opacity: 0.7;
             cursor: not-allowed !important;
 
@@ -322,22 +306,64 @@ body[data-type='website'] {
             }
         }
 
-        &.confirm,
-        &[type='submit'] {
-            background: var(--button-confirm-background-default);
-            color: var(--button-confirm-color-default);
-            border-color: var(--button-confirm-border-color-default);
+        &[data-role='button'] {
+            line-height: var(--button-line-height);
+            font-size: var(--button-font-size);
+            font-weight: var(--button-font-weight);
+            padding: var(--button-padding-vertical) var(--button-padding-horizontal);
+            background: var(--button-cancel-background-default);
+            color: var(--button-cancel-color-default);
+            border: 1px solid var(--button-cancel-border-color-default);
+            border-radius: var(--button-border-radius);
+            cursor: pointer;
 
             &:hover {
-                background: var(--button-confirm-background-hover);
-                color: var(--button-confirm-color-hover);
-                border-color: var(--button-confirm-border-color-hover);
+                background: var(--button-cancel-background-hover);
+                color: var(--button-cancel-color-hover);
+                border-color: var(--button-cancel-border-color-hover);
             }
 
             &[disabled] {
-                background: var(--button-confirm-background-disabled);
-                color: var(--button-confirm-color-disabled);
-                border-color: var(--button-confirm-border-color-disabled);
+                background: var(--button-cancel-background-disabled);
+                color: var(--button-color-cancel-disabled);
+                border-color: var(--button-cancel-border-color-disabled);
+            }
+
+            &.confirm,
+            &[type='submit'] {
+                background: var(--button-confirm-background-default);
+                color: var(--button-confirm-color-default);
+                border-color: var(--button-confirm-border-color-default);
+
+                &:hover {
+                    background: var(--button-confirm-background-hover);
+                    color: var(--button-confirm-color-hover);
+                    border-color: var(--button-confirm-border-color-hover);
+                }
+
+                &[disabled] {
+                    background: var(--button-confirm-background-disabled);
+                    color: var(--button-confirm-color-disabled);
+                    border-color: var(--button-confirm-border-color-disabled);
+                }
+            }
+
+            *.danger {
+                background: var(--button-danger-background-default);
+                color: var(--button-danger-color-default);
+                border-color: var(--button-danger-border-color-default);
+
+                &:hover {
+                    background: var(--button-danger-background-hover);
+                    color: var(--button-danger-color-hover);
+                    border-color: var(--button-danger-border-color-hover);
+                }
+
+                &[disabled] {
+                    background: var(--button-danger-background-disabled);
+                    color: var(--button-danger-color-disabled);
+                    border-color: var(--button-danger-border-color-disabled);
+                }
             }
         }
     }
