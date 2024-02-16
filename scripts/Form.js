@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 10.
+ * @modified 2024. 2. 16.
  */
 class Form {
     static forms = new WeakMap();
@@ -17,6 +17,9 @@ class Form {
     sending = false;
     loading = false;
     submitFunction = null;
+    originData = null;
+    latestEdited = null;
+    latestAutosaved = 0;
     /**
      * 폼을 초기화한다.
      *
@@ -24,7 +27,18 @@ class Form {
      */
     constructor($form) {
         this.$form = $form;
+        this.$form.on('submit', (e) => {
+            if (this.submitFunction !== null) {
+                this.submitFunction(this);
+            }
+            e.preventDefault();
+        });
+        this.$form.on('input', () => {
+            this.latestEdited = new Date().getTime();
+        });
         this.name = this.$form.getAttr('name') ?? 'Form-' + ++Form.index;
+        this.originData = this.getData(true);
+        this.latestEdited = new Date().getTime();
     }
     /**
      * 폼 전송을 제어하는 이벤트를 등록한다.
@@ -33,10 +47,6 @@ class Form {
      */
     onSubmit(submit = null) {
         this.submitFunction = submit;
-        this.$form.on('submit', (e) => {
-            submit(this);
-            e.preventDefault();
-        });
     }
     /**
      * submit 이벤트리스너가 등록되어 있다면 해당 이벤트리스너를 통해 폼을 전송한다.
@@ -58,17 +68,19 @@ class Form {
     /**
      * 폼 데이터를 가져온다.
      *
-     * @param {boolean} is_autosave - 자동저장용 데이터인지 여부
+     * @param {boolean} is_sensitive - 민감한 데이터 제외여부
      * @return {Object} data
      */
-    getData(is_autosave = false) {
+    getData(is_sensitive = false) {
         let data = {};
         const input = new FormData(this.$form.getEl());
         const uploaders = [];
         Array.from(input.keys()).reduce((data, key) => {
             const $input = Html.get('*[name="' + key + '"]', this.$form);
-            if (is_autosave == true && $input.getAttr('type') == 'password') {
-                return data;
+            if (is_sensitive == true) {
+                if ($input.getAttr('type') == 'password' || $input.getAttr('type') == 'hidden') {
+                    return data;
+                }
             }
             if ($input.getAttr('data-role') == 'editor') {
                 const wysiwyg = Modules.get('wysiwyg');
@@ -97,7 +109,7 @@ class Form {
             }
             return data;
         }, data);
-        if (is_autosave == true && Object.keys(data).length == 0) {
+        if (is_sensitive == true && Object.keys(data).length == 0) {
             return null;
         }
         return data;
@@ -139,6 +151,40 @@ class Form {
      */
     isAutosaveLoaded() {
         return this.$form.getAttr('data-autosave-loaded') == 'true';
+    }
+    /**
+     * 자동저장된 데이터를 가져온다.
+     *
+     * @return {Object} data
+     */
+    getAutosaveData() {
+        const autosave = iModules.storage('autosave') ?? {};
+        if (autosave[location.href] === undefined) {
+            return null;
+        }
+        const data = autosave[location.href][this.getName()] ?? null;
+        if (Format.isEqual(this.originData, data) == false) {
+            return data;
+        }
+        return null;
+    }
+    /**
+     * 데이터를 자동저장한다.
+     */
+    saveAutosaveData() {
+        if (this.latestEdited > this.latestAutosaved) {
+            const data = this.getData(true);
+            if (Format.isEqual(this.originData, data) == true) {
+                this.removeAutosaveData();
+            }
+            else {
+                const autosave = iModules.storage('autosave') ?? {};
+                autosave[location.href] ??= {};
+                autosave[location.href][this.getName()] = data;
+                iModules.storage('autosave', autosave);
+            }
+            this.latestAutosaved = new Date().getTime();
+        }
     }
     /**
      * 자동저장된 데이터를 삭제한다.
@@ -190,7 +236,7 @@ class Form {
         const $submit = Html.get('button[type=submit]', this.$form);
         $submit.disable(true);
         this.sending = true;
-        Html.all('div[data-role=form][data-field]', this.$form).forEach(($element) => {
+        Html.all('div[data-field]', this.$form).forEach(($element) => {
             const element = Form.element($element);
             element.setError(false);
         });
@@ -198,13 +244,13 @@ class Form {
         const results = await Ajax.post(url, data, params, is_retry);
         if (results.success == false && results.errors !== undefined) {
             for (const name in results.errors) {
-                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]', this.$form);
+                const $element = Html.get('div[data-field][data-name="' + name + '"]', this.$form);
                 if ($element.getEl() !== null) {
                     const element = Form.element($element);
                     element.setError(results.errors[name]);
                 }
             }
-            const $error = Html.all('div[data-role=form][data-field].error', this.$form).get(0);
+            const $error = Html.all('div[data-field].error', this.$form).get(0);
             if ($error.getEl() !== null) {
                 $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -344,13 +390,11 @@ class Form {
         if ($forms.getCount() == 0) {
             return;
         }
-        await iModules.sleep(100);
-        const autosave = iModules.storage('autosave') ?? {};
         if (is_ready == true) {
             let isLoadable = false;
             $forms.forEach(($form) => {
                 const form = Form.get($form);
-                const data = autosave[location.href][form.getName()] ?? null;
+                const data = form.getAutosaveData();
                 if (form.isAutosaveLoaded() == false && data !== null) {
                     isLoadable = true;
                     iModules.Modal.show(Language.printText('info'), Language.printText('actions.autosave'), [
@@ -383,11 +427,9 @@ class Form {
         else {
             $forms.forEach(($form) => {
                 const form = Form.get($form);
-                autosave[location.href] ??= {};
-                autosave[location.href][form.getName()] = form.getData(true);
+                form.saveAutosaveData();
             });
-            iModules.storage('autosave', autosave);
-            setTimeout(Form.autosave, 30000);
+            setTimeout(Form.autosave, 10000);
         }
     }
 }

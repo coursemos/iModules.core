@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 10.
+ * @modified 2024. 2. 16.
  */
 class Form {
     static forms: WeakMap<HTMLElement, Form> = new WeakMap();
@@ -17,6 +17,9 @@ class Form {
     sending: boolean = false;
     loading: boolean = false;
     submitFunction: (form: Form) => void = null;
+    originData: { [key: string]: any } = null;
+    latestEdited: number = null;
+    latestAutosaved: number = 0;
 
     /**
      * 폼을 초기화한다.
@@ -25,7 +28,18 @@ class Form {
      */
     constructor($form: Dom) {
         this.$form = $form;
+        this.$form.on('submit', (e: SubmitEvent) => {
+            if (this.submitFunction !== null) {
+                this.submitFunction(this);
+            }
+            e.preventDefault();
+        });
+        this.$form.on('input', () => {
+            this.latestEdited = new Date().getTime();
+        });
         this.name = this.$form.getAttr('name') ?? 'Form-' + ++Form.index;
+        this.originData = this.getData(true);
+        this.latestEdited = new Date().getTime();
     }
 
     /**
@@ -35,10 +49,6 @@ class Form {
      */
     onSubmit(submit: (form: Form) => void = null): void {
         this.submitFunction = submit;
-        this.$form.on('submit', (e: SubmitEvent) => {
-            submit(this);
-            e.preventDefault();
-        });
     }
 
     /**
@@ -63,18 +73,20 @@ class Form {
     /**
      * 폼 데이터를 가져온다.
      *
-     * @param {boolean} is_autosave - 자동저장용 데이터인지 여부
+     * @param {boolean} is_sensitive - 민감한 데이터 제외여부
      * @return {Object} data
      */
-    getData(is_autosave: boolean = false): { [key: string]: any } {
+    getData(is_sensitive: boolean = false): { [key: string]: any } {
         let data: { [key: string]: any } = {};
         const input = new FormData(this.$form.getEl() as HTMLFormElement);
         const uploaders: string[] = [];
         Array.from(input.keys()).reduce((data, key) => {
             const $input = Html.get('*[name="' + key + '"]', this.$form);
 
-            if (is_autosave == true && $input.getAttr('type') == 'password') {
-                return data;
+            if (is_sensitive == true) {
+                if ($input.getAttr('type') == 'password' || $input.getAttr('type') == 'hidden') {
+                    return data;
+                }
             }
 
             if ($input.getAttr('data-role') == 'editor') {
@@ -113,7 +125,7 @@ class Form {
             return data;
         }, data);
 
-        if (is_autosave == true && Object.keys(data).length == 0) {
+        if (is_sensitive == true && Object.keys(data).length == 0) {
             return null;
         }
 
@@ -159,6 +171,44 @@ class Form {
      */
     isAutosaveLoaded(): boolean {
         return this.$form.getAttr('data-autosave-loaded') == 'true';
+    }
+
+    /**
+     * 자동저장된 데이터를 가져온다.
+     *
+     * @return {Object} data
+     */
+    getAutosaveData(): { [key: string]: any } {
+        const autosave = iModules.storage('autosave') ?? {};
+        if (autosave[location.href] === undefined) {
+            return null;
+        }
+
+        const data = autosave[location.href][this.getName()] ?? null;
+        if (Format.isEqual(this.originData, data) == false) {
+            return data;
+        }
+
+        return null;
+    }
+
+    /**
+     * 데이터를 자동저장한다.
+     */
+    saveAutosaveData(): void {
+        if (this.latestEdited > this.latestAutosaved) {
+            const data = this.getData(true);
+            if (Format.isEqual(this.originData, data) == true) {
+                this.removeAutosaveData();
+            } else {
+                const autosave = iModules.storage('autosave') ?? {};
+                autosave[location.href] ??= {};
+                autosave[location.href][this.getName()] = data;
+                iModules.storage('autosave', autosave);
+            }
+
+            this.latestAutosaved = new Date().getTime();
+        }
     }
 
     /**
@@ -224,7 +274,7 @@ class Form {
         $submit.disable(true);
 
         this.sending = true;
-        Html.all('div[data-role=form][data-field]', this.$form).forEach(($element) => {
+        Html.all('div[data-field]', this.$form).forEach(($element) => {
             const element = Form.element($element);
             element.setError(false);
         });
@@ -233,14 +283,14 @@ class Form {
         const results = await Ajax.post(url, data, params, is_retry);
         if (results.success == false && results.errors !== undefined) {
             for (const name in results.errors) {
-                const $element = Html.get('div[data-role=form][data-field][data-name="' + name + '"]', this.$form);
+                const $element = Html.get('div[data-field][data-name="' + name + '"]', this.$form);
                 if ($element.getEl() !== null) {
                     const element = Form.element($element);
                     element.setError(results.errors[name]);
                 }
             }
 
-            const $error = Html.all('div[data-role=form][data-field].error', this.$form).get(0);
+            const $error = Html.all('div[data-field].error', this.$form).get(0);
             if ($error.getEl() !== null) {
                 $error.getEl().scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -400,14 +450,11 @@ class Form {
             return;
         }
 
-        await iModules.sleep(100);
-
-        const autosave = iModules.storage('autosave') ?? {};
         if (is_ready == true) {
             let isLoadable: boolean = false;
             $forms.forEach(($form) => {
                 const form = Form.get($form);
-                const data = autosave[location.href][form.getName()] ?? null;
+                const data = form.getAutosaveData();
 
                 if (form.isAutosaveLoaded() == false && data !== null) {
                     isLoadable = true;
@@ -442,12 +489,10 @@ class Form {
         } else {
             $forms.forEach(($form) => {
                 const form = Form.get($form);
-                autosave[location.href] ??= {};
-                autosave[location.href][form.getName()] = form.getData(true);
+                form.saveAutosaveData();
             });
-            iModules.storage('autosave', autosave);
 
-            setTimeout(Form.autosave, 30000);
+            setTimeout(Form.autosave, 10000);
         }
     }
 }
