@@ -135,7 +135,9 @@ class Ajax {
             const results: Ajax.Results = (await response.json()) as Ajax.Results;
             if (results.success == false) {
                 if (typeof Ajax.errorHandler == 'function') {
-                    await Ajax.errorHandler(results);
+                    if (results.errors === undefined || results.message !== undefined) {
+                        await Ajax.errorHandler(results);
+                    }
                 } else {
                     console.error(results);
                 }
