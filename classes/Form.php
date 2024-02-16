@@ -7,7 +7,7 @@
  * @file /classes/Form.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2024. 2. 16.
  */
 require_once __DIR__ . '/FormElement.php';
 class Form
@@ -75,6 +75,20 @@ class Form
     public static function textarea(string $name, int $rows = 5): \FormElement\Textarea
     {
         $element = new \FormElement\Textarea($name, $rows);
+
+        return $element;
+    }
+
+    /**
+     * 디스플레이 태그를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $display 표시될 내용
+     * @return \FormElement\Display $element
+     */
+    public static function display(string $name, string $display): \FormElement\Display
+    {
+        $element = new \FormElement\Display($name, $display);
 
         return $element;
     }

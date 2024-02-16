@@ -7,7 +7,7 @@
  * @file /classes/FormElement.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 24.
+ * @modified 2024. 2. 16.
  */
 namespace FormElement;
 class Base
@@ -347,5 +347,32 @@ class Textarea extends \FormElement\Base
     protected function getField(): string
     {
         return \Html::element('textarea', $this->_attributes, $this->_value ?? '');
+    }
+}
+
+class Display extends \FormElement\Base
+{
+    private string $_display;
+
+    /**
+     * 폼 필드를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $display 표시될 내용
+     */
+    public function __construct(string $name, string $display)
+    {
+        $this->_name = $name;
+        $this->_display = $display;
+    }
+
+    /**
+     * 실제 폼필드 태그를 가져온다.
+     *
+     * @return string $field
+     */
+    protected function getField(): string
+    {
+        return \Html::element('div', null, $this->_display);
     }
 }
