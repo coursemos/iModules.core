@@ -61,7 +61,7 @@
      * 기준이 되는 최상위 폰트크기를 지정합니다.
      * 가변폰트를 사용하려면 해당 값을 가변형으로 정의합니다.
      */
-    --font-size-root: 16px;
+    --font-size-default: 16px;
 
     /**
      * 폰트크기
@@ -78,9 +78,8 @@
     --font-size-h4: 1.5rem;
     --font-size-h5: 1.25rem;
     --font-size-h6: 1rem;
-    --font-size-body-large: 1rem;
-    --font-size-body-medium: 0.875rem;
-    --font-size-body-small: 0.75rem;
+    --font-size-large: 1rem;
+    --font-size-small: 0.75rem;
 
     /**
      * 기본 줄간격을 정의합니다.
@@ -204,7 +203,7 @@
 }
 
 html {
-    font-size: var(--font-size-root);
+    font-size: var(--font-size-default);
     font-family: var(--font-family-body);
     line-height: var(--line-height-default);
 }
@@ -549,6 +548,28 @@ body {
             overflow: hidden;
         }
 
+        ul[data-role='list'] {
+            --list-header-border-color: #222;
+            --list-header-border-weight: 2px;
+            --list-footer-border-color: #222;
+            --list-footer-border-weight: 1px;
+
+            list-style: none;
+            border-top: var(--list-header-border-weight) solid var(--list-header-border-color);
+            border-bottom: var(--list-footer-border-weight) solid var(--list-footer-border-color);
+            width: 100%;
+            font-size: var(--font-size-default);
+            line-height: calc(var(--font-size-default) * var(--line-height-default));
+
+            > li {
+                display: flex;
+                flex-direction: row;
+                align-items: stretch;
+                padding: var(--gap-small) 0;
+                border-bottom: 1px solid var(--color-background-100);
+            }
+        }
+
         ul[data-role='form'] {
             --form-header-border-color: #222;
             --form-header-border-weight: 2px;
@@ -559,7 +580,7 @@ body {
             list-style: none;
             border-top: var(--form-header-border-weight) solid var(--form-header-border-color);
             border-bottom: var(--form-footer-border-weight) solid var(--form-footer-border-color);
-            min-width: 100%;
+            width: 100%;
 
             > li {
                 display: flex;
@@ -988,6 +1009,10 @@ body {
             justify-content: center;
             gap: var(--gap-small);
             padding: var(--gap-small) 0;
+
+            > span[data-role='space'] {
+                flex-grow: 1;
+            }
         }
 
         main[data-role='layout'] {
