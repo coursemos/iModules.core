@@ -72,6 +72,31 @@ class iModules {
         }
     }
     /**
+     * 컨텍스트 URL 경로를 가져온다.
+     *
+     * @param {string} subUrl - 추가할 컨텍스트 URL
+     * @param {Object} params - 추가할 매개변수
+     * @return {string} contextUrl
+     */
+    static getContextUrl(subUrl = null, params = null) {
+        const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
+        const url = Html.get('body').getAttr('data-context-url') ?? '';
+        let contextUrl = url;
+        if (subUrl !== null) {
+            contextUrl += subUrl;
+        }
+        if (params !== null) {
+            let queryString = new URLSearchParams(params);
+            if (is_rewrite == true) {
+                contextUrl += '&' + queryString;
+            }
+            else {
+                contextUrl += '?' + queryString;
+            }
+        }
+        return contextUrl;
+    }
+    /**
      * 프로세스 URL 경로를 가져온다.
      *
      * @param {'module'|'plugin'|'widget'} type - 컴포넌트 타입
