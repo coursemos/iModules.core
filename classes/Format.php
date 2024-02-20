@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 2.
+ * @modified 2024. 2. 19.
  */
 class Format
 {
@@ -173,6 +173,21 @@ class Format
 
         $normalized = Normalizer::normalize($string);
         return $normalized === false ? $string : $normalized;
+    }
+
+    /**
+     * 숫자형태를 언어별 포맷으로 가져온다.
+     *
+     * @param int|float $number
+     * @param ?string $language 언어
+     * @return string $formatted
+     */
+    public static function number(int|float $number, ?string $language = null): string
+    {
+        $language ??= \Router::getLanguage();
+
+        // @todo 언어별 처리
+        return number_format($number);
     }
 
     /**
