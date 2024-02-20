@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 30.
+ * @modified 2024. 2. 20.
  */
 class iModules
 {
@@ -452,9 +452,24 @@ class iModules
         }
 
         /**
+         * 컨텍스트 콘텐츠를 초기화한다.
+         */
+        self::initContent();
+
+        /**
          * 컨텍스트를 가져온다.
          */
         $context = Contexts::get($route);
+
+        /**
+         * 컨텍스트 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
+         */
+        if ($route->getPath() !== '/') {
+            Html::title($context->getTitle() . ' - ' . $context->getSite()->getTitle());
+        }
+        if ($context->getDescription()) {
+            Html::description($context->getDescription());
+        }
 
         /**
          * 컨텍스트의 콘텐츠를 가져온다.
@@ -469,27 +484,13 @@ class iModules
         $theme->assign('context', $context);
         $layout = $theme->getLayout($context->getLayout(), $content);
 
-        /**
-         * 컨텍스트 및 설명에 대한 META 태그 및 고유주소 META 태그를 정의한다. (SEO)
-         */
-        if ($route->getPath() !== '/') {
-            Html::title($context->getTitle() . ' - ' . $context->getSite()->getTitle());
-        }
-        if ($context->getDescription()) {
-            Html::description($context->getDescription());
-        }
-
-        /**
-         * 컨텍스트 콘텐츠를 초기화한다.
-         */
-        self::initContent();
-
         self::loadingTime('doContext');
 
         /**
          * HTML 헤더 및 푸터를 포함하여 출력한다.
          * @todo 이벤트
          */
+        Html::body('data-context-url', $context->getUrl());
         Html::print(Html::header(), $layout, Html::footer());
 
         Html::print(
