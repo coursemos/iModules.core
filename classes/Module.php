@@ -7,19 +7,19 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 2. 24.
  */
 abstract class Module extends Component
 {
     /**
      * @var bool $_init 모듈 클래스가 초기화되었는지 여부
      */
-    private static bool $_init = false;
+    private bool $_init = false;
 
     /**
      * @var object $_configs 모듈 환경설정
      */
-    private static object $_configs;
+    private object $_configs;
 
     /**
      * @var Route $_route 모듈이 시작된 경로
@@ -53,8 +53,8 @@ abstract class Module extends Component
      */
     public function init(): void
     {
-        if (self::$_init == false) {
-            self::$_init = true;
+        if ($this->_init == false) {
+            $this->_init = true;
         }
     }
 
@@ -204,24 +204,24 @@ abstract class Module extends Component
      */
     final public function getConfigs(?string $key = null): mixed
     {
-        if (isset(self::$_configs) == false) {
+        if (isset($this->_configs) == false) {
             $installed = Modules::getInstalled($this->getName());
             $configs = $installed?->configs ?? new stdClass();
-            self::$_configs = $this->getPackage()->getConfigs($configs);
+            $this->_configs = $this->getPackage()->getConfigs($configs);
         }
 
         if ($key == null) {
-            return self::$_configs;
-        } elseif (isset(self::$_configs->$key) == false) {
+            return $this->_configs;
+        } elseif (isset($this->_configs->$key) == false) {
             return null;
         } else {
-            return self::$_configs->$key;
+            return $this->_configs->$key;
         }
     }
 
     /**
      * 모듈의 컨텍스트 목록을 가져온다.
-     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getCOntexts() 메소드를 재정의하여야 한다.
+     * 컨텍스트를 지원하는 모듈이라면 모듈 클래스에서 getContexts() 메소드를 재정의하여야 한다.
      *
      * @return array $contexts 컨텍스트목록
      */
