@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 2. 24.
  */
 class Dom {
     element;
@@ -743,6 +743,12 @@ class Dom {
      */
     focus() {
         this.element?.focus();
+    }
+    /**
+     * HTML 엘리먼트에 포커스를 해제한다.
+     */
+    blur() {
+        this.element?.blur();
     }
     /**
      * HTML 엘리먼트를 보인다.
