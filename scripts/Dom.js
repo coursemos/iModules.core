@@ -764,6 +764,7 @@ class Dom {
         }
         else if (this.getData('origin-display')) {
             this.element.style.display = this.getData('origin-display');
+            this.setData('origin-display', null);
             this.show();
         }
         else {

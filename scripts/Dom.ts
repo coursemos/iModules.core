@@ -811,6 +811,7 @@ class Dom {
             this.show();
         } else if (this.getData('origin-display')) {
             this.element.style.display = this.getData('origin-display');
+            this.setData('origin-display', null);
             this.show();
         } else {
             const origin = document.createElement(this.element.tagName);
