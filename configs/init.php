@@ -42,8 +42,6 @@ define('__IM_VERSION__', '4.0.0');
  */
 require_once Configs::path() . '/classes/AutoLoader.php';
 AutoLoader::init();
-AutoLoader::register('/', '/');
-AutoLoader::register('/', '/classes');
 AutoLoader::register('/vendor', '/src');
 
 /**

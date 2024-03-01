@@ -7,7 +7,7 @@
  * @file /classes/AutoLoader.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 24.
+ * @modified 2024. 2. 27.
  */
 class AutoLoader
 {
@@ -86,28 +86,53 @@ class AutoLoader
             return false;
         }
 
-        foreach (self::$_loader as $loader) {
-            if ($loader->type == 'psr-4') {
-                $namespaces = explode('\\', preg_replace('/^\\\/', '', $class));
-                $className = array_pop($namespaces);
-                if (count($namespaces) >= 2) {
-                    $root = array_splice($namespaces, 0, 2);
-                } else {
-                    $root = [];
-                }
-                $path = self::getPath() . ($loader->basePath == '/' ? '' : $loader->basePath);
-                if (count($root) > 0) {
-                    $path .= '/' . implode('/', $root);
-                }
-                $path .= $loader->sourcePath;
-                if (count($namespaces) > 0) {
-                    $path .= '/' . implode('/', $namespaces);
-                }
-                $path .= '/' . $className . '.php';
+        $namespaces = explode('\\', preg_replace('/^\\\/', '', $class));
+        $className = array_pop($namespaces);
 
-                if (is_file($path) == true) {
-                    require_once $path;
-                    return true;
+        if (count($namespaces) == 0) {
+            $path = self::getPath() . '/classes/' . $className . '.php';
+            if (is_file($path) == true) {
+                require_once $path;
+                return true;
+            }
+        } elseif (in_array($namespaces[0], ['modules', 'plugins', 'widgets']) == true) {
+            $path = self::getPath() . '/' . implode('/', $namespaces) . '/' . $className . '.php';
+            if (is_file($path) == true) {
+                require_once $path;
+                return true;
+            }
+
+            $path = self::getPath() . '/' . implode('/', $namespaces) . '/classes/' . $className . '.php';
+            if (is_file($path) == true) {
+                require_once $path;
+                return true;
+            }
+        } else {
+            foreach (self::$_loader as $loader) {
+                if ($loader->type == 'psr-4') {
+                    $path = self::getPath() . ($loader->basePath == '/' ? '' : $loader->basePath);
+
+                    while ($namespace = array_shift($namespaces)) {
+                        $path .= '/' . $namespace;
+
+                        if (is_dir($path) == false) {
+                            break;
+                        }
+
+                        if (is_dir($path . $loader->sourcePath) == true) {
+                            $path .= $loader->sourcePath;
+                            if (count($namespaces) == 0) {
+                                $path .= '/' . $className . '.php';
+                            } else {
+                                $path .= '/' . implode('/', $namespaces) . '/' . $className . '.php';
+                            }
+
+                            if (is_file($path) == true) {
+                                require_once $path;
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }
