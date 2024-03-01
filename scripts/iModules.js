@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 10.
+ * @modified 2024. 3. 1.
  */
 class iModules {
     static language;
@@ -108,6 +108,39 @@ class iModules {
         const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
         const route = '/' + type + '/' + name + '/process/' + path;
         return iModules.getDir() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+    }
+    /**
+     * 팝업창을 연다.
+     *
+     * @param {string} url - 페이지 URL
+     * @param {int} width - 가로크기
+     * @param {int} height - 가로크기
+     * @param {boolean} scroll - 스크롤바여부
+     * @param {string} name - 창이름
+     * @return {Window} popup - 팝업윈도우
+     */
+    static popup(url, width, height, scroll, name = null) {
+        if (screen.availWidth < width)
+            width = screen.availWidth - 50;
+        if (screen.availHeight < height)
+            height = screen.availHeight - 50;
+        const left = Math.ceil((screen.availWidth - width) / 2);
+        const top = Math.ceil((screen.availHeight - height) / 2);
+        const popup = window.open(url, name ?? '', 'top=' +
+            top +
+            ',left=' +
+            left +
+            ',width=' +
+            width +
+            ',height=' +
+            height +
+            ',scrollbars=' +
+            (scroll == true ? '1' : '0'));
+        if (popup) {
+            popup.resizeTo(width, height);
+            return popup;
+        }
+        return null;
     }
     /**
      * 모바일 디바이스인지 확인한다.
