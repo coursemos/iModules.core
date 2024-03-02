@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 2.
+ * @modified 2024. 3. 2.
  */
 class Format {
     /**
@@ -390,12 +390,12 @@ class Format {
             let passed = true;
             switch (filter.operator) {
                 case '=':
-                    if (value !== filter.value) {
+                    if (value.toString() !== filter.value.toString()) {
                         passed = false;
                     }
                     break;
                 case '!=':
-                    if (value === filter.value) {
+                    if (value.toString() === filter.value.toString()) {
                         passed = false;
                     }
                     break;
@@ -419,6 +419,34 @@ class Format {
                         passed = false;
                     }
                     break;
+                case 'range':
+                    if (filter.value?.start?.value) {
+                        const operator = filter.value?.start?.operator ?? '>';
+                        if (operator == '>') {
+                            if (value <= filter.value?.start?.value) {
+                                passed = false;
+                            }
+                        }
+                        else {
+                            if (value < filter.value?.start?.value) {
+                                passed = false;
+                            }
+                        }
+                    }
+                    if (filter.value?.end?.value) {
+                        const operator = filter.value?.end?.operator ?? '<';
+                        if (operator == '<') {
+                            if (value >= filter.value?.end?.value) {
+                                passed = false;
+                            }
+                        }
+                        else {
+                            if (value > filter.value?.end?.value) {
+                                passed = false;
+                            }
+                        }
+                    }
+                    break;
                 case 'in':
                     if (Array.isArray(filter.value) == false ||
                         Array.isArray(value) == true ||
@@ -434,7 +462,37 @@ class Format {
                     }
                     break;
                 case 'like':
-                    if (value === null || value.search(filter.value) == -1) {
+                    if (value === null || value.indexOf(filter.value) == -1) {
+                        passed = false;
+                    }
+                    break;
+                case 'likes':
+                    if (value === null) {
+                        passed = false;
+                    }
+                    let hasKeyword = false;
+                    for (const keyword of filter.value.split(' ')) {
+                        if (value.indexOf(keyword) > -1) {
+                            hasKeyword = true;
+                            break;
+                        }
+                    }
+                    if (hasKeyword == false) {
+                        passed = false;
+                    }
+                    break;
+                case 'likesall':
+                    if (value === null) {
+                        passed = false;
+                    }
+                    let isAll = true;
+                    for (const keyword of filter.value.split(' ')) {
+                        if (value.indexOf(keyword) == -1) {
+                            isAll = false;
+                            break;
+                        }
+                    }
+                    if (isAll == false) {
                         passed = false;
                     }
                     break;
