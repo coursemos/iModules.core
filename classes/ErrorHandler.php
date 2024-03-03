@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 11.
+ * @modified 2024. 3. 4.
  */
 class ErrorHandler
 {
@@ -107,14 +107,21 @@ class ErrorHandler
         }
 
         if (isset($_SERVER['SSH_CONNECTION']) == true) {
-            echo '[ERROR]' . PHP_EOL;
-            print_r($error->code);
-            echo PHP_EOL;
-            if ($error->message !== null) {
-                echo $error->message;
-                echo PHP_EOL;
+            echo PHP_EOL . '[ERROR]' . PHP_EOL;
+
+            $message = [];
+            if ($error->prefix) {
+                $message[] = $error->prefix;
             }
-            print_r($error->details);
+            if ($error->message) {
+                $message[] = $error->message;
+            }
+            if ($error->suffix) {
+                $message[] = $error->suffix;
+            }
+
+            echo implode(PHP_EOL, $message);
+
             echo PHP_EOL;
             exit();
         }
