@@ -14,7 +14,7 @@ class Cron
     /**
      * @var bool $is_ssh SSH 클라이언트를 통해 실행중인지 여부
      */
-    private static bool $is_ssh;
+    private static bool $is_ssh = false;
 
     /**
      * @var bool $linebreak 자동화실행 중 출력한 메시지에서 줄바꿈을 출력하였는지 여부
@@ -173,19 +173,21 @@ class Cron
      */
     public static function progress(string $char = null): void
     {
-        if (self::$progress == 0 && self::$linebreak == false) {
-            echo PHP_EOL;
-        }
+        if (defined('__IM_CRON__') == true) {
+            if (self::$progress == 0 && self::$linebreak == false) {
+                echo PHP_EOL;
+            }
 
-        echo $char ?? self::$progress % 10;
-        if (self::$progress % 100 == 99) {
-            echo PHP_EOL;
-        }
-        self::$progress++;
-        self::$linebreak = false;
+            echo $char ?? self::$progress % 10;
+            if (self::$progress % 100 == 99) {
+                echo PHP_EOL;
+            }
+            self::$progress++;
+            self::$linebreak = false;
 
-        if (self::$is_ssh == true) {
-            flush();
+            if (self::$is_ssh == true) {
+                flush();
+            }
         }
     }
 }
