@@ -242,6 +242,7 @@ namespace Ajax {
             data: { [key: string]: any };
             percentage: number;
             end: boolean;
+            aborted: boolean;
         }
     }
 
@@ -254,14 +255,19 @@ namespace Ajax {
         chunks: Uint8Array[];
         controller: AbortController;
         signal: AbortSignal;
+        aborted: boolean;
 
         static init(): Ajax.Progress {
             return new Ajax.Progress();
         }
 
+        /**
+         * 프로그래스바 클래스를 정의한다.
+         */
         constructor() {
             this.controller = new AbortController();
             this.signal = this.controller.signal;
+            this.aborted = false;
         }
 
         /**
@@ -289,6 +295,7 @@ namespace Ajax {
                 data: results?.data ?? null,
                 percentage: results?.percentage ?? 0,
                 end: results?.end ?? false,
+                aborted: this.aborted,
             };
         }
 
@@ -353,6 +360,7 @@ namespace Ajax {
          * @param {Ajax.Params} params - GET 데이터
          * @param {Ajax.Data|FormData} data - 전송할 데이터
          * @param {Function} callback - 프로그래스 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async #fetch(
             method: string = 'GET',
@@ -360,7 +368,7 @@ namespace Ajax {
             params: Ajax.Params = {},
             data: Ajax.Data | FormData = {},
             callback: (results: Ajax.Progress.Results) => void
-        ): Promise<void> {
+        ): Promise<Ajax.Progress.Results> {
             const requestUrl = new URL(url, location.origin);
             for (const name in params) {
                 if (params[name] === null) {
@@ -415,16 +423,18 @@ namespace Ajax {
                     if (done) {
                         const success = this.isSuccess();
                         if (success !== true) {
-                            callback(
-                                this.getResults({
-                                    success: false,
-                                    message: typeof success == 'boolean' ? null : success?.message,
-                                    end: true,
-                                })
-                            );
-                            return;
+                            const results = this.getResults({
+                                success: false,
+                                message: typeof success == 'boolean' ? null : success?.message,
+                                end: true,
+                            });
+                            callback(results);
+                            return results;
                         }
-                        break;
+
+                        const data = this.getProgressData();
+                        callback(data);
+                        return data;
                     }
 
                     this.chunks.push(value);
@@ -435,8 +445,9 @@ namespace Ajax {
                     }
                 }
             } catch (e) {
-                callback(this.getResults({ end: true }));
-                return;
+                const results = this.getResults({ end: true });
+                callback(results);
+                return results;
             }
         }
 
@@ -444,6 +455,7 @@ namespace Ajax {
          * 프로그래스바 요청을 취소한다.
          */
         abort(): void {
+            this.aborted = true;
             this.controller.abort();
         }
 
@@ -453,12 +465,13 @@ namespace Ajax {
          * @param {string} url - 요청주소
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async get(
             url: string,
             params: Ajax.Params = {},
             callback: (results: Ajax.Progress.Results) => void
-        ): Promise<void> {
+        ): Promise<Ajax.Progress.Results> {
             return await this.#fetch('GET', url, params, null, callback);
         }
 
@@ -469,13 +482,14 @@ namespace Ajax {
          * @param {Ajax.Data|FormData} data - 전송할 데이터
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async post(
             url: string,
             data: Ajax.Data | FormData = {},
             params: Ajax.Params = {},
             callback: (results: Ajax.Progress.Results) => void
-        ): Promise<void> {
+        ): Promise<Ajax.Progress.Results> {
             return await this.#fetch('POST', url, params, data, callback);
         }
 
@@ -485,12 +499,13 @@ namespace Ajax {
          * @param {string} url - 요청주소
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async delete(
             url: string,
             params: Ajax.Params = {},
             callback: (results: Ajax.Progress.Results) => void
-        ): Promise<void> {
+        ): Promise<Ajax.Progress.Results> {
             return await this.#fetch('DELETE', url, params, null, callback);
         }
 

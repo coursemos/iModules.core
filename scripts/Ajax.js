@@ -183,12 +183,17 @@ class Ajax {
         chunks;
         controller;
         signal;
+        aborted;
         static init() {
             return new Ajax.Progress();
         }
+        /**
+         * 프로그래스바 클래스를 정의한다.
+         */
         constructor() {
             this.controller = new AbortController();
             this.signal = this.controller.signal;
+            this.aborted = false;
         }
         /**
          * 프로그래스바 빈 결과객체를 가져온다.
@@ -205,6 +210,7 @@ class Ajax {
                 data: results?.data ?? null,
                 percentage: results?.percentage ?? 0,
                 end: results?.end ?? false,
+                aborted: this.aborted,
             };
         }
         /**
@@ -266,6 +272,7 @@ class Ajax {
          * @param {Ajax.Params} params - GET 데이터
          * @param {Ajax.Data|FormData} data - 전송할 데이터
          * @param {Function} callback - 프로그래스 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async #fetch(method = 'GET', url, params = {}, data = {}, callback) {
             const requestUrl = new URL(url, location.origin);
@@ -317,14 +324,17 @@ class Ajax {
                     if (done) {
                         const success = this.isSuccess();
                         if (success !== true) {
-                            callback(this.getResults({
+                            const results = this.getResults({
                                 success: false,
                                 message: typeof success == 'boolean' ? null : success?.message,
                                 end: true,
-                            }));
-                            return;
+                            });
+                            callback(results);
+                            return results;
                         }
-                        break;
+                        const data = this.getProgressData();
+                        callback(data);
+                        return data;
                     }
                     this.chunks.push(value);
                     this.bytesCurrent += value.length;
@@ -334,14 +344,16 @@ class Ajax {
                 }
             }
             catch (e) {
-                callback(this.getResults({ end: true }));
-                return;
+                const results = this.getResults({ end: true });
+                callback(results);
+                return results;
             }
         }
         /**
          * 프로그래스바 요청을 취소한다.
          */
         abort() {
+            this.aborted = true;
             this.controller.abort();
         }
         /**
@@ -350,6 +362,7 @@ class Ajax {
          * @param {string} url - 요청주소
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async get(url, params = {}, callback) {
             return await this.#fetch('GET', url, params, null, callback);
@@ -361,6 +374,7 @@ class Ajax {
          * @param {Ajax.Data|FormData} data - 전송할 데이터
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async post(url, data = {}, params = {}, callback) {
             return await this.#fetch('POST', url, params, data, callback);
@@ -371,6 +385,7 @@ class Ajax {
          * @param {string} url - 요청주소
          * @param {Ajax.Params} params - GET 데이터
          * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
          */
         async delete(url, params = {}, callback) {
             return await this.#fetch('DELETE', url, params, null, callback);
