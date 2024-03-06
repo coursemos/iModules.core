@@ -22,20 +22,12 @@ class Format {
         return number?.toLocaleString(locale ?? iModules.getLanguage()) ?? null;
     }
     /**
-     * 날짜 포맷을 변경한다.
+     * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환한다.
      *
-     * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
-     * @param {number} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
-     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
-     * @return {string} formatted
+     * @param {string} format - PHP 포맷
+     * @return {string} format - moment 포맷
      */
-    static date(format, timestamp = null, locale = null) {
-        timestamp ??= moment().unix();
-        timestamp = timestamp * 1000;
-        locale ??= iModules.getLanguage();
-        /**
-         * PHP date 함수 포맷텍스트를 momentjs 포맷텍스트로 치환하기 위한 배열정의
-         */
+    static moment(format) {
         const replacements = {
             'd': 'DD',
             'D': 'ddd',
@@ -79,8 +71,22 @@ class Format {
         format = format.replace(reg, (match) => {
             return replacements[match];
         });
+        return format;
+    }
+    /**
+     * 날짜 포맷을 변경한다.
+     *
+     * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
+     * @param {number} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
+     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     * @return {string} formatted
+     */
+    static date(format, timestamp = null, locale = null) {
+        timestamp ??= moment().unix();
+        timestamp = timestamp * 1000;
+        locale ??= iModules.getLanguage();
         const datetime = moment(timestamp).format();
-        const formatted = moment(timestamp).locale(locale).format(format);
+        const formatted = moment(timestamp).locale(locale).format(Format.moment(format));
         return '<time datetime="' + datetime + '">' + formatted + '</time>';
     }
     /**
