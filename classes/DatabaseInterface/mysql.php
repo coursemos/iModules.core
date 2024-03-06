@@ -92,9 +92,10 @@ class mysql extends DatabaseInterface
         );
         if ($this->_mysqli->connect_error) {
             ErrorHandler::print(
-                'DATABASE_CONNECT_ERROR',
-                '(HY000/' . $this->_mysqli->connect_errno . ') ' . $this->_mysqli->connect_error,
-                $connector
+                ErrorHandler::error(
+                    'DATABASE_CONNECT_ERROR',
+                    '(HY000/' . $this->_mysqli->connect_errno . ') ' . $this->_mysqli->connect_error
+                )
             );
         }
         restore_error_handler();
@@ -1875,7 +1876,6 @@ class mysql extends DatabaseInterface
         }
         $stmt->store_result();
         $stmt->bind_result(...$parameters);
-        //call_user_func_array([$stmt,'bind_result'],$parameters);
 
         $this->_count = 0;
         while ($stmt->fetch()) {
@@ -1883,7 +1883,7 @@ class mysql extends DatabaseInterface
             foreach ($row as $key => $val) {
                 $result[$key] = $val; //isset($val) == false || $val === null ? '' : $val;
             }
-            array_push($results, (object) $result);
+            $results[] = (object) $result;
             $this->_count++;
         }
         $stmt->free_result();
