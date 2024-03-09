@@ -208,7 +208,6 @@ class iModules
         Cache::script('core', '/scripts/Module.js');
         Cache::script('core', '/scripts/Format.js');
         Cache::script('core', '/scripts/Language.js');
-        Cache::script('core', '/scripts/Progress.js');
         Html::script(Cache::script('core'), 1);
 
         /**
