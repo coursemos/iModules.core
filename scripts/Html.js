@@ -9,7 +9,7 @@
  * @modified 2023. 6. 12.
  */
 class Html {
-    static dataValues = new WeakMap();
+    static dataset = new WeakMap();
     static eventListeners = new WeakMap();
     static pointerListeners = new Map();
     /**

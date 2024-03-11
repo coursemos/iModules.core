@@ -10,7 +10,7 @@
  */
 class Dom {
     element;
-    dataValues = {};
+    dataset = {};
     eventListeners = {};
     /**
      * Dom 객체를 생성한다.
@@ -20,11 +20,11 @@ class Dom {
     constructor(element) {
         this.element = element;
         if (this.element !== null) {
-            if (Html.dataValues.has(this.element) == true) {
-                this.dataValues = Html.dataValues.get(this.element);
+            if (Html.dataset.has(this.element) == true) {
+                this.dataset = Html.dataset.get(this.element);
             }
             else {
-                Html.dataValues.set(this.element, this.dataValues);
+                Html.dataset.set(this.element, this.dataset);
             }
             if (Html.eventListeners.has(this.element) == true) {
                 this.eventListeners = Html.eventListeners.get(this.element);
@@ -80,7 +80,7 @@ class Dom {
      * @param {boolean} is_dom - HTML 엘리먼트에 data-attribute 를 생성할 지 여부
      */
     setData(key, value, is_dom = true) {
-        this.dataValues[key] = value;
+        this.dataset[key] = value;
         if (is_dom === true && (typeof value == 'string' || typeof value == 'number')) {
             this.setAttr('data-' + key, value.toString());
         }
@@ -93,13 +93,13 @@ class Dom {
      * @return {any} value - 값
      */
     getData(key) {
-        if (this.dataValues[key] === undefined) {
+        if (this.dataset[key] === undefined) {
             return (this.element?.dataset[key] ??
                 this.element?.dataset[key.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_m, chr) => chr.toUpperCase())] ??
                 null);
         }
         else {
-            return this.dataValues[key] ?? null;
+            return this.dataset[key] ?? null;
         }
     }
     /**

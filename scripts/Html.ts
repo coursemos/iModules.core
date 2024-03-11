@@ -9,7 +9,7 @@
  * @modified 2023. 6. 12.
  */
 class Html {
-    static dataValues: WeakMap<HTMLElement, any> = new WeakMap();
+    static dataset: WeakMap<HTMLElement, any> = new WeakMap();
     static eventListeners: WeakMap<HTMLElement, any> = new WeakMap();
     static pointerListeners: Map<number, Dom> = new Map();
 

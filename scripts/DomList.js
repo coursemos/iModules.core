@@ -6,11 +6,10 @@
  * @file /scripts/DomList.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 4.
+ * @modified 2024. 3. 11.
  */
 class DomList {
     domList;
-    dataValues = {};
     /**
      * Dom 목록객체를 생성한다.
      *
@@ -131,12 +130,12 @@ class DomList {
      * @param {string} key - 값을 가져올 Data 키
      * @return {any[]} value - 값
      */
-    getDatas(key) {
-        let datas = [];
+    getDataset(key) {
+        let dataset = [];
         this.domList.forEach((dom) => {
-            datas.push(dom.getData(key));
+            dataset.push(dom.getData(key));
         });
-        return datas;
+        return dataset;
     }
     /**
      * 목록의 모든 HTML 엘리먼트 스타일을 지정한다.
