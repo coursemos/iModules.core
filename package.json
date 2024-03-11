@@ -300,11 +300,18 @@
                 },
                 "configs": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "모듈설정"
                 },
                 "events": {
                     "type": "json",
+                    "is_null": true,
                     "comment": "이벤트리스너설정"
+                },
+                "dataset": {
+                    "type": "json",
+                    "is_null": true,
+                    "comment": "모듈데이터"
                 },
                 "sort": {
                     "type": "int",
