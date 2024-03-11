@@ -7,9 +7,8 @@
  * @file /classes/Databases/mysql.class.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 8. 20.
+ * @modified 2024. 3. 11.
  */
-
 namespace databases\mysql;
 
 use mysqli;
@@ -56,7 +55,7 @@ class mysql extends DatabaseInterface
     private array $_limit = [];
     private array $_bindTypes = [];
     private array $_bindParams = [];
-    private array $_tableDatas = [];
+    private array $_tableData = [];
     private array $_duplidated = [];
     private string $_tableLockMethod = 'READ';
     private ?int $_insert_id = null;
@@ -186,7 +185,7 @@ class mysql extends DatabaseInterface
         $this->_limit = [];
         $this->_bindTypes = [];
         $this->_bindParams = [];
-        $this->_tableDatas = [];
+        $this->_tableData = [];
         $this->_duplidated = [];
         $this->_tableLockMethod = 'READ';
         $this->_count = 0;
@@ -574,10 +573,10 @@ class mysql extends DatabaseInterface
         }
 
         if ($table != $created) {
-            $datas = $this->select()
+            $rows = $this->select()
                 ->from($table)
                 ->get();
-            if (count($datas) > 0) {
+            if (count($rows) > 0) {
                 $defaults = [];
                 foreach ($schema->columns as $name => $column) {
                     if (isset($column->default) == true) {
@@ -601,9 +600,9 @@ class mysql extends DatabaseInterface
                 }
 
                 $this->transaction();
-                foreach ($datas as $data) {
+                foreach ($rows as $row) {
                     $insert = $defaults;
-                    foreach ($data as $name => $value) {
+                    foreach ($row as $name => $value) {
                         if (array_key_exists($name, $insert) === true) {
                             $insert[$name] = $value;
                         }
@@ -817,7 +816,7 @@ class mysql extends DatabaseInterface
         $this->_start('INSERT');
 
         $this->_query = 'INSERT INTO `' . $table . '`';
-        $this->_tableDatas = $data;
+        $this->_tableData = $data;
         $this->_duplidated = $duplicated;
 
         return $this;
@@ -835,7 +834,7 @@ class mysql extends DatabaseInterface
         $this->_start('REPLACE');
 
         $this->_query = 'REPLACE INTO ' . $table;
-        $this->_tableDatas = $data;
+        $this->_tableData = $data;
 
         return $this;
     }
@@ -852,7 +851,7 @@ class mysql extends DatabaseInterface
         $this->_start('UPDATE');
 
         $this->_query = 'UPDATE ' . $table . ' SET ';
-        $this->_tableDatas = $data;
+        $this->_tableData = $data;
 
         return $this;
     }
@@ -1160,16 +1159,16 @@ class mysql extends DatabaseInterface
         $results = $this->_execute();
         $this->_end();
 
-        $datas = $results->datas;
+        $rows = $results->rows;
         if ($field !== null) {
-            array_walk($datas, function (&$item) use ($field) {
+            array_walk($rows, function (&$item) use ($field) {
                 $item = isset($item->{$field}) == true ? $item->{$field} : null;
             });
         } else {
-            $datas = $results->datas;
+            $rows = $results->rows;
         }
 
-        return $datas;
+        return $rows;
     }
 
     /**
@@ -1312,7 +1311,7 @@ class mysql extends DatabaseInterface
         }
 
         $this->_buildJoin();
-        //		if (empty($this->_tableDatas) == false) $this->_buildTableData($this->_tableDatas);
+        //		if (empty($this->_tableData) == false) $this->_buildTableData($this->_tableData);
         $this->_buildWhere();
         $this->_buildGroupBy();
         $this->_buildHaving();
@@ -1378,7 +1377,7 @@ class mysql extends DatabaseInterface
      */
     private function _buildTableData(): void
     {
-        if (is_array($this->_tableDatas) == false) {
+        if (is_array($this->_tableData) == false) {
             return;
         }
 
@@ -1390,14 +1389,14 @@ class mysql extends DatabaseInterface
              * INSERT INTO SELECT 인 경우 컬럼명만 처리한다.
              */
             if ($this->_from_table !== null) {
-                $this->_query .= '(`' . implode('`,`', $this->_tableDatas) . '`)';
+                $this->_query .= '(`' . implode('`,`', $this->_tableData) . '`)';
             } else {
-                $this->_query .= '(`' . implode('`,`', array_keys($this->_tableDatas)) . '`)';
+                $this->_query .= '(`' . implode('`,`', array_keys($this->_tableData)) . '`)';
             }
             $this->_query .= ' VALUES (';
         }
 
-        foreach ($this->_tableDatas as $column => $value) {
+        foreach ($this->_tableData as $column => $value) {
             /**
              * UPDATE 인 경우 컬럼명을 추가한다.
              */
@@ -1430,7 +1429,7 @@ class mysql extends DatabaseInterface
             $this->_query .= ' ON DUPLICATE KEY UPDATE ';
             foreach ($this->_duplidated as $column) {
                 $this->_query .= '`' . $column . '`=?,';
-                $this->_bindParam($this->_tableDatas[$column]);
+                $this->_bindParam($this->_tableData[$column]);
             }
             $this->_query = rtrim($this->_query, ',');
         }
@@ -1753,17 +1752,17 @@ class mysql extends DatabaseInterface
     /**
      * 쿼리문을 실행한다.
      *
-     * @param bool $is_datas 쿼리실행결과 데이터를 반환할지 여부(기본값 : true)
+     * @param bool $is_rows 쿼리실행결과 데이터를 반환할지 여부(기본값 : true)
      * @return object $results 실행결과
      */
-    private function _execute(bool $is_datas = true): object
+    private function _execute(bool $is_rows = true): object
     {
         $results = new stdClass();
         $results->success = false;
         $results->affected_rows = 0;
         $results->insert_id = 0;
         $results->num_rows = 0;
-        $results->datas = [];
+        $results->rows = [];
 
         $stmt = $this->_mysqli->prepare($this->_query);
         if (!$stmt) {
@@ -1799,10 +1798,10 @@ class mysql extends DatabaseInterface
         /**
          * 쿼리실행결과 데이터가 있는 경우
          */
-        if ($is_datas == true) {
+        if ($is_rows == true) {
             $metadata = $stmt->result_metadata();
             if ($metadata !== false) {
-                $results->datas = $this->_dynamicBindResults($stmt, $metadata);
+                $results->rows = $this->_dynamicBindResults($stmt, $metadata);
             }
         }
 
@@ -1874,7 +1873,6 @@ class mysql extends DatabaseInterface
             $row[$field->name] = null;
             $parameters[] = &$row[$field->name];
         }
-        $stmt->store_result();
         $stmt->bind_result(...$parameters);
 
         $this->_count = 0;
@@ -1886,7 +1884,6 @@ class mysql extends DatabaseInterface
             $results[] = (object) $result;
             $this->_count++;
         }
-        $stmt->free_result();
 
         return $results;
     }
