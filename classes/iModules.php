@@ -213,7 +213,7 @@ class iModules
         /**
          * 제3자 기본 스크립트를 불러온다.
          */
-        Html::script('/scripts/moment.min.js');
+        Html::script('/scripts/moment.js');
 
         /**
          * 모듈의 자바스크립트파일을 불러온다.

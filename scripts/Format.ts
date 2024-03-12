@@ -82,20 +82,31 @@ class Format {
      * 날짜 포맷을 변경한다.
      *
      * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
-     * @param {number} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
+     * @param {number|moment} timestamp - 타임스탬프 (NULL 인 경우 현재시각)
      * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     * @param {boolean} is_html - time 태그 여부
      * @return {string} formatted
      */
-    static date(format: string, timestamp: number = null, locale: string = null): string {
+    static date(format: string, timestamp: any = null, locale: string = null, is_html: boolean = true): string {
         timestamp ??= moment().unix();
-        timestamp = timestamp * 1000;
+
+        let m = null;
+        if (timestamp instanceof moment) {
+            m = timestamp;
+        } else {
+            m = moment(timestamp * 1000);
+        }
 
         locale ??= iModules.getLanguage();
 
-        const datetime = moment(timestamp).format();
-        const formatted = moment(timestamp).locale(locale).format(Format.moment(format));
+        const datetime = m.format();
+        const formatted = m.locale(locale).format(Format.moment(format));
 
-        return '<time datetime="' + datetime + '">' + formatted + '</time>';
+        if (is_html === true) {
+            return '<time datetime="' + datetime + '">' + formatted + '</time>';
+        } else {
+            return formatted;
+        }
     }
 
     /**
@@ -585,6 +596,101 @@ class Format {
                     if (valuecode === null || valuecode.search(keycode) == -1) {
                         passed = false;
                     }
+                    break;
+
+                case 'date':
+                    const dateoperator = filter.value.operator;
+                    const dateformat = filter.value.format;
+
+                    let datestart = null;
+                    let dateend = null;
+
+                    if (dateoperator == 'today') {
+                        datestart = dateend = moment();
+                    } else if (dateoperator == 'yesterday') {
+                        datestart = dateend = moment().add(-1, 'days');
+                    } else if (dateoperator == 'thisweek') {
+                        datestart = moment().startOf('week');
+                        dateend = moment().endOf('week');
+                    } else if (dateoperator == 'lastweek') {
+                        datestart = moment().add(-1, 'weeks').startOf('week');
+                        dateend = moment().add(-1, 'weeks').endOf('week');
+                    } else if (dateoperator == 'thismonth') {
+                        datestart = moment().startOf('month');
+                        dateend = moment().endOf('month');
+                    } else if (dateoperator == 'lastmonth') {
+                        datestart = moment().add(-1, 'months').startOf('month');
+                        dateend = moment().add(-1, 'months').endOf('month');
+                    } else if (dateoperator == 'thisyear') {
+                        datestart = moment().startOf('year');
+                        dateend = moment().endOf('year');
+                    } else if (dateoperator == 'lastyear') {
+                        datestart = moment().add(-1, 'years').startOf('year');
+                        dateend = moment().add(-1, 'years').endOf('year');
+                    } else if (dateoperator == 'range') {
+                        datestart = moment(filter.value.range[0]);
+                        dateend = moment(filter.value.range[1]);
+                    } else if (dateoperator == '=') {
+                        datestart = dateend = moment(filter.value.value);
+                    } else if (dateoperator == '<=') {
+                        dateend = moment(filter.value.value);
+                    } else if (dateoperator == '>=') {
+                        datestart = moment(filter.value.value);
+                    }
+
+                    if (dateformat == 'timestamp') {
+                        let timestamp = parseInt(value, 10);
+                        datestart = datestart?.unix() ?? null;
+                        dateend = dateend?.add(1, 'days')?.unix() ?? null;
+
+                        if (datestart !== null) {
+                            if (timestamp < datestart) {
+                                passed = false;
+                                break;
+                            }
+                        }
+
+                        if (dateend !== null) {
+                            if (timestamp >= dateend) {
+                                passed = false;
+                            }
+                        }
+                    } else if (dateformat == 'date') {
+                        let timestamp = parseInt(value, 10);
+                        datestart = datestart?.format('YYYY-MM-DD') ?? null;
+                        dateend = dateend?.add(1, 'days')?.format('YYYY-MM-DD') ?? null;
+
+                        if (datestart !== null) {
+                            if (timestamp < datestart) {
+                                passed = false;
+                                break;
+                            }
+                        }
+
+                        if (dateend !== null) {
+                            if (timestamp >= dateend) {
+                                passed = false;
+                            }
+                        }
+                    } else if (dateformat == 'datetime') {
+                        let timestamp = parseInt(value, 10);
+                        datestart = datestart?.format('YYYY-MM-DD HH:mm:ss') ?? null;
+                        dateend = dateend?.add(1, 'days')?.format('YYYY-MM-DD HH:mm:ss') ?? null;
+
+                        if (datestart !== null) {
+                            if (timestamp < datestart) {
+                                passed = false;
+                                break;
+                            }
+                        }
+
+                        if (dateend !== null) {
+                            if (timestamp >= dateend) {
+                                passed = false;
+                            }
+                        }
+                    }
+
                     break;
 
                 default:
