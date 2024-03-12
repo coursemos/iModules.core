@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 11.
+ * @modified 2024. 3. 12.
  */
 class Modules
 {
@@ -268,7 +268,12 @@ class Modules
      */
     public static function getData(string $name, string $key): mixed
     {
-        $dataset = json_decode(self::getInstalled($name)?->dataset ?? 'null');
+        $installed = self::db()
+            ->select()
+            ->from(self::table('modules'))
+            ->where('name', $name)
+            ->getOne();
+        $dataset = json_decode($installed?->dataset ?? 'null');
         return $dataset?->{$key} ?? null;
     }
 
@@ -282,7 +287,11 @@ class Modules
      */
     public static function setData(string $name, string $key, mixed $value): bool
     {
-        $installed = self::getInstalled($name);
+        $installed = self::db()
+            ->select()
+            ->from(self::table('modules'))
+            ->where('name', $name)
+            ->getOne();
         if ($installed === null) {
             return false;
         }
