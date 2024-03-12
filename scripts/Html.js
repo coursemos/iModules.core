@@ -6,7 +6,7 @@
  * @file /scripts/Html.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 12.
+ * @modified 2024. 3. 11.
  */
 class Html {
     static dataset = new WeakMap();

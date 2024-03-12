@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 30.
+ * @modified 2024. 3. 11.
  */
 abstract class Component
 {
@@ -293,6 +293,23 @@ abstract class Component
 
         return 'component';
     }
+
+    /**
+     * 컴포넌트의 데이터를 가져온다.
+     *
+     * @param string $key 가져올 데이터키
+     * @return mixed $value 데이터값
+     */
+    abstract public function getData(string $key): mixed;
+
+    /**
+     * 컴포넌트의 데이터를 저장한다.
+     *
+     * @param string $key 저장할 데이터키
+     * @param mixed $value 저장할 데이터값
+     * @return bool $success
+     */
+    abstract public function setData(string $key, mixed $value): bool;
 
     /**
      * 컴포넌트의 관리자 클래스를 가져온다.

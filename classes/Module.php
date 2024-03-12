@@ -103,6 +103,29 @@ abstract class Module extends Component
     }
 
     /**
+     * 모듈의 데이터를 가져온다.
+     *
+     * @param string $key 가져올 데이터키
+     * @return mixed $value 데이터값
+     */
+    final public function getData(string $key): mixed
+    {
+        return Modules::getData($this->getName(), $key);
+    }
+
+    /**
+     * 모듈의 데이터를 저장한다.
+     *
+     * @param string $key 저장할 데이터키
+     * @param mixed $value 저장할 데이터값
+     * @return bool $success
+     */
+    final public function setData(string $key, mixed $value): bool
+    {
+        return Modules::setData($this->getName(), $key, $value);
+    }
+
+    /**
      * 모듈 설치정보를 가져온다.
      *
      * @return ?object $installed 모듈설치정보

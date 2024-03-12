@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 3. 11.
  */
 class Modules
 {
@@ -257,6 +257,45 @@ class Modules
     public static function isInstalled(string $name): bool
     {
         return self::getInstalled($name) !== null;
+    }
+
+    /**
+     * 모듈 데이터를 가져온다..
+     *
+     * @param string $name 모듈명
+     * @param string $key 가져올 데이터키
+     * @return mixed $value 데이터값
+     */
+    public static function getData(string $name, string $key): mixed
+    {
+        $dataset = json_decode(self::getInstalled($name)?->dataset ?? 'null');
+        return $dataset?->{$key} ?? null;
+    }
+
+    /**
+     * 모듈 데이터를 저장한다.
+     *
+     * @param string $name 모듈명
+     * @param string $key 저장할 데이터키
+     * @param mixed $value 저장할 데이터값
+     * @return bool $success
+     */
+    public static function setData(string $name, string $key, mixed $value): bool
+    {
+        $installed = self::getInstalled($name);
+        if ($installed === null) {
+            return false;
+        }
+
+        $dataset = json_decode($installed->dataset ?? 'null') ?? new stdClass();
+        $dataset->{$key} = $value;
+
+        $success = self::db()
+            ->update(self::table('modules'), ['dataset' => Format::toJson($dataset)])
+            ->where('name', $name)
+            ->execute();
+
+        return $success->success;
     }
 
     /**
