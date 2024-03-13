@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 2.
+ * @modified 2024. 3. 14.
  */
 class Format {
     /**
@@ -469,13 +469,6 @@ class Format {
                     if (Array.isArray(filter.value) == false ||
                         Array.isArray(value) == true ||
                         filter.value.includes(value) == false) {
-                        passed = false;
-                    }
-                    break;
-                case 'inset':
-                    if (Array.isArray(value) == false ||
-                        Array.isArray(filter.value) == true ||
-                        value.includes(filter.value) == false) {
                         passed = false;
                     }
                     break;
