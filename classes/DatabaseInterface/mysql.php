@@ -7,7 +7,7 @@
  * @file /classes/Databases/mysql.class.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 11.
+ * @modified 2024. 3. 14.
  */
 namespace databases\mysql;
 
@@ -987,6 +987,238 @@ class mysql extends DatabaseInterface
                 $havingValue = [$operator => $havingValue];
             }
             $this->_having[] = ['OR', $havingValue, $havingProp];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Aui 의 필터조건을 처리한다.
+     *
+     * @param object $filters 필터조건
+     * @param string $mode 필터모드 (OR, AND)
+     * @param array $columns 필터를 적용할 컬럼 [필터컬럼=>테이블컬럼]
+     */
+    public function setFilters(object $filters, string $mode = 'AND', array $columns = []): DatabaseInterface
+    {
+        $where = [];
+        $values = [];
+        foreach ($filters as $field => $filter) {
+            if (isset($columns[$field]) == false) {
+                continue;
+            }
+
+            $column = $columns[$field];
+            if (strpos($column, '`') === false) {
+                $column = '`' . implode('`.`', explode('.', $column)) . '`';
+            }
+
+            $operator = $filter->operator;
+            $value = $filter->value;
+
+            if ($value === null) {
+                continue;
+            }
+
+            switch ($operator) {
+                case '=':
+                case '!=':
+                case '>':
+                case '>=':
+                case '<':
+                case '<=':
+                    if (is_string($value) == true || is_numeric($value) == true) {
+                        $where[] = $column . ' ' . $operator . ' ?';
+                        $values[] = $value;
+                    }
+                    break;
+
+                case 'range':
+                    if (is_object($value) == true) {
+                        $start = $value->start ?? null;
+                        $end = $value->end ?? null;
+
+                        if ($start !== null && $end !== null) {
+                            $where[] =
+                                '(' .
+                                $column .
+                                ' ' .
+                                $start->operator .
+                                ' ? AND ' .
+                                $column .
+                                ' ' .
+                                $end->operator .
+                                ' ?)';
+                            $values[] = $start->value;
+                            $values[] = $end->value;
+                        }
+                    }
+                    break;
+
+                case 'in':
+                    if (is_array($value) == true && count($value) > 0) {
+                        $comparison = '';
+                        foreach ($value as $v) {
+                            $comparison .= ' ?,';
+                            $values[] = $v;
+                        }
+                        if (strlen($comparison) > 0) {
+                            $where[] = $column . ' IN (' . rtrim($comparison, ',') . ')';
+                        }
+                    }
+                    break;
+
+                case 'like':
+                case 'likecode': // 쿼리문만으로 한글 자소분리를 할 수 없으므로 LIKE 구문으로 대체한다.
+                    if (is_string($value) == true || is_numeric($value) == true) {
+                        $where[] = $column . ' like ?';
+                        $values[] = '%' . $value . '%';
+                    }
+                    break;
+
+                case 'likes':
+                case 'likesall':
+                    if (is_string($value) == true || is_numeric($value) == true) {
+                        $keywords = array_values(array_filter(explode(' ', $value)));
+                        if (count($keywords) > 0) {
+                            $likes = [];
+                            foreach ($keywords as $k) {
+                                $likes[] = $column . ' like ?';
+                                $values[] = '%' . $k . '%';
+                            }
+
+                            $likes = implode($operator == 'likes' ? ' OR ' : ' AND ', $likes);
+                            $where[] = '(' . $likes . ')';
+                        }
+                    }
+                    break;
+
+                case 'date':
+                    if (is_object($value) == true) {
+                        $dateoperator = $value?->operator ?? null;
+                        $dateformat = $value?->format ?? null;
+
+                        if ($dateoperator !== null && $dateformat !== null) {
+                            $datestart = null;
+                            $dateend = null;
+
+                            if ($dateoperator == 'today') {
+                                $datestart = $dateend = strtotime(date('Y-m-d'));
+                            } elseif ($dateoperator == 'yesterday') {
+                                $datestart = $dateend = strtotime(date('Y-m-d')) - 86400;
+                            } elseif ($dateoperator == 'thisweek') {
+                                $datestart = strtotime(date('Y-m-d')) - date('w') * 86400;
+                                $dateend = $datestart + 6 * 86400;
+                            } elseif ($dateoperator == 'lastweek') {
+                                $datestart = strtotime(date('Y-m-d')) - date('w') * 86400 - 7 * 86400;
+                                $dateend = $datestart + 6 * 86400;
+                            } elseif ($dateoperator == 'thismonth') {
+                                $datestart = mktime(0, 0, 0, date('n'), 1, date('Y'));
+                                $dateend = mktime(
+                                    0,
+                                    0,
+                                    0,
+                                    date('n', $datestart),
+                                    date('t', $datestart),
+                                    date('Y', $datestart)
+                                );
+                            } elseif ($dateoperator == 'lastmonth') {
+                                $datestart = mktime(0, 0, 0, date('n') - 1, 1, date('Y'));
+                                $dateend = mktime(
+                                    0,
+                                    0,
+                                    0,
+                                    date('n', $datestart),
+                                    date('t', $datestart),
+                                    date('Y', $datestart)
+                                );
+                            } elseif ($dateoperator == 'thisyear') {
+                                $datestart = mktime(0, 0, 0, 1, 1, date('Y'));
+                                $dateend = mktime(0, 0, 0, 12, 31, date('Y', $datestart));
+                            } elseif ($dateoperator == 'lastyear') {
+                                $datestart = mktime(0, 0, 0, 1, 1, date('Y') - 1);
+                                $dateend = mktime(0, 0, 0, 12, 31, date('Y', $datestart));
+                            } elseif ($dateoperator == 'range') {
+                                if (is_array($value->range) == true && count($value->range) == 2) {
+                                    $datestart = strtotime($value->range[0]);
+                                    $dateend = strtotime($value->range[1]);
+                                }
+                            } elseif ($dateoperator == '=') {
+                                $datestart = $dateend = strtotime($value->value);
+                            } elseif ($dateoperator == '<=') {
+                                $dateend = strtotime($value->value);
+                            } elseif ($dateoperator == '>=') {
+                                $datestart = strtotime($value->value);
+                            }
+
+                            if ($datestart !== null && $dateend !== null) {
+                                $comparison = '(';
+
+                                if ($dateformat == 'timestamp') {
+                                    if ($datestart !== null) {
+                                        $comparison .= $column . ' >= ?';
+                                        $values[] = $datestart;
+                                    }
+
+                                    if ($dateend !== null) {
+                                        if ($datestart !== null) {
+                                            $comparison .= ' AND ';
+                                        }
+                                        $comparison .= $column . ' < ?';
+                                        $values[] = $dateend + 86400;
+                                    }
+                                } elseif ($dateformat == 'date') {
+                                    if ($datestart !== null) {
+                                        $datestart = date('Y-m-d', $datestart);
+                                    }
+                                    if ($dateend !== null) {
+                                        $dateend = date('Y-m-d', $dateend);
+                                    }
+
+                                    if ($datestart == $dateend) {
+                                        $comparison .= $column . ' = ?';
+                                        $values[] = $datestart;
+                                    } else {
+                                        if ($datestart !== null) {
+                                            $comparison .= $column . ' >= ?';
+                                            $values[] = $datestart;
+                                        }
+
+                                        if ($dateend !== null) {
+                                            if ($datestart !== null) {
+                                                $comparison .= ' AND ';
+                                            }
+                                            $comparison .= $column . ' <= ?';
+                                            $values[] = $dateend;
+                                        }
+                                    }
+                                } elseif ($dateformat == 'datetime') {
+                                    if ($datestart !== null) {
+                                        $comparison .= $column . ' >= ?';
+                                        $values[] = date('Y-m-d', $datestart) . ' 00:00:00';
+                                    }
+
+                                    if ($dateend !== null) {
+                                        if ($datestart !== null) {
+                                            $comparison .= ' AND ';
+                                        }
+                                        $comparison .= $column . ' < ?';
+                                        $values[] = date('Y-m-d', $dateend + 86400) . ' 00:00:00';
+                                    }
+                                }
+
+                                $comparison .= ')';
+                                $where[] = $comparison;
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (count($where) > 0) {
+            $where = implode(' ' . $mode . ' ', $where);
+            $this->where('(' . $where . ')', $values);
         }
 
         return $this;

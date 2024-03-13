@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 8. 20.
+ * @modified 2024. 3. 14.
  */
 abstract class DatabaseInterface
 {
@@ -275,6 +275,15 @@ abstract class DatabaseInterface
         $havingValue = null,
         ?string $operator = null
     ): DatabaseInterface;
+
+    /**
+     * Aui 의 필터조건을 처리한다.
+     *
+     * @param object $filters 필터조건
+     * @param string $mode 필터모드 (OR, AND)
+     * @param array $columns 필터를 적용할 컬럼 [필터컬럼=>테이블컬럼]
+     */
+    abstract public function setFilters(object $filters, string $mode = 'AND', array $columns = []): DatabaseInterface;
 
     /**
      * JOIN 절을 정의한다. (AND조건)
