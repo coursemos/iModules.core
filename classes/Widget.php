@@ -7,7 +7,7 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 27.
+ * @modified 2024. 3. 14.
  */
 abstract class Widget extends Component
 {
@@ -29,6 +29,29 @@ abstract class Widget extends Component
         if ($this->_init == false) {
             $this->_init = true;
         }
+    }
+
+    /**
+     * 위젯의 데이터를 가져온다.
+     *
+     * @param string $key 가져올 데이터키
+     * @return mixed $value 데이터값
+     */
+    final public function getData(string $key): mixed
+    {
+        return Widgets::getData($this->getName(), $key);
+    }
+
+    /**
+     * 위젯의 데이터를 저장한다.
+     *
+     * @param string $key 저장할 데이터키
+     * @param mixed $value 저장할 데이터값
+     * @return bool $success
+     */
+    final public function setData(string $key, mixed $value): bool
+    {
+        return Widgets::setData($this->getName(), $key, $value);
     }
 
     /**

@@ -7,7 +7,7 @@
  * @file /classes/Widgets.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 3. 14.
  */
 class Widgets
 {
@@ -127,6 +127,33 @@ class Widgets
         }
 
         return self::$_installeds[$base];
+    }
+
+    /**
+     * 위젯 데이터를 가져온다..
+     *
+     * @param string $name 위젯명
+     * @param string $key 가져올 데이터키
+     * @return mixed $value 데이터값
+     */
+    public static function getData(string $name, string $key): mixed
+    {
+        // @todo
+        return null;
+    }
+
+    /**
+     * 위젯 데이터를 저장한다.
+     *
+     * @param string $name 위젯명
+     * @param string $key 저장할 데이터키
+     * @param mixed $value 저장할 데이터값
+     * @return bool $success
+     */
+    public static function setData(string $name, string $key, mixed $value): bool
+    {
+        // @todo
+        return false;
     }
 
     /**
