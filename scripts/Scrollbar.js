@@ -6,7 +6,7 @@
  * @file /scripts/Scrollbar.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 3. 15.
  */
 class Scrollbar {
     /**
@@ -28,7 +28,7 @@ class Scrollbar {
      */
     static create($dom) {
         if ($dom.getData('scrollbar-init') !== true && Html.get('> div[data-role=scrollbar]', $dom).getEl() === null) {
-            const $scrollbar = Html.create('div', { 'data-role': 'scrollbar' });
+            const $scrollbar = Html.create('div', { 'data-role': 'scrollbar', 'data-rendered': 'auto' });
             $scrollbar.append(Scrollbar.createTrack('x'));
             $scrollbar.append(Scrollbar.createTrack('y'));
             $dom.append($scrollbar);
@@ -55,6 +55,7 @@ class Scrollbar {
      * @param {Dom} $dom - 사용자 정의 스크롤바를 사용하는 DOM 객체
      */
     static render($dom) {
+        const $scrollbar = Html.get('> div[data-role=scrollbar]', $dom);
         const scrollWidth = $dom.getScrollWidth();
         const scrollHeight = $dom.getScrollHeight();
         const innerWidth = $dom.is('body') == true ? window.innerWidth : $dom.getInnerWidth();
@@ -62,31 +63,35 @@ class Scrollbar {
         /**
          * X축
          */
-        const $x = Html.get('> div[data-role=scrollbar] > div[data-direction=x]', $dom);
+        const $x = Html.get('div[data-direction=x]', $scrollbar);
         if (scrollWidth <= innerWidth) {
             $x.hide();
         }
         else {
-            $x.setStyle('width', innerWidth + 'px');
+            if ($scrollbar.getData('rendered') == 'auto') {
+                $x.setStyle('width', innerWidth + 'px');
+            }
             $x.show();
             const $thumb = Html.get('div[data-role=thumb]', $x);
             const $track = Html.get('div[data-role=track]', $x);
-            const thumbWidth = (innerWidth / scrollWidth) * innerWidth;
+            const thumbWidth = (innerWidth / scrollWidth) * $track.getOuterWidth();
             const trackWidth = $track.getOuterWidth() - thumbWidth;
             const scrollLeft = $dom.is('body') == true ? document.documentElement.scrollLeft : $dom.getScroll().left;
             const thumbLeft = (scrollLeft / (scrollWidth - innerWidth)) * trackWidth;
-            $thumb.setStyle('height', thumbWidth + 'px');
-            $thumb.setStyle('top', thumbLeft + 'px');
+            $thumb.setStyle('width', thumbWidth + 'px');
+            $thumb.setStyle('left', thumbLeft + 'px');
         }
         /**
          * Y축
          */
-        const $y = Html.get('> div[data-role=scrollbar] > div[data-direction=y]', $dom);
+        const $y = Html.get('div[data-direction=y]', $scrollbar);
         if (scrollHeight <= innerHeight) {
             $y.hide();
         }
         else {
-            $y.setStyle('height', innerHeight + 'px');
+            if ($scrollbar.getData('rendered') == 'auto') {
+                $y.setStyle('height', innerHeight + 'px');
+            }
             $y.show();
             const $thumb = Html.get('div[data-role=thumb]', $y);
             const $track = Html.get('div[data-role=track]', $y);
