@@ -107,7 +107,7 @@ class Template
                 $this->_path = $this->_owner->getBase();
             }
 
-            $this->_path .= '/themes/' . $theme . '/modules/' . $this->_parent->getName();
+            $this->_path .= '/themes/' . $theme . $this->_parent->getBase();
         } else {
             $this->_owner = $parent;
             $this->_name = $template->name;
