@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 12.
+ * @modified 2024. 3. 22.
  */
 class Modules
 {
@@ -439,22 +439,39 @@ class Modules
                     ->count();
 
             self::db()
-                ->replace(self::table('modules'), [
-                    'name' => $name,
-                    'version' => $package->getVersion(),
-                    'hash' => $package->getHash(),
-                    'databases' => $databases,
-                    'attachments' => $attachments,
-                    'is_admin' => $module->hasPackageProperty('ADMIN') == true ? 'TRUE' : 'FALSE',
-                    'is_global' => $module->hasPackageProperty('GLOBAL') == true ? 'TRUE' : 'FALSE',
-                    'is_context' => $module->hasPackageProperty('CONTEXT') == true ? 'TRUE' : 'FALSE',
-                    'is_widget' => $module->hasPackageProperty('WIDGET') == true ? 'TRUE' : 'FALSE',
-                    'is_theme' => $module->hasPackageProperty('THEME') == true ? 'TRUE' : 'FALSE',
-                    'is_cron' => $module->hasPackageProperty('CRON') == true ? 'TRUE' : 'FALSE',
-                    'configs' => Format::toJson($configs),
-                    'events' => 'null',
-                    'sort' => $sort,
-                ])
+                ->insert(
+                    self::table('modules'),
+                    [
+                        'name' => $name,
+                        'version' => $package->getVersion(),
+                        'hash' => $package->getHash(),
+                        'databases' => $databases,
+                        'attachments' => $attachments,
+                        'is_admin' => $module->hasPackageProperty('ADMIN') == true ? 'TRUE' : 'FALSE',
+                        'is_global' => $module->hasPackageProperty('GLOBAL') == true ? 'TRUE' : 'FALSE',
+                        'is_context' => $module->hasPackageProperty('CONTEXT') == true ? 'TRUE' : 'FALSE',
+                        'is_widget' => $module->hasPackageProperty('WIDGET') == true ? 'TRUE' : 'FALSE',
+                        'is_theme' => $module->hasPackageProperty('THEME') == true ? 'TRUE' : 'FALSE',
+                        'is_cron' => $module->hasPackageProperty('CRON') == true ? 'TRUE' : 'FALSE',
+                        'configs' => Format::toJson($configs),
+                        'events' => 'null',
+                        'sort' => $sort,
+                    ],
+                    [
+                        'version',
+                        'hash',
+                        'databases',
+                        'attachments',
+                        'is_admin',
+                        'is_global',
+                        'is_context',
+                        'is_widget',
+                        'is_theme',
+                        'is_cron',
+                        'configs',
+                        'events',
+                    ]
+                )
                 ->execute();
         }
 
