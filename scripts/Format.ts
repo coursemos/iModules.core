@@ -541,6 +541,16 @@ class Format {
                     }
                     break;
 
+                case 'inset':
+                    if (
+                        Array.isArray(value) == false ||
+                        Array.isArray(filter.value) == true ||
+                        value.includes(filter.value) == false
+                    ) {
+                        passed = false;
+                    }
+                    break;
+
                 case 'like':
                     if (value === null || value.indexOf(filter.value) == -1) {
                         passed = false;
