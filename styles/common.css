@@ -6,7 +6,7 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 4.
+ * @modified 2024. 3. 16.
  */
 :root {
     --color-text-100: #b4b4b4;
@@ -61,7 +61,7 @@
      * 기준이 되는 최상위 폰트크기를 지정합니다.
      * 가변폰트를 사용하려면 해당 값을 가변형으로 정의합니다.
      */
-    --font-size-default: 16px;
+    --font-size-default: clamp(16px, 1.6667vw, 24px);
 
     /**
      * 폰트크기
@@ -270,7 +270,6 @@ body {
                 z-index: 10000;
                 width: 0;
                 height: 0;
-                background: green;
 
                 > div[data-role='axis'] {
                     position: absolute;
@@ -335,7 +334,7 @@ body {
                         width: 20px;
                         height: 20px;
                         font-family: moimz;
-                        content: '\ed00';
+                        content: '\efff';
                         font-size: 16px;
                         text-align: center;
                         line-height: 20px;
@@ -722,7 +721,7 @@ body {
                         font-family: moimz;
                         font-style: normal;
                         &::before {
-                            content: '\ec12';
+                            content: '\e786';
                         }
                     }
                 }
@@ -813,7 +812,7 @@ body {
                                 background: var(--input-background-select);
                                 color: var(--input-color-select);
                                 font-family: moimz;
-                                content: '\eb10';
+                                content: '\e404';
                                 font-size: var(--input-font-size);
                                 text-align: center;
                                 line-height: calc(var(--input-font-size) + 4px);
@@ -888,7 +887,7 @@ body {
                         font-style: normal;
 
                         &::before {
-                            content: '\e906';
+                            content: '\e234';
                         }
                     }
 
@@ -937,7 +936,7 @@ body {
 
                         > i {
                             &::before {
-                                content: '\e905';
+                                content: '\e233';
                             }
                         }
                     }
