@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 1.
+ * @modified 2024. 4. 5.
  */
 class iModules {
     static language: string;
@@ -407,7 +407,16 @@ namespace iModules {
  */
 Html.ready(() => {
     const $body = Html.get('body');
-    $body.setAttr('data-device', iModules.isMobile() == true ? 'mobile' : 'desktop');
+    $body.setData('device', iModules.isMobile() == true ? 'mobile' : 'desktop');
+
+    if ($body.getData('color-scheme') === null) {
+        $body.setData('color-scheme', 'auto');
+    }
+
+    $body.setData(
+        'prefers-color-scheme',
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    );
 
     /**
      * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
