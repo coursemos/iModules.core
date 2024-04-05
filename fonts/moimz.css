@@ -6,14 +6,14 @@
  * @file /fonts/moimz.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 3.0.0
- * @modified 2024. 4. 3.
+ * @version 3.0.1
+ * @modified 2024. 4. 6.
  */
 @font-face {
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.0.0') format('woff2');
+    src: url('./moimz.woff2?v=3.0.1') format('woff2');
     font-display: block;
 }
 
@@ -205,6 +205,9 @@
 }
 .mi-copymove::before {
     content: '\e416';
+}
+.mi-placeholder::before {
+    content: '\e420';
 }
 .mi-placeholder-plus::before {
     content: '\e421';
@@ -446,6 +449,12 @@
 .mi-image-remove::before {
     content: '\e803';
 }
+.mi-android::before {
+    content: '\e8c4';
+}
+.mi-github::before {
+    content: '\e8c6';
+}
 .mi-light::before {
     content: '\e901';
 }
@@ -473,11 +482,74 @@
 .mi-admin::before {
     content: '\ea07';
 }
-.mi-hash::before {
+.mi-google::before {
     content: '\eb01';
 }
-.mi-key::before {
+.mi-apple::before {
     content: '\eb02';
+}
+.mi-microsoft::before {
+    content: '\eb03';
+}
+.mi-windows::before {
+    content: '\eb04';
+}
+.mi-google-play::before {
+    content: '\eb05';
+}
+.mi-youtube::before {
+    content: '\eb10';
+}
+.mi-twitch::before {
+    content: '\eb12';
+}
+.mi-vimeo::before {
+    content: '\eb13';
+}
+.mi-facebook::before {
+    content: '\eb21';
+}
+.mi-instagram::before {
+    content: '\eb22';
+}
+.mi-twitter-x::before {
+    content: '\eb23';
+}
+.mi-slack::before {
+    content: '\eb24';
+}
+.mi-discord::before {
+    content: '\eb25';
+}
+.mi-linkedin::before {
+    content: '\eb26';
+}
+.mi-naver::before {
+    content: '\ebf1';
+}
+.mi-kakaotalk::before {
+    content: '\ebf2';
+}
+.mi-hash::before {
+    content: '\ec01';
+}
+.mi-key::before {
+    content: '\ec02';
+}
+.mi-tag::before {
+    content: '\ec03';
+}
+.mi-notice::before {
+    content: '\ec04';
+}
+.mi-map::before {
+    content: '\ec05';
+}
+.mi-building::before {
+    content: '\ec06';
+}
+.mi-shop::before {
+    content: '\ec07';
 }
 .mi-code::before {
     content: '\ed00';
