@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2024. 4. 5.
  */
 class Package
 {
@@ -411,6 +411,10 @@ class Package
             foreach ($configs->options ?? [] as $value => $display) {
                 $field->options[$value] = $this->getByLanguage($display, null, true);
             }
+        }
+
+        if ($field->type == 'theme') {
+            $field->category = $configs->category ?? 'website';
         }
 
         if ($field->type == 'template') {

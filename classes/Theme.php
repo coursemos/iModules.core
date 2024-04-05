@@ -222,6 +222,16 @@ class Theme
     }
 
     /**
+     * 테마 카테고리를 가져온다.
+     *
+     * @return string $type website, admin
+     */
+    public function getCategory(): string
+    {
+        return $this->getPackage()->get('category') ?? 'website';
+    }
+
+    /**
      * 현재 테마의 기본경로를 가져온다.
      *
      * @return string $path
