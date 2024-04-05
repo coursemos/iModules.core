@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 23.
+ * @modified 2024. 4. 5.
  */
 class Template
 {
@@ -111,9 +111,9 @@ class Template
         } else {
             $this->_owner = $parent;
             $this->_name = $template->name;
-            $this->_path = $this->_parent->getBase() . '/templates';
+            $this->_path = $this->_parent->getBase();
         }
-        $this->_path .= '/' . $this->_name;
+        $this->_path .= '/templates/' . $this->_name;
 
         if (is_dir($this->getPath()) == false || is_file($this->getPath() . '/package.json') == false) {
             ErrorHandler::print($this->error('NOT_FOUND_TEMPLATE', $this->getPath()));
