@@ -6,14 +6,14 @@
  * @file /fonts/moimz.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 3.0.1
+ * @version 3.0.0
  * @modified 2024. 4. 6.
  */
 @font-face {
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.0.1') format('woff2');
+    src: url('./moimz.woff2?v=3.0.0.4') format('woff2');
     font-display: block;
 }
 
@@ -118,6 +118,9 @@
 }
 .mi-refresh::before {
     content: '\e228';
+}
+.mi-replace::before {
+    content: '\e229';
 }
 .mi-caret-left::before {
     content: '\e231';
@@ -368,7 +371,7 @@
 .mi-save::before {
     content: '\e743';
 }
-.mi-erase::before {
+.mi-eraser::before {
     content: '\e744';
 }
 .mi-config::before {
@@ -448,6 +451,9 @@
 }
 .mi-image-remove::before {
     content: '\e803';
+}
+.mi-image-text::before {
+    content: '\e804';
 }
 .mi-android::before {
     content: '\e8c4';
@@ -575,6 +581,12 @@
 .mi-subscript::before {
     content: '\ed07';
 }
+.mi-superscript::before {
+    content: '\ed08';
+}
+.mi-paragraph::before {
+    content: '\ed09';
+}
 .mi-align-justify::before {
     content: '\ed10';
 }
@@ -586,6 +598,9 @@
 }
 .mi-align-right::before {
     content: '\ed13';
+}
+.mi-vertical-align::before {
+    content: '\ed14';
 }
 .mi-table::before {
     content: '\ed20';
@@ -602,8 +617,17 @@
 .mi-heading-cell::before {
     content: '\ed24';
 }
-.mi-list::before {
+.mi-outer-border::before {
+    content: '\ed25';
+}
+.mi-inner-border::before {
+    content: '\ed26';
+}
+.mi-list-ul::before {
     content: '\ed31';
+}
+.mi-list-ol::before {
+    content: '\ed32';
 }
 .mi-link::before {
     content: '\ed41';
@@ -620,14 +644,26 @@
 .mi-image-block::before {
     content: '\ed53';
 }
-.mi-vertical-align::before {
+.mi-line-height::before {
     content: '\ed61';
 }
 .mi-transform::before {
     content: '\ed62';
 }
-.mi-palette::before {
+.mi-textarea::before {
     content: '\ed63';
+}
+.mi-palette::before {
+    content: '\ed64';
+}
+.mi-paint::before {
+    content: '\ed65';
+}
+.mi-brush::before {
+    content: '\ed66';
+}
+.mi-cursor-box::before {
+    content: '\ed67';
 }
 .mi-video::before {
     content: '\ed71';
