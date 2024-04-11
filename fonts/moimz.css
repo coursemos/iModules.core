@@ -13,7 +13,7 @@
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.0.0.4') format('woff2');
+    src: url('./moimz.woff2?v=3.0.0.5') format('woff2');
     font-display: block;
 }
 
@@ -442,6 +442,9 @@
 }
 .mi-calendar-minus-01::before {
     content: '\e790';
+}
+.mi-calendar-dates::before {
+    content: '\e791';
 }
 .mi-image::before {
     content: '\e801';
