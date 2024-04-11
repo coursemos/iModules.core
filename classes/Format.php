@@ -272,8 +272,7 @@ class Format
     public static function microtime(int $scale = 8): string
     {
         $scale = min(8, $scale);
-        $microtimestmp = explode(' ', microtime());
-        return $microtimestmp[1] . substr($microtimestmp[0], 1, $scale + 1);
+        return sprintf('%0.' . $scale . 'f', microtime(true));
     }
 
     /**
