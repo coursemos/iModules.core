@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 4. 12.
  */
 class Theme
 {
@@ -40,6 +40,11 @@ class Theme
      * @var Package $_name 테마 패키지 정보 (package.json)
      */
     private Package $_package;
+
+    /**
+     * @var string $_category 테마 카테고리
+     */
+    private string $_category;
 
     /**
      * @var object $_configs 테마 환경설정
@@ -123,6 +128,11 @@ class Theme
         if ($this->_isLoaded() === false) {
             ErrorHandler::print($this->error('NOT_INITIALIZED_THEME'));
         }
+
+        /**
+         * 테마 카테고리에 따라 기본 스타일시트를 불러온다.
+         */
+        Cache::style($this->getCacheName(), '/styles/themes/' . $this->getCategory() . '.css');
 
         /**
          * 테마 설정에서 css value 가 존재하는 경우 css 를 생성한다.
@@ -224,11 +234,15 @@ class Theme
     /**
      * 테마 카테고리를 가져온다.
      *
-     * @return string $type website, admin
+     * @return string $type website, admin 등
      */
     public function getCategory(): string
     {
-        return $this->getPackage()->get('category') ?? 'website';
+        if (isset($this->_category) == false) {
+            $this->_category = $this->getPackage()->get('category') ?? 'website';
+        }
+
+        return $this->_category;
     }
 
     /**
