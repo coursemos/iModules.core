@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 5.
+ * @modified 2024. 4. 15.
  */
 class iModules {
     static language: string;
@@ -417,6 +417,10 @@ Html.ready(() => {
         'prefers-color-scheme',
         window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     );
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        $body.setData('prefers-color-scheme', e.matches ? 'dark' : 'light');
+    });
 
     /**
      * 현재 페이지에 사용중인 모듈 클래스를 초기화한다.
