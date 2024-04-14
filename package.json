@@ -17,7 +17,8 @@
     "dependencies": {
         "modules/admin": "4.0.0",
         "modules/member": "4.0.0",
-        "modules/attachment": "4.0.0"
+        "modules/attachment": "4.0.0",
+        "modules/wysiwyg": "4.0.0"
     },
     "prefix": "im_",
     "databases": {
