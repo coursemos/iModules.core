@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 12.
+ * @modified 2024. 4. 15.
  */
 class Theme
 {
@@ -128,11 +128,6 @@ class Theme
         if ($this->_isLoaded() === false) {
             ErrorHandler::print($this->error('NOT_INITIALIZED_THEME'));
         }
-
-        /**
-         * 테마 카테고리에 따라 기본 스타일시트를 불러온다.
-         */
-        Cache::style($this->getCacheName(), '/styles/themes/' . $this->getCategory() . '.css');
 
         /**
          * 테마 설정에서 css value 가 존재하는 경우 css 를 생성한다.
