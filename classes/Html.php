@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 14.
+ * @modified 2024. 4. 15.
  */
 class Html
 {
@@ -213,9 +213,7 @@ class Html
                 $path = Configs::dir() . $path;
             }
 
-            if ($priority == -1 && isset(self::$_scripts[$path]) == true) {
-                unset(self::$_scripts[$path]);
-            } else {
+            if (isset(self::$_scripts[$path]) == false || self::$_scripts[$path] > -1) {
                 self::$_scripts[$path] = $priority;
             }
         }
@@ -251,9 +249,7 @@ class Html
                 $path = Configs::dir() . $path;
             }
 
-            if ($priority == -1 && isset(self::$_styles[$path]) == true) {
-                unset(self::$_styles[$path]);
-            } else {
+            if (isset(self::$_styles[$path]) == false || self::$_styles[$path] > -1) {
                 self::$_styles[$path] = $priority;
             }
         }
@@ -360,21 +356,25 @@ class Html
          * 스크립트 경로를 <HEAD>에 추가한다.
          */
         foreach (self::$_scripts as $path => $priority) {
-            self::_head(self::element('script', ['src' => $path . self::_time($path)], ''), 1000 + $priority);
+            if ($priority > 0) {
+                self::_head(self::element('script', ['src' => $path . self::_time($path)], ''), 1000 + $priority);
+            }
         }
 
         /**
          * 스타일시트 경로를 <HEAD>에 추가한다.
          */
         foreach (self::$_styles as $path => $priority) {
-            self::_head(
-                self::element('link', [
-                    'rel' => 'stylesheet',
-                    'href' => $path . self::_time($path),
-                    'type' => 'text/css',
-                ]),
-                2000 + $priority
-            );
+            if ($priority > 0) {
+                self::_head(
+                    self::element('link', [
+                        'rel' => 'stylesheet',
+                        'href' => $path . self::_time($path),
+                        'type' => 'text/css',
+                    ]),
+                    2000 + $priority
+                );
+            }
         }
 
         /**
