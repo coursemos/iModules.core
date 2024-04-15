@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 15.
+ * @modified 2024. 4. 16.
  */
 class Html
 {
@@ -272,10 +272,13 @@ class Html
      *
      * @param string $attribute attribute 명 (class, style 등)
      * @param ?string $value attribute 값 (NULL 인 경우 빈 attribute 를 추가한다.)
+     * @param ?bool $is_replacement 먼저 정의된 attribute 를 대치할지 여부
      */
-    public static function body(string $attribute, ?string $value = null): void
+    public static function body(string $attribute, ?string $value = null, ?bool $is_replacement = true): void
     {
-        self::$_attributes[$attribute] = $value;
+        if ($is_replacement === true || isset(self::$_attributes[$attribute]) == false) {
+            self::$_attributes[$attribute] = $value;
+        }
     }
 
     /**
