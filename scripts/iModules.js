@@ -72,6 +72,46 @@ class iModules {
         }
     }
     /**
+     * 쿠키 데이터를 처리한다.
+     *
+     * @param {string} key - 데이터키
+     * @param {any} value - 저장할 데이터 (undefined 인 경우 저장된 데이터를 가져온다.)
+     * @return {any} data - 데이터를 가져올 경우 해당 데이터값
+     */
+    static cookie(key, value = undefined, expired = 0, path = null) {
+        if (value === undefined) {
+            const cookies = document.cookie.split(';');
+            for (const cookie of cookies) {
+                if (cookie.indexOf(key + '=') != -1) {
+                    return cookie.split('=').pop();
+                }
+            }
+            return null;
+        }
+        else {
+            path = path ?? '/';
+            const unixtime = new Date().getTime();
+            if (value === null) {
+                expired = unixtime - 3600 * 1000;
+            }
+            else {
+                expired = unixtime + expired * 1000;
+            }
+            const time = new Date();
+            time.setTime(expired);
+            document.cookie = key + '=' + encodeURIComponent(value) + '; path=' + path + ';' + time.toUTCString();
+        }
+    }
+    /**
+     * 컬러모드를 변경한다.
+     *
+     * @param {string} color - 컬러모드
+     */
+    static colorScheme(color) {
+        Html.get('body').setData('color-scheme', color);
+        iModules.cookie('IM_COLOR_SCHEME', color);
+    }
+    /**
      * 컨텍스트 URL 경로를 가져온다.
      *
      * @param {string} subUrl - 추가할 컨텍스트 URL

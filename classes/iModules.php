@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 20.
+ * @modified 2024. 4. 16.
  */
 class iModules
 {
@@ -490,6 +490,7 @@ class iModules
          * @todo 이벤트
          */
         Html::body('data-context-url', $context->getUrl());
+        Html::body('data-color-scheme', Request::cookie('IM_COLOR_SCHEME') ?? 'auto', false);
         Html::print(Html::header(), $layout, Html::footer());
 
         Html::print(
