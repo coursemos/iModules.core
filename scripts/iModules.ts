@@ -106,7 +106,8 @@ class iModules {
             const time = new Date();
             time.setTime(expired);
 
-            document.cookie = key + '=' + encodeURIComponent(value) + '; path=' + path + ';' + time.toUTCString();
+            document.cookie =
+                key + '=' + encodeURIComponent(value) + '; path=' + path + '; expires=' + time.toUTCString();
         }
     }
 
@@ -117,7 +118,7 @@ class iModules {
      */
     static colorScheme(color: string): void {
         Html.get('body').setData('color-scheme', color);
-        iModules.cookie('IM_COLOR_SCHEME', color);
+        iModules.cookie('IM_COLOR_SCHEME', color, 60 * 60 * 24 * 365);
     }
 
     /**
