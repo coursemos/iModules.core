@@ -7,7 +7,7 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 14.
+ * @modified 2024. 4. 16.
  */
 abstract class Widget extends Component
 {
@@ -104,7 +104,7 @@ abstract class Widget extends Component
             'div',
             [
                 'data-role' => 'widget',
-                'data-name' => $this->getName(),
+                'data-widget' => $this->getName(),
                 'data-template' => $template->getName(),
                 'data-module' => $this->getParentModule()?->getName() ?? 'core',
             ],
