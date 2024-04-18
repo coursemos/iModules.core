@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 10.
+ * @modified 2024. 4. 18.
  */
 class Ajax {
     static errorHandler = null;
@@ -86,7 +86,7 @@ class Ajax {
             'Accept': 'application/json',
         };
         let body = null;
-        if (method == 'POST' || method == 'PUT') {
+        if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
             if (data instanceof FormData) {
                 body = data;
             }
@@ -156,6 +156,19 @@ class Ajax {
      */
     static async post(url, data = {}, params = {}, is_retry = true) {
         return Ajax.#call('POST', url, params, data, is_retry);
+    }
+    /**
+     * PATCH 방식으로 데이터를 가져온다.
+     * 전송할 데이터는 JSON 방식으로 전송된다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Data|FormData} data - 전송할 데이터
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean|number} is_retry - 재시도여부
+     * @return {Promise<Ajax.Results>} results - 요청결과
+     */
+    static async patch(url, data = {}, params = {}, is_retry = true) {
+        return Ajax.#call('PATCH', url, params, data, is_retry);
     }
     /**
      * DELETE 방식으로 데이터를 가져온다.
