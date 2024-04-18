@@ -7,7 +7,7 @@
  * @file /classes/Context.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2024. 4. 18.
  */
 class Context
 {
@@ -312,6 +312,26 @@ class Context
     public function getSort(): int
     {
         return $this->_sort;
+    }
+
+    /**
+     * 컨텍스트 순서를 변경한다.
+     *
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        if ($this->_sort == $sort) {
+            return;
+        }
+
+        $this->_sort = $sort;
+        iModules::db()
+            ->update(iModules::table('contexts'), ['sort' => $sort])
+            ->where('host', $this->_host)
+            ->where('language', $this->_language)
+            ->where('path', $this->_path)
+            ->execute();
     }
 
     /**
