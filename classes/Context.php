@@ -32,19 +32,24 @@ class Context
     private ?string $_icon;
 
     /**
-     * @var string $_icon 컨텍스트 제목
+     * @var string $_title 컨텍스트 제목
      */
     private string $_title;
 
     /**
-     * @var ?string $_icon 컨텍스트 대표이미지
-     */
-    private ?string $_image;
-
-    /**
-     * @var ?string $_icon 컨텍스트 설명
+     * @var ?string $_description 컨텍스트 설명
      */
     private ?string $_description;
+
+    /**
+     * @var ?string $_keywords 컨텍스트 키워드
+     */
+    private ?string $_keywords;
+
+    /**
+     * @var \modules\attachment\dtos\Attachment|string|null $_image 컨텍스트 대표이미지
+     */
+    private \modules\attachment\dtos\Attachment|string|null $_image;
 
     /**
      * @var string $_type 컨텍스트 종류
@@ -123,8 +128,9 @@ class Context
         $this->_path = $context->path;
         $this->_icon = $context->icon;
         $this->_title = $context->title;
-        $this->_image = $context->image;
         $this->_description = $context->description;
+        $this->_keywords = $context->keywords;
+        $this->_image = $context->image;
         $this->_type = $context->type;
         $this->_target = $context->target;
         $this->_context = $context->context;
@@ -213,21 +219,41 @@ class Context
     /**
      * 컨텍스트 대표이미지를 가져온다.
      *
-     * @return string $image
+     * @return ?\modules\attachment\dtos\Attachment $image
      */
-    public function getImage(): string
+    public function getImage(): ?\modules\attachment\dtos\Attachment
     {
+        if (is_string($this->_image) == true) {
+            /**
+             * @var \modules\attachment\Attachment $mAttachment
+             */
+            $mAttachment = Modules::get('attachment');
+            $this->_image = $mAttachment->getAttachment($this->_image);
+        }
+
         return $this->_image;
     }
 
     /**
      * 컨텍스트 설명을 가져온다.
      *
+     * @param bool $is_html - 줄바꿈 기호를 HTML 태그로 치환할 지 여부
      * @return string $description
      */
-    public function getDescription(): string
+    public function getDescription(bool $is_html = true): string
     {
-        return $this->_description ?? '';
+        return preg_replace('/(\r\n|\n)/', $is_html == true ? '<br>' : '\n', $this->_description ?? '');
+    }
+
+    /**
+     * 컨텍스트 키워드를 가져온다.
+     *
+     * @param string $spliter - 줄바꿈기호를 대체할 문자열 (기본값 : ,)
+     * @return string $description
+     */
+    public function getKeywords(string $spliter = ','): string
+    {
+        return preg_replace('/(\r\n|\n)/', $spliter, $this->_keywords ?? '');
     }
 
     /**

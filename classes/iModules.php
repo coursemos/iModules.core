@@ -386,7 +386,10 @@ class iModules
              */
             $site = $route->getSite();
             Html::title($site->getTitle());
-            Html::description($site->getDescription());
+            Html::description($site->getDescription(false));
+            if ($site->getKeywords()) {
+                Html::keywords($site->getKeywords());
+            }
             Html::canonical($route->getUrl(true, true), false);
 
             /**
@@ -466,8 +469,11 @@ class iModules
         if ($route->getPath() !== '/') {
             Html::title($context->getTitle() . ' - ' . $context->getSite()->getTitle());
         }
-        if ($context->getDescription()) {
-            Html::description($context->getDescription());
+        if ($context->getDescription(false)) {
+            Html::description($context->getDescription(false));
+        }
+        if ($context->getKeywords()) {
+            Html::keywords($context->getKeywords());
         }
 
         /**

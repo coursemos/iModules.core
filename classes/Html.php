@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 16.
+ * @modified 2024. 4. 18.
  */
 class Html
 {
@@ -45,6 +45,11 @@ class Html
      * @var ?string $_description HTML 문서 설명
      */
     private static ?string $_description = null;
+
+    /**
+     * @var ?string $_keywords HTML 문서 키워드
+     */
+    private static ?string $_keywords = null;
 
     /**
      * @var string $_robots <META NAME="ROBOTS"> 태그설정
@@ -156,6 +161,16 @@ class Html
     public static function description(string $description): void
     {
         self::$_description = addslashes(preg_replace('/(\r|\n)/', ' ', $description));
+    }
+
+    /**
+     * HTML 키워드를 정의한다.
+     *
+     * @param string $keywords
+     */
+    public static function keywords(string $keywords): void
+    {
+        self::$_keywords = addslashes(preg_replace('/(\r|\n)/', ' ', $keywords));
     }
 
     /**
@@ -333,6 +348,7 @@ class Html
         $title = self::$_title ?? 'iModules';
         self::_head(self::element('title', null, $title), 1);
         self::_head(self::element('meta', ['name' => 'description', 'content' => self::$_description]), 2);
+        self::_head(self::element('meta', ['name' => 'keywords', 'content' => self::$_keywords]), 2);
         self::_head(self::element('meta', ['name' => 'viewport', 'content' => self::$_viewport]), 3);
 
         if (self::$_canonical != null) {

@@ -7,15 +7,10 @@
  * @file /classes/Site.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 4. 18.
  */
 class Site
 {
-    /**
-     * @var object $_site 사이트 RAW 데이터
-     */
-    private object $_site;
-
     /**
      * @var string $_host 호스트명
      */
@@ -37,9 +32,14 @@ class Site
     private ?string $_description;
 
     /**
-     * @var Theme $_theme 사이트 테마 객체
+     * @var string $_keywords 사이트 키워드
      */
-    private Theme $_theme;
+    private ?string $_keywords;
+
+    /**
+     * @var Theme|string $_theme 사이트 테마 객체
+     */
+    private Theme|string $_theme;
 
     /**
      * @var string $_color 사이트 테마 색상
@@ -47,24 +47,24 @@ class Site
     private string $_color;
 
     /**
-     * @var ?\modules\attachment\dtos\Attachment $_logo 사이트 로고객체
+     * @var \modules\attachment\dtos\Attachment|string|null $_logo 사이트 로고객체
      */
-    private ?\modules\attachment\dtos\Attachment $_logo;
+    private \modules\attachment\dtos\Attachment|string|null $_logo;
 
     /**
-     * @var ?\modules\attachment\dtos\Attachment $_favicon 사이트 Favicon
+     * @var \modules\attachment\dtos\Attachment|string|null $_favicon 사이트 Favicon
      */
-    private ?\modules\attachment\dtos\Attachment $_favicon;
+    private \modules\attachment\dtos\Attachment|string|null $_favicon;
 
     /**
-     * @var ?\modules\attachment\dtos\Attachment $_emblem 사이트 엠블럼
+     * @var \modules\attachment\dtos\Attachment|string|null $_emblem 사이트 엠블럼
      */
-    private ?\modules\attachment\dtos\Attachment $_emblem;
+    private \modules\attachment\dtos\Attachment|string|null $_emblem;
 
     /**
-     * @var ?\modules\attachment\dtos\Attachment $_image 사이트 대표이미지
+     * @var \modules\attachment\dtos\Attachment|string|null $_image 사이트 대표이미지
      */
-    private ?\modules\attachment\dtos\Attachment $_image;
+    private \modules\attachment\dtos\Attachment|string|null $_image;
 
     /**
      * @var object $_header 사이트 헤더설정
@@ -93,11 +93,16 @@ class Site
      */
     public function __construct(object $site)
     {
-        $this->_site = $site;
         $this->_host = $site->host;
         $this->_language = $site->language;
         $this->_title = $site->title;
         $this->_description = $site->description;
+        $this->_keywords = $site->keywords;
+        $this->_theme = $site->theme;
+        $this->_logo = $site->logo;
+        $this->_favicon = $site->favicon;
+        $this->_emblem = $site->emblem;
+        $this->_image = $site->image;
         $this->_color = $site->color;
         $this->_header = json_decode($site->header ?? '');
         $this->_footer = json_decode($site->footer ?? '');
@@ -146,11 +151,23 @@ class Site
     /**
      * 사이트 설명을 가져온다.
      *
+     * @param bool $is_html - 줄바꿈 기호를 HTML 태그로 치환할 지 여부
      * @return string $description
      */
-    public function getDescription(): string
+    public function getDescription(bool $is_html = true): string
     {
-        return $this->_description ?? '';
+        return preg_replace('/(\r\n|\n)/', $is_html == true ? '<br>' : '\n', $this->_description ?? '');
+    }
+
+    /**
+     * 사이트 키워드를 가져온다.
+     *
+     * @param string $spliter - 줄바꿈기호를 대체할 문자열 (기본값 : ,)
+     * @return string $description
+     */
+    public function getKeywords(string $spliter = ','): string
+    {
+        return preg_replace('/(\r\n|\n)/', $spliter, $this->_keywords ?? '');
     }
 
     /**
@@ -160,11 +177,10 @@ class Site
      */
     public function getTheme(): Theme
     {
-        if (isset($this->_theme) == true) {
-            return $this->_theme;
+        if (is_string($this->_theme) == true) {
+            $this->_theme = new Theme(json_decode($this->_theme));
         }
 
-        $this->_theme = new Theme(json_decode($this->_site->theme));
         return $this->_theme;
     }
 
@@ -185,15 +201,13 @@ class Site
      */
     public function getLogo(): ?\modules\attachment\dtos\Attachment
     {
-        if (isset($this->_logo) == true) {
-            return $this->_logo;
+        if (is_string($this->_logo) == true) {
+            /**
+             * @var \modules\attachment\Attachment $mAttachment
+             */
+            $mAttachment = Modules::get('attachment');
+            $this->_logo = $mAttachment->getAttachment($this->_logo);
         }
-
-        /**
-         * @var \modules\attachment\Attachment $mAttachment
-         */
-        $mAttachment = Modules::get('attachment');
-        $this->_logo = $this->_site->logo != null ? $mAttachment->getAttachment($this->_site->logo) : null;
 
         return $this->_logo;
     }
@@ -205,15 +219,13 @@ class Site
      */
     public function getFavicon(): ?\modules\attachment\dtos\Attachment
     {
-        if (isset($this->_favicon) == true) {
-            return $this->_favicon;
+        if (is_string($this->_favicon) == true) {
+            /**
+             * @var \modules\attachment\Attachment $mAttachment
+             */
+            $mAttachment = Modules::get('attachment');
+            $this->_favicon = $mAttachment->getAttachment($this->_favicon);
         }
-
-        /**
-         * @var \modules\attachment\Attachment $mAttachment
-         */
-        $mAttachment = Modules::get('attachment');
-        $this->_favicon = $this->_site->favicon != null ? $mAttachment->getAttachment($this->_site->favicon) : null;
 
         return $this->_favicon;
     }
@@ -225,15 +237,13 @@ class Site
      */
     public function getEmblem(): ?\modules\attachment\dtos\Attachment
     {
-        if (isset($this->_emblem) == true) {
-            return $this->_emblem;
+        if (is_string($this->_emblem) == true) {
+            /**
+             * @var \modules\attachment\Attachment $mAttachment
+             */
+            $mAttachment = Modules::get('attachment');
+            $this->_emblem = $mAttachment->getAttachment($this->_emblem);
         }
-
-        /**
-         * @var \modules\attachment\Attachment $mAttachment
-         */
-        $mAttachment = Modules::get('attachment');
-        $this->_emblem = $this->_site->emblem != null ? $mAttachment->getAttachment($this->_site->emblem) : null;
 
         return $this->_emblem;
     }
@@ -245,15 +255,13 @@ class Site
      */
     public function getImage(): ?\modules\attachment\dtos\Attachment
     {
-        if (isset($this->_image) == true) {
-            return $this->_image;
+        if (is_string($this->_image) == true) {
+            /**
+             * @var \modules\attachment\Attachment $mAttachment
+             */
+            $mAttachment = Modules::get('attachment');
+            $this->_image = $mAttachment->getAttachment($this->_image);
         }
-
-        /**
-         * @var \modules\attachment\Attachment $mAttachment
-         */
-        $mAttachment = Modules::get('attachment');
-        $this->_image = $this->_site->image != null ? $mAttachment->getAttachment($this->_site->image) : null;
 
         return $this->_image;
     }
