@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 11.
+ * @modified 2024. 4. 20.
  */
 class Dom {
     element;
@@ -358,7 +358,9 @@ class Dom {
     getScrollWidth() {
         if (this.element == null)
             return 0;
-        return this.element.scrollWidth;
+        const style = window.getComputedStyle(this.element);
+        const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+        return this.element.scrollWidth + border;
     }
     /**
      * HTML 엘리먼트의 스크롤 높이를 가져온다.
@@ -368,7 +370,9 @@ class Dom {
     getScrollHeight() {
         if (this.element == null)
             return 0;
-        return this.element.scrollHeight;
+        const style = window.getComputedStyle(this.element);
+        const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+        return this.element.scrollHeight + border;
     }
     /**
      * HTML 엘리먼트의 문서 전체 기준으로 위치를 가져온다.

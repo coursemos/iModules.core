@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 11.
+ * @modified 2024. 4. 20.
  */
 class Dom {
     element: HTMLElement | null;
@@ -384,7 +384,11 @@ class Dom {
      */
     getScrollWidth(): number {
         if (this.element == null) return 0;
-        return this.element.scrollWidth;
+
+        const style = window.getComputedStyle(this.element);
+        const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+
+        return this.element.scrollWidth + border;
     }
 
     /**
@@ -394,7 +398,11 @@ class Dom {
      */
     getScrollHeight(): number {
         if (this.element == null) return 0;
-        return this.element.scrollHeight;
+
+        const style = window.getComputedStyle(this.element);
+        const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+
+        return this.element.scrollHeight + border;
     }
 
     /**
