@@ -7,7 +7,7 @@
  * @file /classes/Databases/mysql.class.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 14.
+ * @modified 2024. 4. 22.
  */
 namespace databases\mysql;
 
@@ -591,9 +591,9 @@ class mysql extends DatabaseInterface
                     } elseif ($column->type == 'json') {
                         $defaults[$name] = 'null';
                     } elseif ($column->type == 'date') {
-                        $defaults[$name] = '0000-00-00';
+                        $defaults[$name] = '1900-01-01';
                     } elseif ($column->type == 'datetime') {
-                        $defaults[$name] = '0000-00-00 00:00:00';
+                        $defaults[$name] = '1900-01-01 00:00:00';
                     } else {
                         $defaults[$name] = '';
                     }
