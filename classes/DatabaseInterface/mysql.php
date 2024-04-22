@@ -7,7 +7,7 @@
  * @file /classes/Databases/mysql.class.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 22.
+ * @modified 2024. 4. 23.
  */
 namespace databases\mysql;
 
@@ -194,12 +194,27 @@ class mysql extends DatabaseInterface
     /**
      * 데이터베이스의 전체 테이블목록을 가져온다.
      *
-     * @param bool $include_desc 테이블구조 포함여부
      * @return array $tables
      */
-    public function tables(bool $include_desc = false): array
+    public function tables(): array
     {
-        return [];
+        $tables = [];
+        $rows = $this->query('SHOW TABLE STATUS')->get();
+        foreach ($rows as $row) {
+            $table = new stdClass();
+            $table->name = $row->Name;
+            $table->engine = $row->Engine;
+            $table->rows = $row->Rows;
+            $table->data_size = $row->Data_length;
+            $table->index_size = $row->Index_length;
+            $table->table_size = $row->Data_length + $row->Index_length;
+            $table->collation = $row->Collation;
+            $table->comment = $row->Comment;
+
+            $tables[] = $table;
+        }
+
+        return $tables;
     }
 
     /**

@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 14.
+ * @modified 2024. 4. 23.
  */
 abstract class DatabaseInterface
 {
@@ -50,10 +50,9 @@ abstract class DatabaseInterface
     /**
      * 데이터베이스의 전체 테이블목록을 가져온다.
      *
-     * @param bool $include_desc 테이블구조 포함여부
      * @return array $tables
      */
-    abstract public function tables(bool $include_desc = false): array;
+    abstract public function tables(): array;
 
     /**
      * 테이블명이 존재하는지 확인한다.
