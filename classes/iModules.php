@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 16.
+ * @modified 2024. 4. 23.
  */
 class iModules
 {
@@ -105,8 +105,7 @@ class iModules
      */
     public static function table(string $table): string
     {
-        // todo: prefix 설정 제대로
-        return 'im_' . $table;
+        return (Configs::get('db')?->prefix ?? 'im_') . $table;
     }
 
     /**
