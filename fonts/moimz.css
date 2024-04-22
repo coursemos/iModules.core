@@ -6,14 +6,14 @@
  * @file /fonts/moimz.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 3.0.0
- * @modified 2024. 4. 6.
+ * @version 3.2.17
+ * @modified 2024. 4. 22.
  */
 @font-face {
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.0.0.5') format('woff2');
+    src: url('./moimz.woff2?v=3.2.17') format('woff2');
     font-display: block;
 }
 
@@ -473,6 +473,9 @@
 .mi-auto::before {
     content: '\e903';
 }
+.mi-dashboard::before {
+    content: '\ea00';
+}
 .mi-module::before {
     content: '\ea01';
 }
@@ -485,7 +488,7 @@
 .mi-sitemap::before {
     content: '\ea04';
 }
-.mi-glyph::before {
+.mi-database::before {
     content: '\ea05';
 }
 .mi-admin::before {
@@ -559,6 +562,21 @@
 }
 .mi-shop::before {
     content: '\ec07';
+}
+.mi-grid::before {
+    content: '\ec08';
+}
+.mi-data::before {
+    content: '\ec09';
+}
+.mi-certificate::before {
+    content: '\ec10';
+}
+.mi-passcode::before {
+    content: '\ec11';
+}
+.mi-box::before {
+    content: '\ec12';
 }
 .mi-code::before {
     content: '\ed00';
