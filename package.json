@@ -40,17 +40,17 @@
                 },
                 "is_https": {
                     "type": "enum",
-                    "length": "'TRUE', 'FALSE'",
+                    "length": "'TRUE','FALSE'",
                     "comment": "HTTPS사용여부"
                 },
                 "is_rewrite": {
                     "type": "enum",
-                    "length": "'TRUE', 'FALSE'",
+                    "length": "'TRUE','FALSE'",
                     "comment": "REWRITE사용여부"
                 },
                 "is_internationalization": {
                     "type": "enum",
-                    "length": "'TRUE', 'FALSE'",
+                    "length": "'TRUE','FALSE'",
                     "comment": "다국어사용여부"
                 },
                 "sort": {
