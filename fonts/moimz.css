@@ -6,14 +6,14 @@
  * @file /fonts/moimz.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 3.2.17
+ * @version 3.2.18
  * @modified 2024. 4. 22.
  */
 @font-face {
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.2.17') format('woff2');
+    src: url('./moimz.woff2?v=3.2.18') format('woff2');
     font-display: block;
 }
 
@@ -577,6 +577,9 @@
 }
 .mi-box::before {
     content: '\ec12';
+}
+.mi-zap::before {
+    content: '\ec13';
 }
 .mi-code::before {
     content: '\ed00';
