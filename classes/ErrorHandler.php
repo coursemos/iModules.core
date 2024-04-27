@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 4.
+ * @modified 2024. 4. 27.
  */
 class ErrorHandler
 {
@@ -352,6 +352,11 @@ class ErrorHandler
                 $error->message = $message;
                 $error->stacktrace = self::trace('Database');
                 $error->debugModeOnly = true;
+                break;
+
+            case 'REQUIRED':
+                $error->suffix = $message;
+                $error->message = self::getText('REQUIRED');
                 break;
 
             case 'NOT_FOUND_URL':
