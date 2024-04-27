@@ -4,7 +4,7 @@
  *
  * MySQL 인터페이스를 정의한다.
  *
- * @file /classes/Databases/mysql.class.php
+ * @file /classes/Databases/mysql.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
  * @modified 2024. 4. 27.
