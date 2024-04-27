@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 23.
+ * @modified 2024. 4. 27.
  */
 abstract class DatabaseInterface
 {
@@ -71,12 +71,20 @@ abstract class DatabaseInterface
     abstract public function size(string $table): int;
 
     /**
-     * 테이블의 구조를 가져온다.
+     * 테이블의 컬럼목록을 가져온다.
      *
      * @param string $table 테이블명
-     * @return array $desc
+     * @return array $columns
      */
-    abstract public function desc(string $table): array;
+    abstract public function columns(string $table): array;
+
+    /**
+     * 테이블의 인덱스목록을 가져온다.
+     *
+     * @param string $table 테이블명
+     * @return array $indexes
+     */
+    abstract public function indexes(string $table): array;
 
     /**
      * 테이블의 구조를 비교한다.
