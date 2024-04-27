@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 20.
+ * @modified 2024. 4. 27.
  */
 class Dom {
     element: HTMLElement | null;
@@ -798,6 +798,15 @@ class Dom {
      */
     focus(): void {
         this.element?.focus();
+    }
+
+    /**
+     * HTML 엘리먼트 위치로 스크롤을 이동한다.
+     *
+     * @param {boolean} animate - 애니메이션여부
+     */
+    scrollTo(animate: boolean = true): void {
+        this.element?.scrollIntoView({ behavior: animate == true ? 'smooth' : 'auto' });
     }
 
     /**
