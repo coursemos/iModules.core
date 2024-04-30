@@ -6,19 +6,20 @@
  * @file /scripts/Scrollbar.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 15.
+ * @modified 2024. 4. 30.
  */
 class Scrollbar {
     /**
      * 사용자 정의 스크롤바를 사용하는 DOM 을 초기화한다.
      */
     static init(): void {
-        if (
-            Html.get('body').getAttr('data-type') == 'website' &&
-            Html.get('body').getAttr('data-device') == 'desktop'
-        ) {
+        if (Html.get('body').getAttr('data-type') == 'website') {
             Html.all('*[data-scrollbar]').forEach(($dom) => {
-                Scrollbar.create($dom);
+                if (Html.get('body').getAttr('data-device') == 'desktop' || $dom.is('body') == false) {
+                    Scrollbar.create($dom);
+                } else {
+                    $dom.setData('scrollbar-init', true);
+                }
             });
 
             requestAnimationFrame(Scrollbar.rendering);
@@ -119,7 +120,11 @@ class Scrollbar {
     static rendering(): void {
         Html.all('*[data-scrollbar]').forEach(($dom) => {
             if ($dom.getData('scrollbar-init') !== true) {
-                Scrollbar.create($dom);
+                if (Html.get('body').getAttr('data-device') == 'desktop' || $dom.is('body') == false) {
+                    Scrollbar.create($dom);
+                } else {
+                    $dom.setData('scrollbar-init', true);
+                }
             }
             Scrollbar.render($dom);
         });

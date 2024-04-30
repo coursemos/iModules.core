@@ -6,7 +6,7 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 12.
+ * @modified 2024. 4. 30.
  */
 :root {
     /**
@@ -108,7 +108,9 @@
     --im-container-padding-horizontal: 20px;
     --im-container-padding-vertical: 0;
 
-    --scrollbar-weight: clamp(4px, 0.8vw, 8px);
+    --im-scrollbar-color: rgba(0, 0, 0, 0.4);
+
+    --im-scrollbar-weight: clamp(4px, 0.8vw, 8px);
 
     --container-max-width: 80rem;
     --container-gap: var(--gap-container);
@@ -282,11 +284,11 @@ body {
                 right: 0;
 
                 &[data-direction='x'] {
-                    height: var(--scrollbar-weight);
+                    height: var(--im-scrollbar-weight);
                 }
 
                 &[data-direction='y'] {
-                    width: var(--scrollbar-weight);
+                    width: var(--im-scrollbar-weight);
                 }
 
                 > div[data-role='track'] {
@@ -296,10 +298,10 @@ body {
 
                     > div[data-role='thumb'] {
                         position: absolute;
-                        width: calc(var(--scrollbar-weight) - 2px);
-                        height: calc(var(--scrollbar-weight) - 2px);
-                        border-radius: calc((var(--scrollbar-weight) - 2px) / 2);
-                        background: rgba(0, 0, 0, 0.5);
+                        width: calc(var(--im-scrollbar-weight) - 2px);
+                        height: calc(var(--im-scrollbar-weight) - 2px);
+                        border-radius: calc((var(--im-scrollbar-weight) - 2px) / 2);
+                        background: var(--im-scrollbar-color);
                         box-sizing: border-box;
                     }
                 }
