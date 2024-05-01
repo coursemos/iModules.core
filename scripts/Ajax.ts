@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 18.
+ * @modified 2024. 5. 2.
  */
 class Ajax {
     static errorHandler: (e: Error | Ajax.Results) => Promise<void> = null;
@@ -430,7 +430,7 @@ namespace Ajax {
                 const reader = response.body.getReader();
                 this.chunks = [];
                 this.bytesCurrent = 0;
-                this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '-1', 10);
+                this.bytesTotal = parseInt(response.headers.get('Content-Length') ?? '2010000', 10);
                 this.total = parseInt(response.headers.get('X-Progress-Total') ?? '-1', 10);
 
                 if (this.bytesTotal >= 0 && this.total >= 0) {
