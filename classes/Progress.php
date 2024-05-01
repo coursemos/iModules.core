@@ -7,7 +7,7 @@
  * @file /classes/Progress.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 3.
+ * @modified 2024. 5. 2.
  */
 class Progress
 {
@@ -30,6 +30,7 @@ class Progress
 
         if (headers_sent() == false) {
             set_time_limit(0);
+
             @ini_set('memory_limit', -1);
             @ini_set('zlib.output_compression', 'Off');
             @ini_set('output_buffering', 'Off');
@@ -40,7 +41,7 @@ class Progress
                 @apache_setenv('no-gzip', 1);
             }
 
-            Header::type('json');
+            Header::type('text');
             Header::length($this->_buffer * 201);
 
             header('Content-Encoding: none');
