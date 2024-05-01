@@ -126,7 +126,7 @@ class ErrorHandler
             exit();
         }
 
-        if (Header::type() == 'json') {
+        if (Header::type() == 'json' || Header::type() == 'text') {
             $json = new stdClass();
             $json->success = false;
             $json->message = [];
