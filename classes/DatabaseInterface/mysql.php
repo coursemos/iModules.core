@@ -368,8 +368,6 @@ class mysql extends DatabaseInterface
                 if ($is_update == true && $is_force == true) {
                     $alters[] = 'DROP `' . $name . '`';
                 } else {
-                    echo '0';
-                    exit();
                     return false;
                 }
             }
@@ -390,8 +388,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'ADD ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '1';
-                    exit();
                     return false;
                 }
             }
@@ -404,8 +400,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '2 => ' . $this->_columnType($column) . ' => ' . $exists[$name]->typelength;
-                    exit();
                     return false;
                 }
             }
@@ -415,8 +409,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '3';
-                    exit();
                     return false;
                 }
             }
@@ -426,8 +418,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '4';
-                    exit();
                     return false;
                 }
             }
@@ -437,10 +427,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '5 => ';
-                    var_dump($column->default ?? null);
-                    var_dump($exists[$name]->default ?? null);
-                    exit();
                     return false;
                 }
             }
@@ -450,8 +436,6 @@ class mysql extends DatabaseInterface
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
-                    echo '6';
-                    exit();
                     return false;
                 }
             }
@@ -498,8 +482,6 @@ class mysql extends DatabaseInterface
                 if ($primary_key != $column) {
                     if ($is_update == true) {
                         $alters[] = 'DROP PRIMARY KEY';
-                        echo '10';
-                        exit();
                         continue;
                     } else {
                         return false;
@@ -520,8 +502,6 @@ class mysql extends DatabaseInterface
                 if ($index->type !== 'primary_key') {
                     if ($is_update == true) {
                         $alters[] = 'DROP INDEX `' . $index->name . '`';
-                        echo '11';
-                        exit();
                     } else {
                         return false;
                     }
@@ -543,8 +523,6 @@ class mysql extends DatabaseInterface
                     if ($primary_key != $column) {
                         if ($is_update == true) {
                             $alters[] = 'ADD PRIMARY KEY(' . $columns . ')';
-                            echo '12';
-                            exit();
                         } else {
                             return false;
                         }
@@ -558,8 +536,6 @@ class mysql extends DatabaseInterface
                         } else {
                             $alters[] = 'ADD INDEX(' . $columns . ')';
                         }
-                        echo '13';
-                        exit();
                     } else {
                         return false;
                     }
