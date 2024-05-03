@@ -156,7 +156,7 @@ class Site
      */
     public function getDescription(bool $is_html = true): string
     {
-        return preg_replace('/(\r\n|\n)/', $is_html == true ? '<br>' : '\n', $this->_description ?? '');
+        return preg_replace('/(\r|\n)/', $is_html == true ? '<br>' : "\n", $this->_description ?? '');
     }
 
     /**
@@ -167,7 +167,7 @@ class Site
      */
     public function getKeywords(string $spliter = ','): string
     {
-        return preg_replace('/(\r\n|\n)/', $spliter, $this->_keywords ?? '');
+        return preg_replace('/(\r|\n)/', $spliter, $this->_keywords ?? '');
     }
 
     /**
