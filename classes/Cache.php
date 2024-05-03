@@ -345,7 +345,7 @@ class Cache
                                 $minifier->add($path);
                             }
                         }
-                        $source = $minifier->execute(self::url() . $group . '.css');
+                        $source = $minifier->execute(self::url($group . '.css'));
                         $source = preg_replace('/(\/\*(.*?)\*\/);?/', "\n$1\n", $source);
 
                         $description = [
