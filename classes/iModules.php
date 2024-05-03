@@ -262,23 +262,6 @@ class iModules
                 'href' => $site->getFavicon()->getUrl('origin'),
             ]);
         }
-        /**
-         * OG 태그를 설정한다.
-         *
-        $this->head('meta',array('property'=>'og:url','content'=>$this->getCanonical()));
-        $this->head('meta',array('property'=>'og:type','content'=>'website'));
-        $this->head('meta',array('property'=>'og:title','content'=>$this->getViewTitle()));
-        $this->head('meta',array('property'=>'og:description','content'=>preg_replace('/(\r|\n)/',' ',$this->getViewDescription())));
-        $viewImage = $this->getViewImage(true,true);
-        if (is_object($viewImage) == true) {
-            $this->head('meta',array('property'=>'og:image','content'=>$this->getViewImage(true)));
-            $this->head('meta',array('property'=>'og:image:width','content'=>$viewImage->width));
-            $this->head('meta',array('property'=>'og:image:height','content'=>$viewImage->height));
-        } elseif ($viewImage != null) {
-            $this->head('meta',array('property'=>'og:image','content'=>$viewImage));
-        }
-        $this->head('meta',array('property'=>'twitter:card','content'=>'summary_large_image'));
-        */
     }
 
     /**

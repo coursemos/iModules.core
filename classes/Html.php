@@ -52,6 +52,11 @@ class Html
     private static ?string $_keywords = null;
 
     /**
+     * @var ?\modules\attachment\dtos\Attachment $_image HTML 문서 이미지
+     */
+    private static ?\modules\attachment\dtos\Attachment $_image = null;
+
+    /**
      * @var string $_robots <META NAME="ROBOTS"> 태그설정
      */
     private static string $_robots = 'all';
@@ -166,11 +171,25 @@ class Html
     /**
      * HTML 키워드를 정의한다.
      *
-     * @param string $keywords
+     * @param ?string $keywords
      */
-    public static function keywords(string $keywords): void
+    public static function keywords(?string $keywords): void
     {
         self::$_keywords = addslashes(preg_replace('/(\r|\n)/', ' ', $keywords));
+    }
+
+    /**
+     * 페이지 이미지를 정의한다.
+     *
+     * @param ?\modules\attachment\dtos\Attachment $image 이미지객체
+     */
+    public static function image(?\modules\attachment\dtos\Attachment $image): void
+    {
+        if ($image?->getType() == 'image') {
+            self::$_image = $image;
+        } else {
+            self::$_image = null;
+        }
     }
 
     /**
@@ -352,10 +371,65 @@ class Html
         self::_head(self::element('meta', ['name' => 'viewport', 'content' => self::$_viewport]), 3);
 
         if (self::$_canonical != null) {
-            Html::head('link', ['rel' => 'canonical', 'href' => self::$_canonical], 4);
+            self::_head(self::element('link', ['rel' => 'canonical', 'href' => self::$_canonical]), 4);
         }
 
         self::_head(self::element('meta', ['name' => 'robots', 'content' => self::$_robots]), 5);
+
+        /**
+         * OG 태그를 생성한다.
+         */
+        self::_head(
+            self::element('meta', [
+                'property' => 'og:url',
+                'content' => self::$_canonical ?? \Router::get()->getUrl(true, true),
+            ]),
+            6
+        );
+        self::_head(
+            self::element('meta', [
+                'property' => 'og:title',
+                'content' => self::$_title,
+            ]),
+            6
+        );
+        self::_head(
+            self::element('meta', [
+                'property' => 'og:description',
+                'content' => self::$_description,
+            ]),
+            6
+        );
+        if (self::$_image !== null) {
+            self::_head(
+                self::element('meta', [
+                    'property' => 'og:image',
+                    'content' => self::$_image->getUrl('view', true),
+                ]),
+                6
+            );
+            self::_head(
+                self::element('meta', [
+                    'property' => 'og:image:width',
+                    'content' => self::$_image->getWidth(),
+                ]),
+                6
+            );
+            self::_head(
+                self::element('meta', [
+                    'property' => 'og:image:height',
+                    'content' => self::$_image->getHeight(),
+                ]),
+                6
+            );
+        }
+        self::_head(
+            self::element('meta', [
+                'property' => 'twitter:card',
+                'content' => 'summary_large_image',
+            ]),
+            6
+        );
 
         /**
          * 웹폰트를 추가한다.
