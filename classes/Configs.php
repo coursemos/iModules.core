@@ -475,7 +475,7 @@ class Configs
      */
     public static function debug(): bool
     {
-        return true; //Request::get('debug') === 'true';
+        return (self::$_configs?->debug ?? false) === true;
     }
 
     /**
