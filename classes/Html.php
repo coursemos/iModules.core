@@ -379,13 +379,15 @@ class Html
         /**
          * OG 태그를 생성한다.
          */
-        self::_head(
-            self::element('meta', [
-                'property' => 'og:url',
-                'content' => self::$_canonical ?? \Router::get()->getUrl(true, true),
-            ]),
-            6
-        );
+        if (self::$_canonical != null) {
+            self::_head(
+                self::element('meta', [
+                    'property' => 'og:url',
+                    'content' => self::$_canonical ?? \Router::get()->getUrl(true, true),
+                ]),
+                6
+            );
+        }
         self::_head(
             self::element('meta', [
                 'property' => 'og:title',
