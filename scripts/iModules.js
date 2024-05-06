@@ -6,10 +6,31 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 15.
+ * @modified 2024. 5. 6.
  */
 class iModules {
     static language;
+    static loadingTimeAt;
+    /**
+     * 실행시간을 계산한다.
+     * 출력메시지가 NULL 인 경우 초기시각을 지정하고,
+     * 출력메시지가 존재할 경우 해당 메시지와 함께 초기시각으로 부터 경과된 시간을 표시한다.
+     *
+     * @param {string} message - 출력메시지 (NULL 인 경우, )
+     */
+    static loadingTime(message = null) {
+        if (message === null) {
+            iModules.loadingTimeAt = window.performance.now();
+        }
+        else {
+            if (iModules.loadingTimeAt === undefined) {
+                console.error('loadingTime is not init.');
+            }
+            else {
+                console.debug(message, (window.performance.now() - iModules.loadingTimeAt) / 1000 + 'ms');
+            }
+        }
+    }
     /**
      * 지정된 시간만큼 자바스크립트를 지연시킨다.
      *
