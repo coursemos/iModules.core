@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 27.
+ * @modified 2024. 5. 6.
  */
 class Dom {
     element;
@@ -764,33 +764,23 @@ class Dom {
     }
     /**
      * HTML 엘리먼트를 보인다.
+     * 자바스크립트를 통해 숨겨진 뒤 다시 보이는 경우 원래의 display 속성을 사용하고,
+     * 그렇지 않은 경우 설정된 display 속성값으로 객체를 보인다.
+     *
+     * @param {string} display - 초기 display 속성 (기본값 : block)
      */
-    show() {
+    show(display = 'block') {
         if (this.element === null)
             return;
-        if (this.getStyle('display') && this.getStyle('display') != 'none')
-            return;
-        if (this.element.style.display == 'none') {
-            this.element.style.display = '';
-            this.show();
-        }
-        else if (this.getData('origin-display')) {
-            this.element.style.display = this.getData('origin-display');
-            this.setData('origin-display', null);
-            this.show();
-        }
-        else {
-            const origin = document.createElement(this.element.tagName);
-            document.body.appendChild(origin);
-            const display = window.getComputedStyle(origin).display;
-            origin.remove();
-            this.setStyle('display', display);
-        }
+        this.setStyle('display', this.getData('origin-display') ?? display);
+        this.setData('origin-display', null);
     }
     /**
      * HTML 엘리먼트를 숨긴다.
      */
     hide() {
+        if (this.element === null)
+            return;
         if (this.getStyle('display') == 'none')
             return;
         if (this.getStyle('display') != 'none') {
