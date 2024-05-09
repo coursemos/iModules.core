@@ -826,8 +826,11 @@ class Dom {
     show(display: string = 'block'): void {
         if (this.element === null) return;
 
-        this.setStyle('display', this.getData('origin-display') ?? display);
-        this.setData('origin-display', null);
+        if (this.element.style.getPropertyValue('display') === 'none') {
+            this.element.style.removeProperty('display');
+        } else {
+            this.setStyle('display', this.getData('origin-display') ?? display);
+        }
     }
 
     /**

@@ -772,8 +772,12 @@ class Dom {
     show(display = 'block') {
         if (this.element === null)
             return;
-        this.setStyle('display', this.getData('origin-display') ?? display);
-        this.setData('origin-display', null);
+        if (this.element.style.getPropertyValue('display') === 'none') {
+            this.element.style.removeProperty('display');
+        }
+        else {
+            this.setStyle('display', this.getData('origin-display') ?? display);
+        }
     }
     /**
      * HTML 엘리먼트를 숨긴다.
