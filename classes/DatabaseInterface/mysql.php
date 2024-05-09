@@ -1665,7 +1665,6 @@ class mysql extends DatabaseInterface
         }
 
         $this->_buildJoin();
-        //		if (empty($this->_tableData) == false) $this->_buildTableData($this->_tableData);
         $this->_buildWhere();
         $this->_buildGroupBy();
         $this->_buildHaving();
@@ -1772,6 +1771,12 @@ class mysql extends DatabaseInterface
                 $this->_bindParam($value);
                 $this->_query .= '?,';
                 continue;
+            }
+
+            if (is_array($value) == true) {
+                if (isset($value['expression']) == true) {
+                    $this->_query .= str_replace('@', '`' . $column . '`', $value['expression']);
+                }
             }
         }
         $this->_query = rtrim($this->_query, ',');

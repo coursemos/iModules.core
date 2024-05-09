@@ -426,6 +426,26 @@ abstract class DatabaseInterface
      * @return DatabaseInterface $this
      */
     abstract public function displayError(bool $display): DatabaseInterface;
+
+    /**
+     * 연산식을 위한 객체를 반환한다.
+     *
+     * @param string $expression 연산식
+     */
+    final public function expression(string $expression): array
+    {
+        return ['expression' => $expression];
+    }
+
+    /**
+     * 컬럼값을 더한다.
+     *
+     * @param string $expression 연산식
+     */
+    final public function increase(int|float $number = 1): array
+    {
+        return $this->expression('@ + ' . $number);
+    }
 }
 
 abstract class DatabaseConnector
