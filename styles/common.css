@@ -6,7 +6,7 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 30.
+ * @modified 2024. 5. 9.
  */
 :root {
     /**
@@ -105,7 +105,7 @@
     --im-color-foreground: var(--im-color-foreground-500);
 
     --im-container-width: 1280px;
-    --im-container-padding-horizontal: 20px;
+    --im-container-padding-inline: 20px;
     --im-container-padding-vertical: 0;
 
     --im-scrollbar-color: rgba(0, 0, 0, 0.4);
@@ -415,9 +415,9 @@ body {
     div[data-role='container'] {
         container: container / inline-size;
         margin: 0 auto;
-        width: calc(100vw - var(--im-container-padding-horizontal) * 2);
+        width: calc(100vw - var(--im-container-padding-inline) * 2);
         max-width: var(--im-container-width);
-        padding: var(--im-container-padding-vertical) 0;
+        padding-block: var(--im-container-padding-vertical);
     }
 
     > div[data-role='disabled'] {
