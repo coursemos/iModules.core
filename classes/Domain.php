@@ -54,7 +54,7 @@ class Domain
     public function __construct(object $domain)
     {
         $this->_host = $domain->host;
-        $this->_alias = $domain->alias ? explode(',', $domain->alias) : [];
+        $this->_alias = $domain->alias ? explode("\n", $domain->alias) : [];
         $this->_language = $domain->language;
         $this->_is_https = $domain->is_https == 'TRUE';
         $this->_is_rewrite = $domain->is_rewrite == 'TRUE';
