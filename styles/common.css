@@ -6,23 +6,25 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 9.
+ * @modified 2024. 5. 12.
  */
 :root {
     /**
      * 아이모듈에서 공통적으로 사용할 컬러셋을 지정합니다.
      */
-    --im-color-foreground-100: #b4b4b4;
-    --im-color-foreground-200: #6f6f6f;
-    --im-color-foreground-300: #393840;
-    --im-color-foreground-400: #222;
-    --im-color-foreground-500: #000;
+    --im-color-foreground-100: #8e8e8e;
+    --im-color-foreground-200: #757575;
+    --im-color-foreground-300: #5b5b5b;
+    --im-color-foreground-400: #2d2d2d;
+    --im-color-foreground-500: #191919;
+    --im-color-foreground-600: #191919;
 
     --im-color-background-100: #d0d0d0;
     --im-color-background-200: #dadada;
     --im-color-background-300: #e6e6e6;
-    --im-color-background-400: #f7f7f7;
+    --im-color-background-400: #f4f4f4;
     --im-color-background-500: #fff;
+    --im-color-background-600: #fff;
 
     --im-color-accent-300: #66acfb;
     --im-color-accent-400: #3391f9;
@@ -46,8 +48,13 @@
     --im-color-action-500: #6d56fb;
     --im-color-action-600: #5442c2;
 
-    --im-color-mark-background: #ffedb5;
-    --im-color-mark-foreground: #f44336;
+    --im-color-mark-400: #f7e9c1;
+    --im-color-mark-500: #f8e6b0;
+    --im-color-mark-600: #f0dfab;
+
+    --im-color-selection-400: #eff5fc;
+    --im-color-selection-500: #e1edfa;
+    --im-color-selection-600: #dae5f2;
 
     --im-font-family-head: SUITE;
     --im-font-family-body: SUIT;
@@ -101,6 +108,7 @@
      * 아이모듈 기본 컴포넌트에 대한 스타일 변수를 정의합니다.
      * 사이트테마에서 해당 변수를 재정의하여 아이모듈 기본 컴포넌트의 스타일을 해당 테마에 어울리게 지정할 수 있습니다.
      */
+    --im-color-scrollbar: #000;
     --im-color-background: var(--im-color-background-500);
     --im-color-foreground: var(--im-color-foreground-500);
 
@@ -108,10 +116,7 @@
     --im-container-padding-inline: 20px;
     --im-container-padding-vertical: 0;
 
-    --im-scrollbar-color: rgba(0, 0, 0, 0.4);
-
     --im-scrollbar-weight: clamp(4px, 0.8vw, 8px);
-
     --container-max-width: 80rem;
     --container-gap: var(--gap-container);
 
@@ -202,8 +207,57 @@
     --modal-padding-horizontal: var(--gap-container);
 
     font-size: var(--im-font-size-default);
-    font-family: var(--im-font-family-body);
-    line-height: var(--im-line-height-default);
+}
+
+body[data-color-scheme='dark'],
+body[data-color-scheme='auto'][data-prefers-color-scheme='dark'] {
+    --im-color-foreground-100: #5b5b5b;
+    --im-color-foreground-200: #757575;
+    --im-color-foreground-300: #8e8e8e;
+    --im-color-foreground-400: #c5c5c5;
+    --im-color-foreground-500: #f0f0f0;
+    --im-color-foreground-600: #fff;
+
+    --im-color-background-100: #666;
+    --im-color-background-200: #4d4d4d;
+    --im-color-background-300: #333;
+    --im-color-background-400: #222;
+    --im-color-background-500: #191919;
+    --im-color-background-600: #000;
+
+    --im-color-accent-300: #004695;
+    --im-color-accent-400: #005ec6;
+    --im-color-accent-500: #0075f8;
+    --im-color-accent-600: #3391f9;
+    --im-color-accent-700: #66acfb;
+
+    --im-color-accent-backward-400: #e6e6e6;
+    --im-color-accent-backward-500: #f7f7f7;
+    --im-color-accent-backward-600: #fff;
+
+    --im-color-begining-400: #08ad55;
+    --im-color-begining-500: #14ae5c;
+    --im-color-begining-600: #45e590;
+
+    --im-color-danger-400: #cc3131;
+    --im-color-danger-500: #dc3535;
+    --im-color-danger-600: #ef5454;
+
+    --im-color-action-400: #5442c2;
+    --im-color-action-500: #6d56fb;
+    --im-color-action-600: #8875fe;
+
+    --im-color-mark-400: #082043;
+    --im-color-mark-500: #07394f;
+    --im-color-mark-600: #204d61;
+
+    --im-color-selection-400: #101a03;
+    --im-color-selection-500: #1a3208;
+    --im-color-selection-600: #254a0d;
+
+    --im-color-scrollbar: #fff;
+    --im-color-background: var(--im-color-background-500);
+    --im-color-foreground: var(--im-color-foreground-500);
 }
 
 * {
@@ -234,6 +288,7 @@ body {
         font-family: inherit;
         font-size: inherit;
         border-radius: 0;
+        outline: none;
 
         &[type='search'] {
             -webkit-appearance: none;
@@ -245,8 +300,7 @@ body {
     }
 
     mark {
-        color: var(--mark-color);
-        background: var(--mark-background);
+        background: var(--im-color-mark-500);
     }
 
     button,
