@@ -7,7 +7,7 @@
  * @file /classes/Form.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 16.
+ * @modified 2024. 5. 13.
  */
 require_once __DIR__ . '/FormElement.php';
 class Form
@@ -49,6 +49,20 @@ class Form
     public static function check(string $name, string $value = '', string $boxLabel = ''): \FormElement\Check
     {
         $element = new \FormElement\Check($name, $value, $boxLabel);
+        return $element;
+    }
+
+    /**
+     * 라디오 태그를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $value 필드값
+     * @param string $boxLabel 체크박스 라벨텍스트
+     * @return \FormElement\Check $element
+     */
+    public static function radio(string $name, string $value = '', string $boxLabel = ''): \FormElement\Radio
+    {
+        $element = new \FormElement\Radio($name, $value, $boxLabel);
         return $element;
     }
 
