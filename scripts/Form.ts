@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 16.
+ * @modified 2024. 5. 13.
  */
 class Form {
     static forms: WeakMap<HTMLElement, Form> = new WeakMap();
@@ -326,7 +326,7 @@ class Form {
             }
         }
 
-        Html.all('div[data-role=form]', $form).forEach(($element) => {
+        Html.all('div[data-role=field]', $form).forEach(($element) => {
             Form.element($element).init();
         });
     }
@@ -383,8 +383,7 @@ class Form {
      */
     static input(name: string, type: string = 'text'): FormElement.Input {
         const $dom = Html.create('div', {
-            'data-role': 'form',
-            'data-type': 'field',
+            'data-role': 'field',
             'data-field': 'input',
             'data-name': name,
         });
@@ -397,13 +396,13 @@ class Form {
      * 체크박스 태그를 생성한다.
      *
      * @param {string} name - 필드명
-     * @param {string} type - 종류 (text, password, search 등)
+     * @param {string} value - 필드값
+     * @param {string} boxLabel - 라벨텍스트
      * @return {FormElement.Input} element
      */
     static check(name: string, value: string, boxLabel: string = null): FormElement.Check {
         const $dom = Html.create('div', {
-            'data-role': 'form',
-            'data-type': 'field',
+            'data-role': 'field',
             'data-field': 'check',
             'data-name': name,
         });
@@ -424,8 +423,7 @@ class Form {
      */
     static select(name: string, options: { [value: string]: string }): FormElement.Select {
         const $dom = Html.create('div', {
-            'data-role': 'form',
-            'data-type': 'field',
+            'data-role': 'field',
             'data-field': 'select',
             'data-name': name,
         });
@@ -751,7 +749,7 @@ namespace FormElement {
                 this.setError(false);
             }
 
-            this.$expand = Html.create('div', { 'data-role': 'form', 'data-field': 'select' });
+            this.$expand = Html.create('div', { 'data-role': 'field', 'data-field': 'select' });
             this.$expand.setStyle('min-width', this.$dom.getOuterWidth() + 'px');
 
             const $select = Html.get('select', this.$dom);
