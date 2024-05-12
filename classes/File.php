@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 31.
+ * @modified 2024. 5. 13.
  */
 class File
 {
@@ -270,8 +270,9 @@ class File
      *
      * @param string $__path 파일경로
      * @param array $values 인클루드하는 파일에서 사용할 변수
+     * @param bool $isReturnValues 인클루드한 파일에서 사용된 변수를 반환할지 여부
      */
-    public static function include(string $__path, array $values = []): void
+    public static function include(string $__path, array $values = [], bool $isReturnValues = false): mixed
     {
         if (is_file($__path) == true) {
             /**
@@ -279,6 +280,10 @@ class File
              */
             extract($values, EXTR_REFS);
             include $__path;
+
+            if ($isReturnValues == true) {
+                return (object) get_defined_vars();
+            }
         }
     }
 }
