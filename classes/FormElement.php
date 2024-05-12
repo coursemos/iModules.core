@@ -7,7 +7,7 @@
  * @file /classes/FormElement.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 16.
+ * @modified 2024. 5. 13.
  */
 namespace FormElement;
 class Base
@@ -134,7 +134,7 @@ class Base
         $field = strtolower(end($field));
         return \Html::element(
             'div',
-            ['data-role' => 'form', 'data-type' => 'field', 'data-field' => $field, 'data-name' => $this->_name],
+            ['data-role' => 'field', 'data-field' => $field, 'data-name' => $this->_name],
             \Html::tag($this->getField(), $this->getHelpText())
         );
     }
@@ -247,6 +247,60 @@ class Check extends \FormElement\Base
         $this->_name = $name;
         $this->_boxLabel = $boxLabel;
         $this->_attributes['type'] = 'checkbox';
+        $this->_attributes['name'] = $name;
+        $this->_attributes['value'] = $value;
+    }
+
+    /**
+     * 필드값을 설정한다.
+     *
+     * @param bool $checked 체크여부
+     * @return this $this
+     */
+    public function checked(bool $checked): self
+    {
+        $this->_checked = $checked;
+        return $this;
+    }
+
+    /**
+     * 실제 폼필드 태그를 가져온다.
+     *
+     * @return string $field
+     */
+    protected function getField(): string
+    {
+        if ($this->_checked === true) {
+            $this->_attributes['checked'] = 'checked';
+        }
+        return \Html::element('label', [], \Html::element('input', $this->_attributes) . ($this->_boxLabel ?? ''));
+    }
+}
+
+class Radio extends \FormElement\Base
+{
+    /**
+     * @var string $_boxLabel 박스라벨
+     */
+    private string $_boxLabel;
+
+    /**
+     * @var bool $checked 선택여부
+     */
+    private bool $_checked = false;
+
+    /**
+     * 폼 필드를 생성한다.
+     *
+     * @param string $name 필드명
+     * @param string $value 체크시 전송될 값
+     * @param string $boxLabel 박스라벨
+     */
+    public function __construct(string $name, string $value, string $boxLabel = '')
+    {
+        $this->_name = $name;
+        $this->_boxLabel = $boxLabel;
+        $this->_attributes['type'] = 'radio';
         $this->_attributes['name'] = $name;
         $this->_attributes['value'] = $value;
     }
