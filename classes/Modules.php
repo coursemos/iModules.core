@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 22.
+ * @modified 2024. 5. 13.
  */
 class Modules
 {
@@ -237,7 +237,7 @@ class Modules
             $installed->is_theme = $installed->is_theme == 'TRUE';
             $installed->is_cron = $installed->is_cron == 'TRUE';
             $installed->configs = json_decode($installed->configs);
-            $installed->events = json_decode($installed->events);
+            $installed->listeners = json_decode($installed->listeners ?? 'null');
         }
 
         /**
@@ -454,7 +454,7 @@ class Modules
                         'is_theme' => $module->hasPackageProperty('THEME') == true ? 'TRUE' : 'FALSE',
                         'is_cron' => $module->hasPackageProperty('CRON') == true ? 'TRUE' : 'FALSE',
                         'configs' => Format::toJson($configs),
-                        'events' => 'null',
+                        'listeners' => Format::toJson($package->get('listeners')),
                         'sort' => $sort,
                     ],
                     [
@@ -469,7 +469,7 @@ class Modules
                         'is_theme',
                         'is_cron',
                         'configs',
-                        'events',
+                        'listeners',
                     ]
                 )
                 ->execute();

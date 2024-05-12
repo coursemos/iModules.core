@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 24.
+ * @modified 2024. 5. 13.
  */
 abstract class Module extends Component
 {
@@ -357,11 +357,17 @@ abstract class Module extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/processes/' . $process . '.' . $method . '.php') == true) {
-            File::include($this->getPath() . '/processes/' . $process . '.' . $method . '.php', [
-                'me' => &$this,
-                'results' => &$results,
-                'path' => $path,
-            ]);
+            $values = File::include(
+                $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
+                [
+                    'me' => &$this,
+                    'results' => &$results,
+                    'path' => $path,
+                ],
+                true
+            );
+
+            Event::fireEvent('afterDoProcess', $this, $process . '.' . $method, $values, $results);
         } else {
             ErrorHandler::print(
                 $this->error(

@@ -314,7 +314,7 @@
                     "is_null": true,
                     "comment": "모듈설정"
                 },
-                "events": {
+                "listeners": {
                     "type": "json",
                     "is_null": true,
                     "comment": "이벤트리스너설정"
