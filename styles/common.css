@@ -355,7 +355,7 @@ body {
             }
 
             &::placeholder {
-                color: var(--im-component-color-foreground-placeholder);
+                color: var(--im-color-foreground-300);
             }
         }
 
