@@ -6,7 +6,7 @@
  * @file /styles/common.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 12.
+ * @modified 2024. 5. 15.
  */
 :root {
     /**
@@ -32,7 +32,6 @@
     --im-color-accent-600: #005ec6;
     --im-color-accent-700: #004695;
 
-    --im-color-accent-backward-300: #8e8e8e;
     --im-color-accent-backward-400: #c5c5c5;
     --im-color-accent-backward-500: #f0f0f0;
     --im-color-accent-backward-600: #fff;
@@ -142,7 +141,6 @@ body[data-color-scheme='auto'][data-prefers-color-scheme='dark'] {
     --im-color-accent-600: #3391f9;
     --im-color-accent-700: #66acfb;
 
-    --im-color-accent-backward-300: #8e8e8e;
     --im-color-accent-backward-400: #c5c5c5;
     --im-color-accent-backward-500: #f0f0f0;
     --im-color-accent-backward-600: #fff;
@@ -400,6 +398,7 @@ body {
                     (var(--im-component-height-default) - 1lh) / 2 - var(--im-component-border-weight) * 2
                 );
                 background: var(--im-color-accent-500);
+                color: var(--im-color-accent-backward-500);
                 border: var(--im-component-border-weight) solid var(--im-color-accent-500);
 
                 > i {
@@ -756,7 +755,7 @@ body {
             color: var(--im-color-accent-backward-500);
 
             &[disabled] {
-                color: var(--im-color-accent-backward-300);
+                color: var(--im-color-accent-backward-400);
             }
 
             &.confirm {
