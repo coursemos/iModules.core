@@ -749,10 +749,15 @@ namespace FormElement {
                 this.setError(false);
             }
 
-            this.$expand = Html.create('div', { 'data-role': 'field', 'data-field': 'select' });
+            const $select = Html.get('select', this.$dom);
+
+            this.$expand = Html.create('div', {
+                'data-role': 'field',
+                'data-field': 'select',
+                'data-name': $select.getAttr('name'),
+            });
             this.$expand.setStyle('min-width', this.$dom.getOuterWidth() + 'px');
 
-            const $select = Html.get('select', this.$dom);
             const $ul = Html.create('ul', { 'data-scrollbar': 'auto' });
             Html.all('option', $select).forEach(($option) => {
                 const $li = Html.create(
