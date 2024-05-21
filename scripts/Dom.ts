@@ -380,29 +380,37 @@ class Dom {
     /**
      * HTML 엘리먼트의 스크롤 너비를 가져온다.
      *
+     * @param {boolean} is_border - 테두리굵기 포함여부
      * @return {number} scrollWidth
      */
-    getScrollWidth(): number {
+    getScrollWidth(is_border: boolean = false): number {
         if (this.element == null) return 0;
 
-        const style = window.getComputedStyle(this.element);
-        const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+        let border = 0;
+        if (is_border == true) {
+            const style = window.getComputedStyle(this.element);
+            border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+        }
 
-        return this.element.scrollWidth - border;
+        return this.element.scrollWidth + border;
     }
 
     /**
      * HTML 엘리먼트의 스크롤 높이를 가져온다.
      *
+     * @param {boolean} is_border - 테두리굵기 포함여부
      * @return {number} scrollHeight
      */
-    getScrollHeight(): number {
+    getScrollHeight(is_border: boolean = false): number {
         if (this.element == null) return 0;
 
-        const style = window.getComputedStyle(this.element);
-        const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+        let border = 0;
+        if (is_border == true) {
+            const style = window.getComputedStyle(this.element);
+            border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+        }
 
-        return this.element.scrollHeight - border;
+        return this.element.scrollHeight + border;
     }
 
     /**
