@@ -360,7 +360,11 @@ class Select extends \FormElement\Base
     {
         $options = [];
         foreach ($this->_options as $value => $display) {
-            $options[] = \Html::element('option', ['value' => $value], $display);
+            if ($value == $this->_value) {
+                $options[] = \Html::element('option', ['value' => $value, 'selected' => 'selected'], $display);
+            } else {
+                $options[] = \Html::element('option', ['value' => $value], $display);
+            }
         }
         return \Html::element('select', $this->_attributes, \Html::tag(...$options));
     }
