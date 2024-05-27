@@ -7,7 +7,7 @@
  * @file /classes/Context.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 18.
+ * @modified 2024. 5. 27.
  */
 class Context
 {
@@ -194,6 +194,38 @@ class Context
     public function getPathAt(int $index): string
     {
         return $this->getPathArray()[$index] ?? '';
+    }
+
+    /**
+     * 컨텍스트 경로배열에서 특정 인덱스까지의 경로명을 가져온다.
+     *
+     * @param int $end 가져올인덱스
+     * @return string $path
+     */
+    public function getPathEnd(int $end): string
+    {
+        $path = '';
+        for ($i = 0; $i <= $end; $i++) {
+            $path .= '/' . $this->getPathEnd($i);
+        }
+
+        return $path;
+    }
+
+    /**
+     * 컨텍스트 경로배열에서 특정 인덱스까지의 경로를 가진 컨텍스트를 가져온다.
+     *
+     * @param int $end 가져올인덱스
+     * @return Context $context
+     */
+    public function getContextEnd(int $end): Context
+    {
+        $path = '';
+        for ($i = 0; $i <= $end; $i++) {
+            $path .= '/' . $this->getPathEnd($i);
+        }
+
+        return Contexts::get(Router::get($path));
     }
 
     /**
