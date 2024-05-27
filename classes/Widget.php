@@ -7,7 +7,7 @@
  * @file /classes/Widget.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 16.
+ * @modified 2024. 5. 27.
  */
 abstract class Widget extends Component
 {
@@ -20,6 +20,16 @@ abstract class Widget extends Component
      * @var Template $_template 템플릿
      */
     private Template $_template;
+
+    /**
+     * @var array $_attributes 위젯컨테이너속성
+     */
+    private array $_attributes = [];
+
+    /**
+     * @var ?object $_configs 위젯설정
+     */
+    private ?object $_configs = null;
 
     /**
      * 위젯 설정을 초기화한다.
@@ -55,20 +65,6 @@ abstract class Widget extends Component
     }
 
     /**
-     * 템플릿을 설정한다.
-     *
-     * @param string $name 템플릿명
-     * @param array $configs 템플릿설정
-     * @return Widget $widget
-     */
-    final public function setTemplate(string $name, array $configs = []): Widget
-    {
-        $template = (object) ['name' => $name, 'configs' => (object) $configs];
-        $this->_template = new Template($this, $template);
-        return $this;
-    }
-
-    /**
      * 템플릿을 가져온다.
      *
      * @return Template $template
@@ -86,9 +82,63 @@ abstract class Widget extends Component
     }
 
     /**
-     * 위젯을 출력하는데 사용하는 데이터를 할당한다.
+     * 템플릿을 설정한다.
+     *
+     * @param string $name 템플릿명
+     * @param array $configs 템플릿설정
+     * @return Widget $widget
      */
-    abstract public function setValues(): void;
+    final public function setTemplate(string $name, array $configs = []): Widget
+    {
+        $template = (object) ['name' => $name, 'configs' => (object) $configs];
+        $this->_template = new Template($this, $template);
+        return $this;
+    }
+
+    /**
+     * 위젯컨테이너속성을 설정한다.
+     *
+     * @param string $key 설정값키
+     * @param mixed $value 설정값
+     * @return Widget $widget
+     */
+    final public function setAttribute(string $key, int|string|null $value = null): Widget
+    {
+        $this->_attributes[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * 위젯설정값을 설정한다.
+     *
+     * @param string $key 설정값키
+     * @param mixed $value 설정값
+     * @return Widget $widget
+     */
+    final public function setConfig(string $key, mixed $value = null): Widget
+    {
+        $this->_configs ??= new \stdClass();
+        $this->_configs->$key = $value;
+        return $this;
+    }
+
+    /**
+     * 위젯설정값을 가져온다..
+     *
+     * @param string $key 설정값키
+     * @return mixed $value 설정값
+     */
+    final public function getConfig(string $key): mixed
+    {
+        return $this->_configs?->$key ?? null;
+    }
+
+    /**
+     * 위젯을 출력하는데 사용하는 데이터를 할당한다.
+     *
+     * @param \Template $template 위젯템플릿 객체
+     */
+    abstract public function setTemplateValues(\Template $template): void;
 
     /**
      * 위젯 레이아웃을 가져온다.
@@ -98,18 +148,19 @@ abstract class Widget extends Component
     final public function getLayout(): string
     {
         $template = $this->getTemplate();
-        $this->setValues();
+        $this->setTemplateValues($template);
 
-        return Html::element(
-            'div',
+        $attributes = array_merge(
             [
                 'data-role' => 'widget',
                 'data-widget' => $this->getName(),
                 'data-template' => $template->getName(),
                 'data-module' => $this->getParentModule()?->getName() ?? 'core',
             ],
-            $template->getLayout()
+            $this->_attributes
         );
+
+        return Html::element('div', $attributes, $template->getLayout());
     }
 
     final public function doLayout(): void
