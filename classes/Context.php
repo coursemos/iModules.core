@@ -206,7 +206,7 @@ class Context
     {
         $path = '';
         for ($i = 0; $i <= $end; $i++) {
-            $path .= '/' . $this->getPathEnd($i);
+            $path .= '/' . $this->getPathAt($i);
         }
 
         return $path;
@@ -220,12 +220,7 @@ class Context
      */
     public function getContextEnd(int $end): Context
     {
-        $path = '';
-        for ($i = 0; $i <= $end; $i++) {
-            $path .= '/' . $this->getPathEnd($i);
-        }
-
-        return Contexts::get(Router::get($path));
+        return Contexts::get(Router::get($this->getPathEnd($end)));
     }
 
     /**
