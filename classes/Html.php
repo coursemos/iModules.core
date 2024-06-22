@@ -554,7 +554,7 @@ class Html
     {
         $time = '';
 
-        if (strpos($path, '/') === 0) {
+        if (strpos($path, '//') !== 0 && strpos($path, 'http') !== 0) {
             if (is_file(Configs::dirToPath($path)) === false) {
                 if (Configs::debug() == true) {
                     $time .= strpos($path, '?') === false ? '?t=' : '&t=';
