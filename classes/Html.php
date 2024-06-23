@@ -229,6 +229,16 @@ class Html
     }
 
     /**
+     * 컬러모드를 지정한다.
+     *
+     * @param string $color 컬러모드 (light, dark, auto)
+     */
+    public static function color(string $color): void
+    {
+        self::body('data-color-scheme', $color, true);
+    }
+
+    /**
      * 자바스크립트 추가한다.
      *
      * @param string|array $path 자바스크립트 경로
