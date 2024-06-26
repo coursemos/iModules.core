@@ -326,6 +326,22 @@ class Html
     }
 
     /**
+     * <BODY> 스크롤영역을 설정한다.
+     *
+     * @param bool|string $scrollable
+     */
+    public static function scroll(bool|string $scrollable): void
+    {
+        if ($scrollable === false) {
+            self::$_attributes['data-scroll'] = 'false';
+        } else {
+            self::$_attributes['data-scroll'] = 'true';
+            self::$_attributes['data-scroll-x'] = $scrollable === true || $scrollable == 'x' ? 'true' : 'false';
+            self::$_attributes['data-scroll-y'] = $scrollable === true || $scrollable == 'y' ? 'true' : 'false';
+        }
+    }
+
+    /**
      * 웹폰트를 불러온다.
      *
      * @param string $font 폰트명

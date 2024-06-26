@@ -197,7 +197,7 @@ class iModules
         Cache::script('common', '/scripts/Dom.js');
         Cache::script('common', '/scripts/DomList.js');
         Cache::script('common', '/scripts/Form.js');
-        Cache::script('common', '/scripts/Scrollbar.js');
+        Cache::script('common', '/scripts/Scroll.js');
         Html::script(Cache::script('common'), 1);
 
         Cache::script('core', '/scripts/iModules.js');

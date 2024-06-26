@@ -499,9 +499,9 @@ Html.ready(() => {
         Form.autosave(true);
 
         /**
-         * 스크롤바를 처리한다.
+         * 스크롤영역을 처리한다.
          */
-        Scrollbar.init();
+        Scroll.init();
 
         /**
          * Ajax 에러핸들러를 등록한다.
