@@ -44,14 +44,14 @@ class Format {
             'm': 'MM',
             'M': 'MMM',
             'n': 'M',
-            't': '', // no equivalent
-            'L': '', // no equivalent
+            't': '',
+            'L': '',
             'o': 'YYYY',
             'Y': 'YYYY',
             'y': 'YY',
             'a': 'a',
             'A': 'A',
-            'B': '', // no equivalent
+            'B': '',
             'g': 'h',
             'G': 'H',
             'h': 'hh',
@@ -59,14 +59,14 @@ class Format {
             'i': 'mm',
             's': 'ss',
             'u': 'SSS',
-            'e': 'zz', // deprecated since version 1.6.0 of moment.js
-            'I': '', // no equivalent
-            'O': '', // no equivalent
-            'P': '', // no equivalent
-            'T': '', // no equivalent
-            'Z': '', // no equivalent
-            'c': '', // no equivalent
-            'r': '', // no equivalent
+            'e': 'zz',
+            'I': '',
+            'O': '',
+            'P': '',
+            'T': '',
+            'Z': '',
+            'c': '',
+            'r': '',
             'U': 'X',
         };
 
