@@ -384,7 +384,7 @@ class mysql extends DatabaseInterface
                 /**
                  * 구조변경이 가능한 경우 컬럼을 생성한다.
                  */
-                if ($is_update == true) {
+                if ($is_update == true && (($column->is_null ?? false) === true || isset($column->default) == true)) {
                     $alters[] = 'ADD ' . $this->_columnQuery($name, $column);
                     continue;
                 } else {
