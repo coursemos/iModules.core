@@ -390,6 +390,12 @@ class Format {
             }
             return true;
         }
+        if (typeof left === 'function' || typeof right === 'function') {
+            if (typeof left != typeof right) {
+                return false;
+            }
+            return true;
+        }
         return left === right;
     }
     /**
