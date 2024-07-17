@@ -187,8 +187,6 @@ class Html
     {
         if ($image?->getType() == 'image') {
             self::$_image = $image;
-        } else {
-            self::$_image = null;
         }
     }
 
