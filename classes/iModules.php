@@ -234,37 +234,6 @@ class iModules
     }
 
     /**
-     * 기본 META 태그를 설정한다.
-     */
-    public static function metas(): void
-    {
-        $site = Sites::get();
-
-        /**
-         * 테마색상을 추가한다.
-         */
-        Html::head('meta', ['name' => 'theme-color', 'content' => $site->getColor()]);
-
-        /**
-         * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
-         */
-        if ($site->getEmblem() !== null) {
-            Html::head('link', ['rel' => 'apple-touch-icon', 'href' => $site->getEmblem()->getUrl('origin')]);
-        }
-
-        /**
-         * 사이트 Favicon 태그를 정의한다.
-         */
-        if ($site->getFavicon() !== null) {
-            Html::head('link', [
-                'rel' => 'shortcut icon',
-                'type' => 'image/x-icon',
-                'href' => $site->getFavicon()->getUrl('origin'),
-            ]);
-        }
-    }
-
-    /**
      * 커스터마이즈 언어팩을 불러온다.
      *
      * @return object $customize
@@ -375,14 +344,37 @@ class iModules
             Html::canonical($route->getUrl(true, true), false);
 
             /**
+             * 대표이미지를 설정한다.
+             */
+            Html::image($site->getImage());
+
+            /**
+             * 테마색상을 추가한다.
+             */
+            Html::head('meta', ['name' => 'theme-color', 'content' => $site->getColor()]);
+
+            /**
+             * 모바일기기 및 애플 디바이스를 위한 TOUCH-ICON 태그를 정의한다.
+             */
+            if ($site->getEmblem() !== null) {
+                Html::head('link', ['rel' => 'apple-touch-icon', 'href' => $site->getEmblem()->getUrl('origin')]);
+            }
+
+            /**
+             * 사이트 Favicon 태그를 정의한다.
+             */
+            if ($site->getFavicon() !== null) {
+                Html::head('link', [
+                    'rel' => 'shortcut icon',
+                    'type' => 'image/x-icon',
+                    'href' => $site->getFavicon()->getUrl('origin'),
+                ]);
+            }
+
+            /**
              * 아이모듈 페이지에서 공통적으로 사용하는 리소스를 불러온다.
              */
             iModules::resources();
-
-            /**
-             * 메타데이터를 설정한다.
-             */
-            iModules::metas();
         } else {
             /**
              * Content-Type 을 지정한다.
@@ -457,6 +449,11 @@ class iModules
         if ($context->getKeywords()) {
             Html::keywords($context->getKeywords());
         }
+
+        /**
+         * 컨텍스트 이미지를 설정한다.
+         */
+        Html::image($context->getImage());
 
         /**
          * 컨텍스트의 콘텐츠를 가져온다.
