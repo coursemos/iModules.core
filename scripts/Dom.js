@@ -6,7 +6,7 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 13.
+ * @modified 2024. 8. 2.
  */
 class Dom {
     element;
@@ -795,7 +795,7 @@ class Dom {
             return;
         if (this.getStyle('display') == 'none')
             return;
-        if (this.getStyle('display') != 'none') {
+        if (this.getStyle('display') != 'none' && this.getStyle('display') != 'block') {
             this.setData('origin-display', this.getStyle('display'));
         }
         this.setStyle('display', 'none');
