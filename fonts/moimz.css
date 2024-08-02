@@ -6,14 +6,14 @@
  * @file /fonts/moimz.css
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @version 3.2.28
- * @modified 2024. 4. 22.
+ * @version 3.2.31
+ * @modified 2024. 7. 26.
  */
 @font-face {
     font-family: 'moimz';
     font-weight: normal;
     font-style: normal;
-    src: url('./moimz.woff2?v=3.2.28') format('woff2');
+    src: url('./moimz.woff2?v=3.2.31') format('woff2');
     font-display: block;
 }
 
@@ -314,35 +314,44 @@
 .mi-star::before {
     content: '\e703';
 }
-.mi-heart::before {
+.mi-star-fill::before {
     content: '\e704';
 }
-.mi-pin::before {
+.mi-heart::before {
     content: '\e705';
 }
-.mi-bookmark::before {
+.mi-heart-fill::before {
     content: '\e706';
 }
-.mi-bookmark-check::before {
+.mi-pin::before {
     content: '\e707';
 }
-.mi-thumbs-up::before {
+.mi-bookmark::before {
     content: '\e708';
 }
-.mi-thumbs-down::before {
+.mi-bookmark-fill::before {
     content: '\e709';
 }
-.mi-send::before {
+.mi-bookmark-check::before {
+    content: '\e710';
+}
+.mi-thumbs-up::before {
     content: '\e711';
 }
-.mi-enter::before {
+.mi-thumbs-down::before {
     content: '\e712';
 }
-.mi-mail::before {
+.mi-send::before {
     content: '\e713';
 }
-.mi-memo::before {
+.mi-enter::before {
     content: '\e714';
+}
+.mi-mail::before {
+    content: '\e715';
+}
+.mi-memo::before {
+    content: '\e716';
 }
 .mi-print::before {
     content: '\e721';
@@ -434,13 +443,13 @@
 .mi-calendar-date::before {
     content: '\e787';
 }
-.mi-calendar-check-01::before {
+.mi-calendar-check::before {
     content: '\e788';
 }
-.mi-calendar-plus-01::before {
+.mi-calendar-plus::before {
     content: '\e789';
 }
-.mi-calendar-minus-01::before {
+.mi-calendar-minus::before {
     content: '\e790';
 }
 .mi-calendar-dates::before {
