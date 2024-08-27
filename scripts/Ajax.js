@@ -95,6 +95,9 @@ class Ajax {
                 body = JSON.stringify(data);
             }
         }
+        if (method == 'SYNC') {
+            method = 'GET';
+        }
         try {
             const response = (await fetch(url, {
                 method: method,
@@ -181,6 +184,18 @@ class Ajax {
      */
     static async delete(url, params = {}, is_retry = true) {
         return Ajax.#call('DELETE', url, params, null, is_retry);
+    }
+    /**
+     * SYNC 방식으로 데이터를 가져온다.
+     * 전송할 데이터는 JSON 방식으로 전송된다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean|number} is_retry - 재시도여부
+     * @return {Promise<Ajax.Results>} results - 요청결과
+     */
+    static async sync(url, params = {}, is_retry = true) {
+        return Ajax.#call('SYNC', url, params, null, is_retry);
     }
     static setErrorHandler(handler) {
         Ajax.errorHandler = handler;
@@ -313,6 +328,9 @@ class Ajax {
                     body = JSON.stringify(data);
                 }
             }
+            if (method == 'SYNC') {
+                method = 'GET';
+            }
             try {
                 const response = (await fetch(url, {
                     signal: this.signal,
@@ -402,6 +420,17 @@ class Ajax {
          */
         async delete(url, params = {}, callback) {
             return await this.#fetch('DELETE', url, params, null, callback);
+        }
+        /**
+         * SYNC 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
+         */
+        async sync(url, params = {}, callback) {
+            return await this.#fetch('SYNC', url, params, null, callback);
         }
         /**
          * 프로그래스바 데이터가 정상적으로 종료되었는지 확인한다.

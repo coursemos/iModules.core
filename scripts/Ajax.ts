@@ -121,6 +121,10 @@ class Ajax {
             }
         }
 
+        if (method == 'SYNC') {
+            method = 'GET';
+        }
+
         try {
             const response: Response = (await fetch(url, {
                 method: method,
@@ -227,6 +231,19 @@ class Ajax {
         is_retry: boolean | number = true
     ): Promise<Ajax.Results> {
         return Ajax.#call('DELETE', url, params, null, is_retry);
+    }
+
+    /**
+     * SYNC 방식으로 데이터를 가져온다.
+     * 전송할 데이터는 JSON 방식으로 전송된다.
+     *
+     * @param {string} url - 요청주소
+     * @param {Ajax.Params} params - GET 데이터
+     * @param {boolean|number} is_retry - 재시도여부
+     * @return {Promise<Ajax.Results>} results - 요청결과
+     */
+    static async sync(url: string, params: Ajax.Params = {}, is_retry: boolean | number = true): Promise<Ajax.Results> {
+        return Ajax.#call('SYNC', url, params, null, is_retry);
     }
 
     static setErrorHandler(handler: (e: Error | Ajax.Results) => Promise<void>): void {
@@ -415,6 +432,10 @@ namespace Ajax {
                 }
             }
 
+            if (method == 'SYNC') {
+                method = 'GET';
+            }
+
             try {
                 const response: Response = (await fetch(url, {
                     signal: this.signal,
@@ -526,6 +547,22 @@ namespace Ajax {
             callback: (results: Ajax.Progress.Results) => void
         ): Promise<Ajax.Progress.Results> {
             return await this.#fetch('DELETE', url, params, null, callback);
+        }
+
+        /**
+         * SYNC 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
+         */
+        async sync(
+            url: string,
+            params: Ajax.Params = {},
+            callback: (results: Ajax.Progress.Results) => void
+        ): Promise<Ajax.Progress.Results> {
+            return await this.#fetch('SYNC', url, params, null, callback);
         }
 
         /**
