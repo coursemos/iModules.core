@@ -236,6 +236,36 @@ class Crawler
     }
 
     /**
+     * 웹페이지의 SSL 인증서 만료일시를 가져온다.
+     *
+     * @return int $expired_at
+     */
+    public function getSSLExpiredAt(string $url): int
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CERTINFO, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $info = curl_getinfo($ch);
+        curl_close($ch);
+
+        if (isset($info['certinfo']) == false) {
+            return -1;
+        } else {
+            $expired_at = [];
+            foreach ($info['certinfo'] as $cert) {
+                $expired_at[] = strtotime($cert['Expire date']);
+            }
+
+            sort($expired_at);
+
+            return isset($expired_at[0]) == true ? $expired_at[0] : -1;
+        }
+    }
+
+    /**
      * 웹페이지 컨텐츠의 캐릭터셋을 UTF-8로 변경한다.
      *
      * @param string $origin 원본 컨텐츠
