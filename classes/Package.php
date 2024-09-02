@@ -7,7 +7,7 @@
  * @file /classes/Package.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 5.
+ * @modified 2024. 9. 2.
  */
 class Package
 {
@@ -410,6 +410,17 @@ class Package
             $field->options = [];
             foreach ($configs->options ?? [] as $value => $display) {
                 $field->options[$value] = $this->getByLanguage($display, null, true);
+            }
+        }
+
+        if ($field->type == 'check') {
+            if (count($field->options) == 0) {
+                if (isset($configs->boxLabel) == true) {
+                    $field->boxLabel = $this->getByLanguage($configs->boxLabel, null, true);
+                }
+
+                $field->options = null;
+                $field->value = isset($field->value) == true && $field->value == true;
             }
         }
 
