@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface/mysql.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 8. 30.
+ * @modified 2024. 9. 3.
  */
 namespace databases\mysql;
 
@@ -481,7 +481,9 @@ class mysql extends DatabaseInterface
             if ($type == 'primary_key') {
                 if ($primary_key != $column) {
                     if ($is_update == true) {
-                        $alters[] = 'DROP PRIMARY KEY';
+                        if ($primary_key !== null) {
+                            $alters[] = 'DROP PRIMARY KEY';
+                        }
                         continue;
                     } else {
                         return false;
