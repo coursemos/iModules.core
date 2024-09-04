@@ -7,7 +7,7 @@
  * @file /classes/Route.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2024. 9. 4.
  */
 class Route
 {
@@ -110,6 +110,7 @@ class Route
     {
         $path = preg_replace('/\/\*$/', '{*}', $this->_path);
         $matcher = str_replace('/', '\/', $path);
+        $matcher = preg_replace('/{[^}]+}{\*}/', '([^\/]+){*}', $matcher);
         $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
 
         $keys = [];

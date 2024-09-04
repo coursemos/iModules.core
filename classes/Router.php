@@ -7,7 +7,7 @@
  * @file /classes/Router.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2024. 9. 4.
  */
 class Router
 {
@@ -121,9 +121,11 @@ class Router
         $matched = null;
         $matchedCount = 0;
         foreach ($paths as $path) {
-            $matcher = str_replace('/', '\/', $path);
+            $matcher = $path;
+            $matcher = preg_replace('/{[^}]+}\/\*/', '([^/]+)/*', $matcher);
             $matcher = str_replace('*', '(.*?)', $matcher);
             $matcher = preg_replace('/{[^}]+}/', '(.*?)', $matcher);
+            $matcher = str_replace('/', '\/', $matcher);
 
             if (
                 preg_match('/^' . $matcher . '$/', $match, $matches) == true ||

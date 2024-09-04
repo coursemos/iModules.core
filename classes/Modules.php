@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 13.
+ * @modified 2024. 9. 4.
  */
 class Modules
 {
@@ -74,9 +74,15 @@ class Modules
         }
 
         /**
-         * 모듈 라우터를 초기화한다.
+         * 모듈 프로세스 라우터를 초기화한다.
          */
         Router::add('/module/{name}/process/{path}', '#', 'blob', ['Modules', 'doProcess']);
+
+        /**
+         * 모듈 컨텍스트 라우터를 초기화한다.
+         */
+        Router::add('/module/{name}/context/{context}', '#', 'html', ['Modules', 'doContext']);
+        Router::add('/module/{name}/context/{context}/*', '#', 'html', ['Modules', 'doContext']);
     }
 
     /**
@@ -507,6 +513,19 @@ class Modules
         }
 
         exit(Format::toJson($results));
+    }
+
+    /**
+     * 모듈 컨텍스트 라우팅을 처리한다.
+     *
+     * @param Route $route 현재경로
+     * @param string $name 모듈명
+     * @param string $path 요청주소
+     */
+    public static function doContext(Route $route, string $name, string $context): string
+    {
+        $content = Modules::get($name, $route)->getContent($context, null);
+        return $content;
     }
 
     /**
