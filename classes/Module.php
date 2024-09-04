@@ -395,6 +395,39 @@ abstract class Module extends Component
     }
 
     /**
+     * 모듈 API 라우팅을 처리한다.
+     *
+     * @param string $method 요청방법
+     * @param string $api API명
+     * @param string $path 요청경로
+     */
+    public function doApi(string $method, string $api, string $path): object
+    {
+        define('__IM_API__', true);
+
+        $results = new stdClass();
+        if (is_file($this->getPath() . '/apis/' . $api . '.' . $method . '.php') == true) {
+            $values = File::include(
+                $this->getPath() . '/apis/' . $api . '.' . $method . '.php',
+                [
+                    'me' => &$this,
+                    'results' => &$results,
+                    'path' => $path,
+                ],
+                true
+            );
+
+            Event::fireEvent('afterDoApi', $this, $api . '.' . $method, $values, $results);
+        } else {
+            ErrorHandler::print(
+                $this->error('NOT_FOUND_API_FILE', $this->getPath() . '/apis/' . $api . '.' . $method . '.php')
+            );
+        }
+
+        return $results;
+    }
+
+    /**
      * 특수한 에러코드의 경우 에러데이터를 클래스에서 처리하여 에러클래스로 전달한다.
      *
      * @param string $code 에러코드

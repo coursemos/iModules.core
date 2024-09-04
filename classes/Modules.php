@@ -79,6 +79,11 @@ class Modules
         Router::add('/module/{name}/process/{path}', '#', 'blob', ['Modules', 'doProcess']);
 
         /**
+         * 모듈 API 라우터를 초기화한다.
+         */
+        Router::add('/module/{name}/api/{path}', '#', 'blob', ['Modules', 'doApi']);
+
+        /**
          * 모듈 컨텍스트 라우터를 초기화한다.
          */
         Router::add('/module/{name}/context/{context}', '#', 'html', ['Modules', 'doContext']);
@@ -507,6 +512,37 @@ class Modules
             $results = call_user_func_array([$mModule, 'doProcess'], [$method, $process, $path]);
             if (isset($results->success) == false) {
                 ErrorHandler::print(self::error('NOT_FOUND_MODULE_PROCESS', $name));
+            }
+        } else {
+            ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
+        }
+
+        exit(Format::toJson($results));
+    }
+
+    /**
+     * 모듈 API 라우팅을 처리한다.
+     *
+     * @param Route $route 현재경로
+     * @param string $name 모듈명
+     * @param string $path 요청주소
+     */
+    public static function doApi(Route $route, string $name, string $path): void
+    {
+        Header::type('json');
+        $language = Request::languages(true);
+        $route->setLanguage($language);
+        $method = strtolower(Request::method());
+
+        $paths = explode('/', $path);
+        $api = array_shift($paths);
+        $path = implode('/', $paths);
+
+        if (self::isInstalled($name) == true) {
+            $mModule = self::get($name);
+            $results = call_user_func_array([$mModule, 'doApi'], [$method, $api, $path]);
+            if (isset($results->success) == false) {
+                ErrorHandler::print(self::error('NOT_FOUND_MODULE_API', $name));
             }
         } else {
             ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
