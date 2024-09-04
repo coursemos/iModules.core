@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 23.
+ * @modified 2024. 9. 4.
  */
 class iModules
 {
@@ -538,6 +538,35 @@ class iModules
          * @todo 이벤트
          */
         Html::print(Html::header(), $content, Html::footer());
+
+        Html::print(
+            Html::tag(
+                '<!--',
+                'Powered By : ',
+                '  _ __  __           _       _           ',
+                ' (_)  \\/  | ___   __| |_   _| | ___  ___ ',
+                ' | | |\\/| |/ _ \\ / _` | | | | |/ _ \\/ __|',
+                ' | | |  | | (_) | (_| | |_| | |  __/\\__ \\',
+                ' |_|_|  |_|\\___/ \\__,_|\\__,_|_|\\___||___/  v' . __IM_VERSION__,
+                '-->'
+            )
+        );
+        if (Configs::debug() == true) {
+            if (count(self::$_loadingTime) > 0) {
+                foreach (self::loadingTimes() as $time) {
+                    $loadingTimes[] =
+                        '<!-- ' .
+                        $time['name'] .
+                        ':' .
+                        str_repeat(' ', 20 - strlen($time['name'])) .
+                        $time['total'] .
+                        '(+' .
+                        $time['current'] .
+                        ') -->';
+                }
+                Html::print(...$loadingTimes);
+            }
+        }
     }
 
     /**
