@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 13.
+ * @modified 2024. 9. 4.
  */
 abstract class Module extends Component
 {
@@ -212,11 +212,25 @@ abstract class Module extends Component
              * 모듈의 컨텍스트 템플릿이 지정되지 않은 경우 에러메시지를 출력한다.
              */
             if (isset($this->_template) == false) {
-                ErrorHandler::get($this->error('UNDEFINED_TEMPLATE'));
+                ErrorHandler::print($this->error('UNDEFINED_TEMPLATE'));
             }
 
             return new Template($this, $this->_template);
         }
+    }
+
+    /**
+     * 모듈의 컨텍스트 템플릿을 확인한다.
+     *
+     * @return ?Template $template
+     */
+    final public function checkTemplate(): ?Template
+    {
+        if (isset($this->_template) == false) {
+            return null;
+        }
+
+        return new Template($this, $this->_template);
     }
 
     /**
@@ -327,7 +341,7 @@ abstract class Module extends Component
         $attributes['data-role'] ??= 'module';
         $attributes['data-module'] ??= $this->getName();
         $attributes['data-context'] ??= $context;
-        $attributes['data-template'] ??= $this->getTemplate()->getName();
+        $attributes['data-template'] ??= $this->checkTemplate()?->getName();
 
         return Html::element('div', $attributes, $content);
     }
