@@ -184,6 +184,20 @@ class iModules {
     }
 
     /**
+     * API URL 경로를 가져온다.
+     *
+     * @param {'module'|'plugin'|'widget'} type - 컴포넌트 타입
+     * @param {string} name - 컴포넌트명
+     * @param {string} path - 실행경로
+     * @return {string} processUrl
+     */
+    static getApiUrl(type: string, name: string, path: string): string {
+        const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
+        const route = '/' + type + '/' + name + '/api/' + path;
+        return iModules.getDir() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+    }
+
+    /**
      * 팝업창을 연다.
      *
      * @param {string} url - 페이지 URL

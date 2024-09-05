@@ -98,4 +98,14 @@ class Component {
     getProcessUrl(path: string): string {
         return iModules.getProcessUrl(this.type, this.name, path);
     }
+
+    /**
+     * API URL 경로를 가져온다.
+     *
+     * @param {string} path - 실행경로
+     * @return {string} processUrl
+     */
+    getApiUrl(path: string): string {
+        return iModules.getApiUrl(this.type, this.name, path);
+    }
 }
