@@ -587,6 +587,12 @@ class Modules
                 $error->suffix = Request::url();
                 return $error;
 
+            case 'NOT_FOUND_MODULE_API':
+                $error = ErrorHandler::data($code);
+                $error->message = ErrorHandler::getText($code, ['module' => $message]);
+                $error->suffix = Request::url();
+                return $error;
+
             default:
                 return ErrorHandler::error($code, $message, $details);
         }
