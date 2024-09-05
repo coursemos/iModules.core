@@ -371,6 +371,12 @@ class ErrorHandler
                 $error->suffix = $message;
                 break;
 
+            case 'NOT_FOUND_API_FILE':
+                Header::code(404);
+                $error->message = ErrorHandler::getText($code);
+                $error->suffix = $message;
+                break;
+
             case 'NOT_FOUND_CONTEXT':
                 $error->message = ErrorHandler::getText($code);
                 $error->suffix = $message;
