@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 6.
+ * @modified 2024. 9. 6.
  */
 class iModules {
     static language;
@@ -183,6 +183,20 @@ class iModules {
         const is_rewrite = Html.get('body').getAttr('data-rewrite') === 'true';
         const route = '/' + type + '/' + name + '/api/' + path;
         return iModules.getDir() + (is_rewrite === true ? route + '?debug=true' : '/?route=' + route + '&debug=true');
+    }
+    /**
+     * UUID 를 생성한다.
+     *
+     * @return {string} uuid
+     */
+    static uuid() {
+        if (typeof crypto.randomUUID == 'function') {
+            return crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            var r = (Math.random() * 16) | 0, v = c == 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
     }
     /**
      * 팝업창을 연다.

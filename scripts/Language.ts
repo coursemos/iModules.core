@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 4.
+ * @modified 2024. 9. 6.
  */
 class Language {
     static observer: MutationObserver;
@@ -229,7 +229,7 @@ class Language {
                 let string: any = Language.has(path, code);
 
                 if (string === false) {
-                    const uuid = crypto.randomUUID();
+                    const uuid = iModules.uuid();
                     Language.prints.set(uuid, { text: text, placeHolder: placeHolder, paths: paths, codes: codes });
                     Language.observe();
                     return '<span data-language="' + uuid + '">...</span>';
@@ -274,7 +274,7 @@ class Language {
         paths: string[] = null,
         codes: string[] = null
     ): string {
-        const uuid = crypto.randomUUID();
+        const uuid = iModules.uuid();
         Language.prints.set(uuid, { text: 'errors.' + error, placeHolder: placeHolder, paths: paths, codes: codes });
         Language.observe();
         return '<span data-language="' + uuid + '">...</span>';
