@@ -17,7 +17,7 @@ class iModules {
      * 출력메시지가 NULL 인 경우 초기시각을 지정하고,
      * 출력메시지가 존재할 경우 해당 메시지와 함께 초기시각으로 부터 경과된 시간을 표시한다.
      *
-     * @param {string} message - 출력메시지 (NULL 인 경우, )
+     * @param {string} message - 출력메시지 (NULL 인 경우 기준 시간을 지정한다.)
      */
     static loadingTime(message: string = null): void {
         if (message === null) {
