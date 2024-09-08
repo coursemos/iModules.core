@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 9. 9.
  */
 class Request
 {
@@ -35,6 +35,19 @@ class Request
     {
         return Header::get('X-Method') ??
             (isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET');
+    }
+
+    /**
+     * 클라이언트 아이피를 가져온다.
+     * Proxy 서버를 통해 접속하였을 경우에도 가급적 실제 아이피를 가져온다.
+     *
+     * @return string $ip
+     */
+    public static function ip()
+    {
+        return isset($_SERVER['HTTP_X_FORWARDED_FOR']) == true
+            ? $_SERVER['HTTP_X_FORWARDED_FOR']
+            : $_SERVER['REMOTE_ADDR'];
     }
 
     /**
