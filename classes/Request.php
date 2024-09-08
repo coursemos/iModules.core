@@ -43,11 +43,21 @@ class Request
      *
      * @return string $ip
      */
-    public static function ip()
+    public static function ip(): string
     {
         return isset($_SERVER['HTTP_X_FORWARDED_FOR']) == true
             ? $_SERVER['HTTP_X_FORWARDED_FOR']
             : $_SERVER['REMOTE_ADDR'];
+    }
+
+    /**
+     * 클라이언트 디바이스를 가져온다.
+     *
+     * @return string $device
+     */
+    public static function device(): string
+    {
+        return isset($_SERVER['HTTP_USER_AGENT']) == true ? $_SERVER['HTTP_USER_AGENT'] : '';
     }
 
     /**
