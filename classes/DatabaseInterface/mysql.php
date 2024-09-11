@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface/mysql.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 3.
+ * @modified 2024. 9. 12.
  */
 namespace databases\mysql;
 
@@ -918,6 +918,19 @@ class mysql extends DatabaseInterface
 
         $this->_columns = $columns;
         $this->_query = 'SELECT ';
+
+        return $this;
+    }
+
+    /**
+     * SELECT 쿼리시 가져올 컬럼을 추가한다.
+     *
+     * @param array $columns 가져올 컬럼명
+     * @return DatabaseInterface $this
+     */
+    public function addSelect(array $columns = []): DatabaseInterface
+    {
+        $this->_columns = array_merge($this->_columns, $columns);
 
         return $this;
     }

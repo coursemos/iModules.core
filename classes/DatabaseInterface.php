@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 27.
+ * @modified 2024. 9. 12.
  */
 abstract class DatabaseInterface
 {
@@ -190,6 +190,14 @@ abstract class DatabaseInterface
      * @return DatabaseInterface $this
      */
     abstract public function select(array $columns = []): DatabaseInterface;
+
+    /**
+     * SELECT 쿼리시 가져올 컬럼을 추가한다.
+     *
+     * @param array $columns 가져올 컬럼명
+     * @return DatabaseInterface $this
+     */
+    abstract public function addSelect(array $columns = []): DatabaseInterface;
 
     /**
      * INSERT 쿼리빌더를 시작한다.
