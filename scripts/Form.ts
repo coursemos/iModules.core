@@ -6,7 +6,7 @@
  * @file /scripts/Form.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 13.
+ * @modified 2024. 9. 12.
  */
 class Form {
     static forms: WeakMap<HTMLElement, Form> = new WeakMap();
@@ -29,10 +29,18 @@ class Form {
     constructor($form: Dom) {
         this.$form = $form;
         this.$form.on('submit', (e: SubmitEvent) => {
-            if (this.submitFunction !== null) {
-                this.submitFunction(this);
+            if (this.$form.getAttr('method')?.toUpperCase() == 'GET') {
+                Html.all('input', this.$form).forEach(($input: Dom) => {
+                    if ($input.getValue().length == 0) {
+                        $input.disable();
+                    }
+                });
+            } else {
+                if (this.submitFunction !== null) {
+                    this.submitFunction(this);
+                }
+                e.preventDefault();
             }
-            e.preventDefault();
         });
         this.$form.on('input', () => {
             this.latestEdited = new Date().getTime();
@@ -97,7 +105,9 @@ class Form {
                     data[key] = editor.getValue();
                 }
 
-                uploaders.push(editor.getUploader().getId());
+                if (editor.getUploader() !== null) {
+                    uploaders.push(editor.getUploader().getId());
+                }
 
                 return data;
             }
