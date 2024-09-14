@@ -458,6 +458,92 @@ class Template
     }
 
     /**
+     * 페이지이동 네비게이션을 가져온다.
+     *
+     * @param int $p 현재페이지
+     * @param int $total 총 페이지
+     * @param int $pagenum 페이지이동버튼 갯수
+     * @param string $mode 페이지 표시 형식 (FIXED, CENTER)
+     * @param ?string $link 페이지 이동링크 (페이지번호가 들어가는 부분에 ${PAGE} 치환자 사용)
+     * @param ?string $file 페이지 네비게이션 템플릿 파일명
+     * @return string $html
+     */
+    public static function getPagination(
+        int $page,
+        int $totalPage,
+        int $pagenum,
+        string $mode = 'CENTER',
+        ?string $link = null,
+        ?string $file = null
+    ): string {
+        $page = is_numeric($page) == true && $p > 0 ? $page : 1;
+        $link = $link;
+        if (strpos($link, '#') !== 0) {
+            //$link .= $this->IM->getQueryString();
+        }
+
+        $totalPage = $totalPage == 0 ? 1 : $totalPage;
+
+        if ($mode == 'FIXED') {
+            $startPage = floor(($page - 1) / $pagenum) * $pagenum + 1;
+            $endPage = $startPage + $pagenum - 1 < $totalPage ? $startPage + $pagenum - 1 : $totalPage;
+            $prevPageStart = $startPage - $pagenum > 0 ? $startPage - $pagenum : false;
+            $nextPageStart = $endPage < $totalPage ? $endPage + 1 : false;
+        } else {
+            $gap = max(1, floor($pagenum / 2));
+            $startPage = $page - $gap > 0 ? $page - $gap : 1;
+            $endPage = $page + $gap;
+            if ($endPage - $startPage < $gap * 2 + 1) {
+                $endPage = $gap * 2 - $startPage + 1;
+            }
+            $endPage = $endPage > $totalPage ? $totalPage : $endPage;
+            if ($startPage > 1 && $endPage - $startPage < $gap * 2 + 1) {
+                $startPage = max(1, $endPage - $gap * 2 + 1);
+            }
+            $prevPageStart = null;
+            $nextPageStart = null;
+        }
+
+        $prevPage = $page > 1 ? $page - 1 : false;
+        $nextPage = $page < $totalPage ? $page + 1 : false;
+
+        /*
+        if ($file == null) {
+            ob_start();
+            if (is_file($this->getPath() . '/pagination.php') == true) {
+                include $this->getPath() . '/pagination.php';
+            } else {
+                include __IM_PATH__ . '/includes/pagination.php';
+            }
+            $html = ob_get_clean();
+        } else {
+            if (is_file($this->getPath() . '/' . $file . '.php') == true) {
+                ob_start();
+                include $this->getPath() . '/pagination.php';
+                $html = ob_get_clean();
+            } else {
+                return $this->getError('NOT_FOUND_TEMPLET_FILE', $this->getDir() . '/' . $file . '.php', false);
+            }
+        }
+
+        $html =
+            PHP_EOL .
+            '<div data-role="pagination" data-page="' .
+            $p .
+            '" data-total="' .
+            $total .
+            '">' .
+            $html .
+            '</div>' .
+            PHP_EOL;
+
+        return $html;
+        */
+
+        return '';
+    }
+
+    /**
      * 템플릿 관련 에러를 처리한다.
      *
      * @param string $code 에러코드
