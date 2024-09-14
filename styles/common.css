@@ -843,6 +843,12 @@ body {
                 color: var(--im-color-accent-backward-400);
             }
 
+            &.loading {
+                &::after {
+                    color: var(--im-color-accent-backward-500);
+                }
+            }
+
             &.confirm {
                 &::before {
                     background: var(--im-color-accent-500);
