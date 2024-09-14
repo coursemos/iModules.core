@@ -58,15 +58,6 @@ class Form {
         this.submitFunction = submit;
     }
     /**
-     * submit 이벤트리스너가 등록되어 있다면 해당 이벤트리스너를 통해 폼을 전송한다.
-     */
-    async requestSubmit() {
-        if (this.submitFunction !== null) {
-            this.submitFunction(this);
-            this.removeAutosaveData();
-        }
-    }
-    /**
      * 폼 이름을 가져온다.
      *
      * @return {string} name
