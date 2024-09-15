@@ -420,6 +420,7 @@ body {
             padding: calc((var(--im-component-height-default) - 1lh) / 2 - var(--im-component-border-weight) * 2);
             resize: none;
             position: relative;
+            overflow: hidden;
 
             &:focus {
                 border-color: var(--im-color-accent-500);
@@ -772,6 +773,7 @@ body {
         position: relative;
         cursor: pointer;
         background: transparent !important;
+        overflow: hidden;
         z-index: 0;
 
         &::before {
