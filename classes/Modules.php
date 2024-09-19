@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 4.
+ * @modified 2024. 9. 19.
  */
 class Modules
 {
@@ -517,7 +517,11 @@ class Modules
             ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
         }
 
-        exit(Format::toJson($results));
+        if (Header::length() !== null) {
+            exit(str_pad(Format::toJson($results), Header::length()));
+        } else {
+            exit(Format::toJson($results));
+        }
     }
 
     /**
@@ -548,7 +552,11 @@ class Modules
             ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
         }
 
-        exit(Format::toJson($results));
+        if (Header::length() !== null) {
+            exit(str_pad(Format::toJson($results), Header::length()));
+        } else {
+            exit(Format::toJson($results));
+        }
     }
 
     /**
