@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 2. 19.
+ * @modified 2024. 9. 23.
  */
 class Format
 {
@@ -437,11 +437,16 @@ class Format
      *
      * @return string $ip
      */
-    public static function ip(): string
+    public static function ip(string $ip = null, bool $is_mask = true): string
     {
-        return isset($_SERVER['HTTP_X_FORWARDED_FOR']) == true
-            ? $_SERVER['HTTP_X_FORWARDED_FOR']
-            : $_SERVER['REMOTE_ADDR'];
+        $ip ??= Request::ip();
+        if ($is_mask == true) {
+            $ips = explode('.', $ip);
+            $ips[2] = str_repeat('*', strlen($ips[2]));
+            $ip = implode('.', $ips);
+        }
+
+        return $ip;
     }
 
     /**
@@ -463,5 +468,37 @@ class Format
     public static function toJson(mixed $data): string
     {
         return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * 두개의 데이터가 동일한지 비교한다.
+     *
+     * @param mixed $left
+     * @param mixed $right
+     * @return bool $is_equal - 동일한지 여부
+     */
+    public static function isEqual(mixed $left, mixed $right): bool
+    {
+        if ($left === null || $right === null) {
+            return $left === $right;
+        }
+
+        if (gettype($left) !== gettype($right)) {
+            return false;
+        }
+
+        if (is_array($left) == true || is_array($right) == true) {
+            $left = ksort($left);
+            $right = ksort($right);
+
+            return json_encode($left) == json_encode($right);
+        }
+
+        // @todo array 로 변환되지 않는 경우
+        if (is_object($left) == true || is_object($right) == true) {
+            return Format::isEqual((array) $left, (array) $right);
+        }
+
+        return $left == $right;
     }
 }
