@@ -479,24 +479,95 @@ class Format
      */
     public static function isEqual(mixed $left, mixed $right): bool
     {
-        if ($left === null || $right === null) {
-            return $left === $right;
+        if (is_null($left) != is_null($right)) {
+            return false;
         }
 
-        if (gettype($left) !== gettype($right)) {
+        if (gettype($left) != gettype($right)) {
             return false;
         }
 
         if (is_array($left) == true || is_array($right) == true) {
-            $left = ksort($left);
-            $right = ksort($right);
+            if (is_array($left) != is_array($right)) {
+                return false;
+            }
 
-            return json_encode($left) == json_encode($right);
+            if (array_is_list($left) != array_is_list($right)) {
+                return false;
+            }
+
+            if (array_is_list($left) == false) {
+                return Format::isEqual((object) $left, (object) $right);
+            }
+
+            if (count($left) != count($right)) {
+                return false;
+            }
+
+            foreach ($left as $v) {
+                $matched = false;
+                foreach ($right as $c) {
+                    if (Format::isEqual($v, $c) == true) {
+                        $matched = true;
+                        break;
+                    }
+                }
+
+                if ($matched == false) {
+                    return false;
+                }
+            }
+
+            foreach ($right as $v) {
+                $matched = false;
+                foreach ($left as $c) {
+                    if (Format::isEqual($v, $c) == true) {
+                        $matched = true;
+                        break;
+                    }
+                }
+
+                if ($matched == false) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        // @todo array 로 변환되지 않는 경우
         if (is_object($left) == true || is_object($right) == true) {
-            return Format::isEqual((array) $left, (array) $right);
+            if (is_object($left) != is_object($right)) {
+                return false;
+            }
+
+            $checked = [];
+            foreach ($left as $k => $v) {
+                if (property_exists($right, $k) == false) {
+                    return false;
+                }
+
+                if (Format::isEqual($v, $right->{$k}) == false) {
+                    return false;
+                }
+
+                $checked[] = $k;
+            }
+
+            foreach ($right as $k => $v) {
+                if (in_array($k, $checked) == true) {
+                    continue;
+                }
+
+                if (property_exists($left, $k) == false) {
+                    return false;
+                }
+
+                if (Format::isEqual($v, $left->{$k}) == false) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         return $left == $right;
