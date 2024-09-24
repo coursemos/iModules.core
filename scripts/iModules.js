@@ -9,6 +9,7 @@
  * @modified 2024. 9. 6.
  */
 class iModules {
+    static DEBUG;
     static language;
     static loadingTimeAt;
     /**
