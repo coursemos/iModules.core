@@ -130,6 +130,7 @@ class Ajax {
                 method: method,
                 headers: headers,
                 body: body,
+                mode: 'cors',
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch(async (e) => {
