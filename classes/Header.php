@@ -239,7 +239,7 @@ class Header
     public static function origin(string $origin): void
     {
         if (headers_sent() == false) {
-            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Access-Control-Allow-Origin:' . (self::get('Origin') ?? '*'));
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Allow-Headers: Authorization');
             header('Access-Control-Allow-Methods: *');
