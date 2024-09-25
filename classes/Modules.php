@@ -534,6 +534,7 @@ class Modules
     public static function doApi(Route $route, string $name, string $path): void
     {
         Header::type('json');
+        Header::origin('*');
         $language = Request::languages(true);
         $route->setLanguage($language);
         $method = strtolower(Request::method());
