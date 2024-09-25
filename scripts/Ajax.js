@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 2.
+ * @modified 2024. 9. 26.
  */
 class Ajax {
     static errorHandler = null;
@@ -103,7 +103,6 @@ class Ajax {
                 method: method,
                 headers: headers,
                 body: body,
-                mode: 'cors',
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch(async (e) => {
@@ -338,7 +337,6 @@ class Ajax {
                     method: method,
                     headers: headers,
                     body: body,
-                    mode: 'cors',
                     cache: 'no-store',
                     redirect: 'follow',
                 }).catch(async (e) => {

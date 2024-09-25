@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 2.
+ * @modified 2024. 9. 26.
  */
 class Ajax {
     static errorHandler: (e: Error | Ajax.Results) => Promise<void> = null;
@@ -130,7 +130,6 @@ class Ajax {
                 method: method,
                 headers: headers,
                 body: body,
-                mode: 'cors',
                 cache: 'no-store',
                 redirect: 'follow',
             }).catch(async (e) => {
@@ -443,7 +442,6 @@ namespace Ajax {
                     method: method,
                     headers: headers,
                     body: body,
-                    mode: 'cors',
                     cache: 'no-store',
                     redirect: 'follow',
                 }).catch(async (e) => {
