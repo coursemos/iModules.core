@@ -233,15 +233,13 @@ class Header
 
     /**
      * 크로스사이트 헤더를 설정한다.
-     *
-     * @param string $origin 허용할 도메인 (* 인 경우 전체도메인)
      */
-    public static function origin(string $origin): void
+    public static function cors(): void
     {
         if (headers_sent() == false) {
-            header('Access-Control-Allow-Origin:' . (self::get('Origin') ?? '*'));
+            header('Access-Control-Allow-Origin:' . (self::get('origin') ?? '*'));
             header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Allow-Headers: Authorization');
+            header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept-Language, Accept, X-Method');
             header('Access-Control-Allow-Methods: *');
         }
     }

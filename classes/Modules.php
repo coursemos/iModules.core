@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 19.
+ * @modified 2024. 9. 26.
  */
 class Modules
 {
@@ -534,7 +534,7 @@ class Modules
     public static function doApi(Route $route, string $name, string $path): void
     {
         Header::type('json');
-        Header::origin('*');
+        Header::cors();
         $language = Request::languages(true);
         $route->setLanguage($language);
         $method = strtolower(Request::method());

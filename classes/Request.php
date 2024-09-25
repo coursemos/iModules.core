@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 9.
+ * @modified 2024. 9. 26.
  */
 class Request
 {
@@ -34,7 +34,8 @@ class Request
     public static function method(): string
     {
         return Header::get('X-Method') ??
-            (isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET');
+            (Header::get('Access-Control-Request-Method') ??
+                (isset($_SERVER['REQUEST_METHOD']) == true ? $_SERVER['REQUEST_METHOD'] : 'GET'));
     }
 
     /**
