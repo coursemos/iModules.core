@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 4.
+ * @modified 2024. 9. 26.
  */
 class iModules
 {
@@ -165,7 +165,6 @@ class iModules
             'domain' => Configs::get('session_domain'),
             'secure' => Request::isHttps() == true,
             'httponly' => true,
-            'samesite' => Request::isHttps() == true ? 'None' : 'Lax',
         ];
 
         session_name('IM_SESSION_ID');
