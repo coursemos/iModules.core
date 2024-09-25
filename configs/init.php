@@ -7,7 +7,7 @@
  * @file /configs/init.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 6. 24.
+ * @modified 2024. 9. 26.
  */
 if (is_file('./configs/configs.php') == false) {
     header('location: ./install');
@@ -48,8 +48,6 @@ AutoLoader::register('/vendor', '/src');
  * 에러클래스를 초기화한다.
  */
 ErrorHandler::init();
-
-iModules::session_start();
 
 /**
  * 사이트 헤더 설정

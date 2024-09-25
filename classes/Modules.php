@@ -499,6 +499,7 @@ class Modules
     public static function doProcess(Route $route, string $name, string $path): void
     {
         Header::type('json');
+        iModules::session_start();
         $language = Request::languages(true);
         $route->setLanguage($language);
         $method = strtolower(Request::method());

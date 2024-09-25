@@ -36,11 +36,6 @@ class iModules
         self::$_startTime = Format::microtime();
 
         /**
-         * 세션을 시작한다.
-         */
-        self::session_start();
-
-        /**
          * 라우터를 초기화한다.
          */
         Router::init();
@@ -144,7 +139,7 @@ class iModules
      */
     public static function session_start(): void
     {
-        if (defined('IM_SESSION_STARTED') == true) {
+        if (defined('IM_SESSION_STARTED') == true || defined('IM_SESSION_STOPPED') == true) {
             return;
         }
 
@@ -181,7 +176,11 @@ class iModules
      */
     public static function session_stop(): void
     {
-        session_write_close();
+        if (defined('IM_SESSION_STARTED') == true) {
+            session_write_close();
+        }
+
+        define('IM_SESSION_STOPPED', true);
     }
 
     /**
@@ -390,7 +389,6 @@ class iModules
     public static function respond(): void
     {
         self::init();
-
         $route = Router::get();
 
         /**
@@ -425,6 +423,11 @@ class iModules
             Header::location(Request::combine($route->getUrl(true), Request::query()));
             exit();
         }
+
+        /**
+         * 세션을 시작한다.
+         */
+        self::session_start();
 
         /**
          * 컨텍스트 콘텐츠를 초기화한다.
@@ -521,6 +524,11 @@ class iModules
             Header::location(Request::combine($route->getUrl(true), Request::query()));
             exit();
         }
+
+        /**
+         * 세션을 시작한다.
+         */
+        self::session_start();
 
         /**
          * 컨텍스트의 콘텐츠를 가져온다.
