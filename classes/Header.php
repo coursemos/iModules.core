@@ -7,7 +7,7 @@
  * @file /classes/Header.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 2. 25.
+ * @modified 2024. 9. 29.
  */
 class Header
 {
@@ -21,8 +21,6 @@ class Header
     {
         header('X-Powered-By: iModules (https://www.imodules.io)', true);
         header('X-XSS-Protection: 1; mode=block', true);
-
-        self::cache(0);
     }
 
     /**

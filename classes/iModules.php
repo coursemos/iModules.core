@@ -430,6 +430,11 @@ class iModules
         self::session_start();
 
         /**
+         * 기본캐시설정을 처리한다.
+         */
+        Header::cache(0);
+
+        /**
          * 컨텍스트 콘텐츠를 초기화한다.
          */
         self::initContent();
@@ -529,6 +534,11 @@ class iModules
          * 세션을 시작한다.
          */
         self::session_start();
+
+        /**
+         * 기본캐시설정을 처리한다.
+         */
+        Header::cache(0);
 
         /**
          * 컨텍스트의 콘텐츠를 가져온다.
