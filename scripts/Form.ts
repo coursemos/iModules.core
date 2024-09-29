@@ -145,13 +145,23 @@ class Form {
         }
 
         for (const name in data) {
-            const $field = Html.get('*[name="' + name + '"]', this.$form);
-            if ($field.getEl() === null) {
-                continue;
-            }
+            this.setValue(name, data[name] ?? null);
+        }
+    }
 
-            const value = data[name] ?? null;
+    /**
+     * 폼 내부의 필드값을 지정한다.
+     *
+     * @param {string} name - 필드명
+     * @param {any} value - 필드값
+     */
+    setValue(name: string, value: any) {
+        let $fields = Html.all('*[name="' + name + '"]', this.$form);
+        if ($fields.getCount() == 0) {
+            $fields = Html.all('*[name="' + name + '[]"]', this.$form);
+        }
 
+        $fields.forEach(($field) => {
             if ($field.getAttr('data-role') == 'editor') {
                 const mWysiwyg = Modules.get('wysiwyg') as modules.wysiwyg.Wysiwyg;
                 const editor = mWysiwyg.getEditor($field);
@@ -161,7 +171,7 @@ class Form {
             } else {
                 $field.setValue(value);
             }
-        }
+        });
     }
 
     /**
@@ -234,14 +244,14 @@ class Form {
     /**
      * 폼을 전송한다.
      *
-     * @param {string} url - 전송할주소
+     * @param {string} url - 전송할주소 (NULL 이고 submitFunction 이 존재할 경우 submitFunction 을 실행한다.)
      * @param {Ajax.Params} params - GET 데이터
      * @param {boolean} is_raw - JSON 방식이 아닌 전통적인 방식으로 전송할지 여부
      * @param {boolean} is_retry - 실패시 재시도여부
      * @return {Promise<Ajax.Results>} results - 전송결과
      */
     async submit(
-        url: string,
+        url: string = null,
         params: Ajax.Params = {},
         is_raw: boolean = false,
         is_retry: boolean = true
@@ -253,6 +263,12 @@ class Form {
         if (this.loading == true) {
             iModules.Modal.show(await Language.getErrorText('TITLE'), await Language.getErrorText('LOADING'));
             return { success: false };
+        }
+
+        if (url === null) {
+            if (typeof this.submitFunction == 'function') {
+                this.submitFunction(this);
+            }
         }
 
         /**
