@@ -6,7 +6,7 @@
  * @file /scripts/Format.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 14.
+ * @modified 2024. 9. 29.
  */
 class Format {
     /**
@@ -466,6 +466,7 @@ class Format {
         filters: { [field: string]: { value: any; operator: string } },
         filterMode: 'OR' | 'AND' = 'AND'
     ): boolean {
+        filters ??= {};
         let matched = true;
         for (const field in filters) {
             const filter = filters[field];
