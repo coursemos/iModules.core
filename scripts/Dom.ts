@@ -635,7 +635,15 @@ class Dom {
             this.element instanceof HTMLTextAreaElement ||
             this.element instanceof HTMLSelectElement
         ) {
-            return this.element.value;
+            if (this.element.getAttribute('type') == 'checkbox' || this.element.getAttribute('type') == 'radio') {
+                if ((this.element as HTMLInputElement).checked == true) {
+                    return this.element.value;
+                } else {
+                    return null;
+                }
+            } else {
+                return this.element.value;
+            }
         }
     }
 
