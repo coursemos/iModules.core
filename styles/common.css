@@ -778,7 +778,7 @@ body {
         padding: calc((var(--im-component-height-default) - 1lh) / 2 - var(--im-component-border-weight) * 2);
         position: relative;
         cursor: pointer;
-        background: transparent !important;
+        background: transparent;
         overflow: hidden;
         z-index: 0;
 
