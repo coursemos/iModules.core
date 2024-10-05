@@ -74,8 +74,10 @@ class iModules {
         if (value === undefined) {
             return datas[key] ?? null;
         } else {
-            if (value === null && datas[key] !== undefined) {
-                delete datas[key];
+            if (value === null) {
+                if (datas[key] !== undefined) {
+                    delete datas[key];
+                }
             } else {
                 datas[key] = value;
             }
@@ -97,8 +99,10 @@ class iModules {
         if (value === undefined) {
             return datas[key] ?? null;
         } else {
-            if (value === null && datas[key] !== undefined) {
-                delete datas[key];
+            if (value === null) {
+                if (datas[key] !== undefined) {
+                    delete datas[key];
+                }
             } else {
                 datas[key] = value;
             }
