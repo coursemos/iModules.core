@@ -6,7 +6,7 @@
  * @file /scripts/iModules.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 28.
+ * @modified 2024. 10. 5.
  */
 class iModules {
     static DEBUG: any;
@@ -74,7 +74,11 @@ class iModules {
         if (value === undefined) {
             return datas[key] ?? null;
         } else {
-            datas[key] = value;
+            if (value === null && datas[key] !== undefined) {
+                delete datas[key];
+            } else {
+                datas[key] = value;
+            }
             window.sessionStorage?.setItem('iModules-Session', JSON.stringify(datas));
         }
     }
@@ -93,7 +97,11 @@ class iModules {
         if (value === undefined) {
             return datas[key] ?? null;
         } else {
-            datas[key] = value;
+            if (value === null && datas[key] !== undefined) {
+                delete datas[key];
+            } else {
+                datas[key] = value;
+            }
             window.localStorage?.setItem('iModules-Storage', JSON.stringify(datas));
         }
     }
