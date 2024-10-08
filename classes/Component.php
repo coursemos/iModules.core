@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 11.
+ * @modified 2024. 10. 8.
  */
 abstract class Component
 {
@@ -17,9 +17,68 @@ abstract class Component
     private \modules\admin\admin\Component $_adminClass;
 
     /**
+     * @var Protocol[] $_protocols 규약클래스
+     */
+    private static array $_protocols = [];
+
+    /**
      * 컴포넌트 설정을 초기화한다.
      */
     abstract public function init(): void;
+
+    /**
+     * 컴포넌트간 데이터 교한을 위한 규약 클래스를 가져온다.
+     *
+     * @param Component $target 호출대상
+     * @return ?Protocol $protocol
+     */
+    public function getProtocol(Component $target): ?Protocol
+    {
+        if (isset(self::$_protocols[$this->getType() . '@' . $this->getName()]) == false) {
+            self::$_protocols[$this->getType() . '@' . $this->getName()] = [];
+        }
+
+        if (
+            isset(
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ]
+            ) == false
+        ) {
+            if (
+                is_file(
+                    $target->getPath() . '/protocols/' . $this->getType() . 's/' . $this->getName() . '/Protocol.php'
+                ) == true
+            ) {
+                require_once $target->getPath() .
+                    '/protocols/' .
+                    $this->getType() .
+                    's/' .
+                    $this->getName() .
+                    '/Protocol.php';
+
+                $classPaths = explode('/', $target->getName());
+                $className = ucfirst(end($classPaths));
+                $className = '\\' . $target->getType() . 's\\' . implode('\\', $classPaths) . '\\Protocol';
+
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ] = new $className($this, $target);
+            } else {
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ] = false;
+            }
+        }
+
+        return self::$_protocols[$this->getType() . '@' . $this->getName()][
+            $target->getType() . '@' . $target->getName()
+        ] !== false
+            ? self::$_protocols[$this->getType() . '@' . $this->getName()][
+                $target->getType() . '@' . $target->getName()
+            ]
+            : null;
+    }
 
     /**
      * 각 컴포넌트에서 사용할 데이터베이스 인터페이스 클래스를 가져온다.
