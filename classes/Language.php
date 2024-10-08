@@ -7,7 +7,7 @@
  * @file /classes/Language.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 30.
+ * @modified 2024. 10. 8.
  */
 class Language
 {
@@ -211,8 +211,9 @@ class Language
         Header::type('json');
 
         $pack = null;
-        if ($type == 'module') {
-            $pack = \Modules::get($name)->getPath() . '/languages/' . $code . '.json';
+        $component = Component::get($type, $name);
+        if ($component !== null) {
+            $pack = $component->getPath() . '/languages/' . $code . '.json';
         }
 
         if ($pack !== null && is_file($pack) == true) {
