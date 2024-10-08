@@ -27,6 +27,22 @@ abstract class Component
     abstract public function init(): void;
 
     /**
+     * 컴포넌트 종류 및 이름으로 컴포넌트 클래스를 가져온다.
+     *
+     * @param string $type
+     * @param string $name
+     * @return ?Component $component
+     */
+    final public static function get(string $type, string $name): ?Component
+    {
+        if ($type == 'module') {
+            return Modules::get($name);
+        }
+
+        return null;
+    }
+
+    /**
      * 컴포넌트간 데이터 교한을 위한 규약 클래스를 가져온다.
      *
      * @param Component $target 호출대상
