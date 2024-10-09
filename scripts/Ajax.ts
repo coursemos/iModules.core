@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 26.
+ * @modified 2024. 10. 9.
  */
 class Ajax {
     static errorHandler: (e: Error | Ajax.Results) => Promise<void> = null;
@@ -421,8 +421,15 @@ namespace Ajax {
                 'Accept': 'application/json',
             };
 
-            let body: string | FormData = null;
+            if (method == 'SYNC') {
+                method = 'GET';
+            }
 
+            if (method == 'EXCEL') {
+                method = 'POST';
+            }
+
+            let body: string | FormData = null;
             if (method == 'POST' || method == 'PUT') {
                 if (data instanceof FormData) {
                     body = data;
@@ -430,10 +437,6 @@ namespace Ajax {
                     headers['Content-Type'] = 'application/json; charset=utf-8';
                     body = JSON.stringify(data);
                 }
-            }
-
-            if (method == 'SYNC') {
-                method = 'GET';
             }
 
             try {
@@ -563,6 +566,24 @@ namespace Ajax {
             callback: (results: Ajax.Progress.Results) => void
         ): Promise<Ajax.Progress.Results> {
             return await this.#fetch('SYNC', url, params, null, callback);
+        }
+
+        /**
+         * EXCEL 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Data|FormData} data - 전송할 데이터
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
+         */
+        async excel(
+            url: string,
+            data: Ajax.Data | FormData = {},
+            params: Ajax.Params = {},
+            callback: (results: Ajax.Progress.Results) => void
+        ): Promise<Ajax.Progress.Results> {
+            return await this.#fetch('EXCEL', url, params, data, callback);
         }
 
         /**

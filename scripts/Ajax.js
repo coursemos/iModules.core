@@ -6,7 +6,7 @@
  * @file /scripts/Ajax.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 26.
+ * @modified 2024. 10. 9.
  */
 class Ajax {
     static errorHandler = null;
@@ -318,6 +318,12 @@ class Ajax {
                 'Accept-Language': iModules.getLanguage(),
                 'Accept': 'application/json',
             };
+            if (method == 'SYNC') {
+                method = 'GET';
+            }
+            if (method == 'EXCEL') {
+                method = 'POST';
+            }
             let body = null;
             if (method == 'POST' || method == 'PUT') {
                 if (data instanceof FormData) {
@@ -327,9 +333,6 @@ class Ajax {
                     headers['Content-Type'] = 'application/json; charset=utf-8';
                     body = JSON.stringify(data);
                 }
-            }
-            if (method == 'SYNC') {
-                method = 'GET';
             }
             try {
                 const response = (await fetch(url, {
@@ -431,6 +434,18 @@ class Ajax {
          */
         async sync(url, params = {}, callback) {
             return await this.#fetch('SYNC', url, params, null, callback);
+        }
+        /**
+         * EXCEL 요청을 프로그래스바 요청과 함께 가져온다.
+         *
+         * @param {string} url - 요청주소
+         * @param {Ajax.Data|FormData} data - 전송할 데이터
+         * @param {Ajax.Params} params - GET 데이터
+         * @param {Function} callback - 프로그래스 데이터를 받을 콜백함수
+         * @return {Ajax.Progress.Results} results - 프로그래스 최종완료 결과
+         */
+        async excel(url, data = {}, params = {}, callback) {
+            return await this.#fetch('EXCEL', url, params, data, callback);
         }
         /**
          * 프로그래스바 데이터가 정상적으로 종료되었는지 확인한다.
