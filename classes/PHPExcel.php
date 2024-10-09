@@ -350,14 +350,24 @@ class PHPExcel
      *
      * @param string $column 열인덱스
      * @param mixed $value 데이터
+     * @param bool $is_recount 길이재계산 여부
      */
-    public function setColumnLength(string $column, mixed $value): void
+    public function setColumnLength(string $column, mixed $value, bool $is_recount = true): void
     {
+        if ($is_recount == false && isset($this->_columnLengths[$column]) == true) {
+            return;
+        }
+
         $length = mb_strlen($value, 'utf-8');
+        $alnum_length = strlen(preg_replace('/[가-힣]*/', '', $value));
+        $size = $length * 1.5 - $alnum_length * 0.65;
+
         if (isset($this->_columnLengths[$column]) == false) {
-            $this->_columnLengths[$column] = $length;
-        } else {
-            $this->_columnLengths[$column] = max($this->_columnLengths[$column], $length);
+            $this->_columnLengths[$column] = $size;
+        }
+
+        if ($is_recount == true) {
+            $this->_columnLengths[$column] = max($this->_columnLengths[$column], $size);
         }
     }
 
@@ -383,12 +393,11 @@ class PHPExcel
     public function setAutoSizeAll(): void
     {
         foreach ($this->_columnLengths as $column => $length) {
-            $width = $length * 1.25;
-            $width = min(300, $width);
-            $width = max(12, $width);
+            $length = min(300, $length);
+            $length = max(12, $length);
             $this->getActiveSheet()
                 ->getColumnDimension($column)
-                ->setWidth($width);
+                ->setWidth($length);
         }
     }
 
