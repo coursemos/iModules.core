@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 4.
+ * @modified 2024. 10. 10.
  */
 abstract class Module extends Component
 {
@@ -184,6 +184,17 @@ abstract class Module extends Component
     final public function getProcessUrl(string $path): string
     {
         return iModules::getProcessUrl('module', $this->getName(), $path);
+    }
+
+    /**
+     * API URL 을 가져온다.
+     *
+     * @param string $path API 경로
+     * @return string $url
+     */
+    final public function getApiUrl(string $path): string
+    {
+        return iModules::getApiUrl('module', $this->getName(), $path);
     }
 
     /**

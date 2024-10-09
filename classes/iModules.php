@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 26.
+ * @modified 2024. 10. 10.
  */
 class iModules
 {
@@ -294,6 +294,26 @@ class iModules
         $domain = Domains::get();
 
         $route = '/' . $type . '/' . $name . '/process/' . $path;
+        if ($domain->isRewrite() == true) {
+            return Configs::dir() . $route;
+        } else {
+            return Configs::dir() . '?route=' . $route;
+        }
+    }
+
+    /**
+     * API URL 을 가져온다.
+     *
+     * @param string $type API를 실행할 컴포넌트종류 (module, plugin, widget)
+     * @param string $name 컴포넌트명
+     * @param string $path API 경로
+     * @return string $url
+     */
+    public static function getApiUrl(string $type, string $name, string $path): string
+    {
+        $domain = Domains::get();
+
+        $route = '/' . $type . '/' . $name . '/api/' . $path;
         if ($domain->isRewrite() == true) {
             return Configs::dir() . $route;
         } else {
