@@ -305,7 +305,7 @@ class PHPExcel
      * @param mixed $value 데이터
      * @param string $format 날짜포맷
      */
-    public function setDateValue(string $cellIndex, mixed $value, string $format = 'yyyy.mm.dd(aaa) hh:mm'): void
+    public function setDateValue(string $cellIndex, mixed $value, string $format = 'yyyy-mm-dd hh:mm:ss'): void
     {
         if (is_numeric($value) == false) {
             $value = strtotime($value);
