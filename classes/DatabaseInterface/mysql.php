@@ -1222,15 +1222,17 @@ class mysql extends DatabaseInterface
     ): DatabaseInterface {
         $allowedDirection = ['ASC', 'DESC'];
         $orderbyDirection = strtoupper(trim($orderbyDirection));
-        $orderByField = preg_replace('/[^-a-z0-9\.\(\),_\* <>=!"\']+/i', '', $orderByField);
+        //$orderByField = preg_replace('/[^-a-z0-9\.\(\),_\* <>=!"\']+/i', '', $orderByField);
         if (empty($orderbyDirection) == true || in_array($orderbyDirection, $allowedDirection) == false) {
             $this->_error('Wrong order direction: ' . $orderbyDirection);
         }
 
         if ($customFields !== null) {
+            /*
             foreach ($customFields as $key => $value) {
                 $customFields[$key] = preg_replace('/[^-a-z0-9\.\(\),_\* <>=!"\']+/i', '', $value);
             }
+            */
             $orderByField = 'FIELD (' . $orderByField . ',"' . implode('","', $customFields) . '")';
         }
         $this->_orderBy[$orderByField] = $orderbyDirection;
