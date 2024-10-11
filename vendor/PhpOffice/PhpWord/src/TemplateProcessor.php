@@ -315,6 +315,33 @@ class TemplateProcessor
         $this->replaceXmlBlock($search, $xmlWriter->getData(), 'w:p');
     }
 
+    public function getAll()
+    {
+        $dom = new DOMDocument();
+        $dom->loadXML($this->tempDocumentMainPart);
+        $body = $dom->getElementsByTagName('body')->item(0);
+
+        return $dom->saveXML($body);
+    }
+
+    public function getXml(Element\AbstractElement $complexType): string
+    {
+        $elementName = substr(get_class($complexType), strrpos(get_class($complexType), '\\') + 1);
+        $objectClass = 'PhpOffice\\PhpWord\\Writer\\Word2007\\Element\\' . $elementName;
+
+        $xmlWriter = new XMLWriter();
+        /** @var \PhpOffice\PhpWord\Writer\Word2007\Element\AbstractElement $elementWriter */
+        $elementWriter = new $objectClass($xmlWriter, $complexType, false);
+        $elementWriter->write();
+
+        return $xmlWriter->getData();
+    }
+
+    public function setXml($search, $xml): void
+    {
+        $this->replaceXmlBlock($search, $xml, 'w:p');
+    }
+
     /**
      * @param mixed $search
      * @param mixed $replace
@@ -414,11 +441,14 @@ class TemplateProcessor
 
         // add chart to content type
         $xmlRelationsType = "<Override PartName=\"/word/{$filename}\" ContentType=\"application/vnd.openxmlformats-officedocument.drawingml.chart+xml\"/>";
-        $this->tempDocumentContentTypes = str_replace('</Types>', $xmlRelationsType, $this->tempDocumentContentTypes) . '</Types>';
+        $this->tempDocumentContentTypes =
+            str_replace('</Types>', $xmlRelationsType, $this->tempDocumentContentTypes) . '</Types>';
 
         // Add the chart to relations
         $xmlChartRelation = "<Relationship Id=\"rId{$rId}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart\" Target=\"charts/chart{$rId}.xml\"/>";
-        $this->tempDocumentRelations[$this->getMainPartName()] = str_replace('</Relationships>', $xmlChartRelation, $this->tempDocumentRelations[$this->getMainPartName()]) . '</Relationships>';
+        $this->tempDocumentRelations[$this->getMainPartName()] =
+            str_replace('</Relationships>', $xmlChartRelation, $this->tempDocumentRelations[$this->getMainPartName()]) .
+            '</Relationships>';
 
         // Write the chart
         $xmlWriter = new XMLWriter();
@@ -437,7 +467,8 @@ class TemplateProcessor
         $varInlineArgs = [];
         // size format documentation: https://msdn.microsoft.com/en-us/library/documentformat.openxml.vml.shape%28v=office.14%29.aspx?f=255&MSPPError=-2147217396
         foreach ($varElements as $argIdx => $varArg) {
-            if (strpos($varArg, '=')) { // arg=value
+            if (strpos($varArg, '=')) {
+                // arg=value
                 [$argName, $argValue] = explode('=', $varArg, 2);
                 $argName = strtolower($argName);
                 if ($argName == 'size') {
@@ -445,9 +476,11 @@ class TemplateProcessor
                 } else {
                     $varInlineArgs[strtolower($argName)] = $argValue;
                 }
-            } elseif (preg_match('/^([0-9]*[a-z%]{0,2}|auto)x([0-9]*[a-z%]{0,2}|auto)$/i', $varArg)) { // 60x40
+            } elseif (preg_match('/^([0-9]*[a-z%]{0,2}|auto)x([0-9]*[a-z%]{0,2}|auto)$/i', $varArg)) {
+                // 60x40
                 [$varInlineArgs['width'], $varInlineArgs['height']] = explode('x', $varArg, 2);
-            } else { // :60:40:f
+            } else {
+                // :60:40:f
                 switch ($argIdx) {
                     case 0:
                         $varInlineArgs['width'] = $varArg;
@@ -491,22 +524,26 @@ class TemplateProcessor
     {
         $imageRatio = $actualWidth / $actualHeight;
 
-        if (($width === '') && ($height === '')) { // defined size are empty
+        if ($width === '' && $height === '') {
+            // defined size are empty
             $width = $actualWidth . 'px';
             $height = $actualHeight . 'px';
-        } elseif ($width === '') { // defined width is empty
+        } elseif ($width === '') {
+            // defined width is empty
             $heightFloat = (float) $height;
             $widthFloat = $heightFloat * $imageRatio;
             $matches = [];
             preg_match('/\\d([a-z%]+)$/', $height, $matches);
             $width = $widthFloat . $matches[1];
-        } elseif ($height === '') { // defined height is empty
+        } elseif ($height === '') {
+            // defined height is empty
             $widthFloat = (float) $width;
             $heightFloat = $widthFloat / $imageRatio;
             $matches = [];
             preg_match('/\\d([a-z%]+)$/', $width, $matches);
             $height = $heightFloat . $matches[1];
-        } else { // we have defined size, but we need also check it aspect ratio
+        } else {
+            // we have defined size, but we need also check it aspect ratio
             $widthMatches = [];
             preg_match('/\\d([a-z%]+)$/', $width, $widthMatches);
             $heightMatches = [];
@@ -518,10 +555,12 @@ class TemplateProcessor
                 $heightFloat = (float) $height;
                 $definedRatio = $widthFloat / $heightFloat;
 
-                if ($imageRatio > $definedRatio) { // image wider than defined box
-                    $height = ($widthFloat / $imageRatio) . $dimention;
-                } elseif ($imageRatio < $definedRatio) { // image higher than defined box
-                    $width = ($heightFloat * $imageRatio) . $dimention;
+                if ($imageRatio > $definedRatio) {
+                    // image wider than defined box
+                    $height = $widthFloat / $imageRatio . $dimention;
+                } elseif ($imageRatio < $definedRatio) {
+                    // image higher than defined box
+                    $width = $heightFloat * $imageRatio . $dimention;
                 }
             }
         }
@@ -586,9 +625,14 @@ class TemplateProcessor
     {
         // define templates
         $typeTpl = '<Override PartName="/word/media/{IMG}" ContentType="image/{EXT}"/>';
-        $relationTpl = '<Relationship Id="{RID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/{IMG}"/>';
-        $newRelationsTpl = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
-        $newRelationsTypeTpl = '<Override PartName="/{RELS}" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>';
+        $relationTpl =
+            '<Relationship Id="{RID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/{IMG}"/>';
+        $newRelationsTpl =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
+            "\n" .
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
+        $newRelationsTypeTpl =
+            '<Override PartName="/{RELS}" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>';
         $extTransform = [
             'image/jpeg' => 'jpeg',
             'image/png' => 'png',
@@ -614,7 +658,8 @@ class TemplateProcessor
 
             // setup type for image
             $xmlImageType = str_replace(['{IMG}', '{EXT}'], [$imgName, $imgExt], $typeTpl);
-            $this->tempDocumentContentTypes = str_replace('</Types>', $xmlImageType, $this->tempDocumentContentTypes) . '</Types>';
+            $this->tempDocumentContentTypes =
+                str_replace('</Types>', $xmlImageType, $this->tempDocumentContentTypes) . '</Types>';
         }
 
         $xmlImageRelation = str_replace(['{RID}', '{IMG}'], [$rid, $imgName], $relationTpl);
@@ -624,11 +669,14 @@ class TemplateProcessor
             $this->tempDocumentRelations[$partFileName] = $newRelationsTpl;
             // and add it to content types
             $xmlRelationsType = str_replace('{RELS}', $this->getRelationsName($partFileName), $newRelationsTypeTpl);
-            $this->tempDocumentContentTypes = str_replace('</Types>', $xmlRelationsType, $this->tempDocumentContentTypes) . '</Types>';
+            $this->tempDocumentContentTypes =
+                str_replace('</Types>', $xmlRelationsType, $this->tempDocumentContentTypes) . '</Types>';
         }
 
         // add image to relations
-        $this->tempDocumentRelations[$partFileName] = str_replace('</Relationships>', $xmlImageRelation, $this->tempDocumentRelations[$partFileName]) . '</Relationships>';
+        $this->tempDocumentRelations[$partFileName] =
+            str_replace('</Relationships>', $xmlImageRelation, $this->tempDocumentRelations[$partFileName]) .
+            '</Relationships>';
     }
 
     /**
@@ -668,7 +716,8 @@ class TemplateProcessor
 
         // define templates
         // result can be verified via "Open XML SDK 2.5 Productivity Tool" (http://www.microsoft.com/en-us/download/details.aspx?id=30425)
-        $imgTpl = '<w:pict><v:shape type="#_x0000_t75" style="width:{WIDTH};height:{HEIGHT}" stroked="f" filled="f"><v:imagedata r:id="{RID}" o:title=""/></v:shape></w:pict>';
+        $imgTpl =
+            '<w:pict><v:shape type="#_x0000_t75" style="width:{WIDTH};height:{HEIGHT}" stroked="f" filled="f"><v:imagedata r:id="{RID}" o:title=""/></v:shape></w:pict>';
 
         $i = 0;
         foreach ($searchParts as $partFileName => &$partContent) {
@@ -676,7 +725,7 @@ class TemplateProcessor
 
             foreach ($searchReplace as $searchString => $replaceImage) {
                 $varsToReplace = array_filter($partVariables, function ($partVar) use ($searchString) {
-                    return ($partVar == $searchString) || preg_match('/^' . preg_quote($searchString) . ':/', $partVar);
+                    return $partVar == $searchString || preg_match('/^' . preg_quote($searchString) . ':/', $partVar);
                 });
 
                 foreach ($varsToReplace as $varNameWithArgs) {
@@ -690,12 +739,22 @@ class TemplateProcessor
 
                     // replace preparations
                     $this->addImageToRelations($partFileName, $rid, $imgPath, $preparedImageAttrs['mime']);
-                    $xmlImage = str_replace(['{RID}', '{WIDTH}', '{HEIGHT}'], [$rid, $preparedImageAttrs['width'], $preparedImageAttrs['height']], $imgTpl);
+                    $xmlImage = str_replace(
+                        ['{RID}', '{WIDTH}', '{HEIGHT}'],
+                        [$rid, $preparedImageAttrs['width'], $preparedImageAttrs['height']],
+                        $imgTpl
+                    );
 
                     // replace variable
                     $varNameWithArgsFixed = static::ensureMacroCompleted($varNameWithArgs);
                     $matches = [];
-                    if (preg_match('/(<[^<]+>)([^<]*)(' . preg_quote($varNameWithArgsFixed) . ')([^>]*)(<[^>]+>)/Uu', $partContent, $matches)) {
+                    if (
+                        preg_match(
+                            '/(<[^<]+>)([^<]*)(' . preg_quote($varNameWithArgsFixed) . ')([^>]*)(<[^>]+>)/Uu',
+                            $partContent,
+                            $matches
+                        )
+                    ) {
                         $wholeTag = $matches[0];
                         array_shift($matches);
                         [$openTag, $prefix, , $postfix, $closeTag] = $matches;
@@ -722,17 +781,11 @@ class TemplateProcessor
         $variables = $this->getVariablesForPart($this->tempDocumentMainPart);
 
         foreach ($this->tempDocumentHeaders as $headerXML) {
-            $variables = array_merge(
-                $variables,
-                $this->getVariablesForPart($headerXML)
-            );
+            $variables = array_merge($variables, $this->getVariablesForPart($headerXML));
         }
 
         foreach ($this->tempDocumentFooters as $footerXML) {
-            $variables = array_merge(
-                $variables,
-                $this->getVariablesForPart($footerXML)
-            );
+            $variables = array_merge($variables, $this->getVariablesForPart($footerXML));
         }
 
         return array_count_values($variables);
@@ -782,7 +835,8 @@ class TemplateProcessor
 
                 // If tmpXmlRow doesn't contain continue, this row is no longer part of the spanned row.
                 $tmpXmlRow = $this->getSlice($extraRowStart, $extraRowEnd);
-                if (!preg_match('#<w:vMerge/>#', $tmpXmlRow) &&
+                if (
+                    !preg_match('#<w:vMerge/>#', $tmpXmlRow) &&
                     !preg_match('#<w:vMerge w:val="continue"\s*/>#', $tmpXmlRow)
                 ) {
                     break;
@@ -811,7 +865,9 @@ class TemplateProcessor
 
         $tagPos = strpos($this->tempDocumentMainPart, $search);
         if (!$tagPos) {
-            throw new Exception(sprintf('Can not delete row %s, template variable not found or variable contains markup.', $search));
+            throw new Exception(
+                sprintf('Can not delete row %s, template variable not found or variable contains markup.', $search)
+            );
         }
 
         $tableStart = $this->findTableStart($tagPos);
@@ -844,7 +900,8 @@ class TemplateProcessor
 
                 // If tmpXmlRow doesn't contain continue, this row is no longer part of the spanned row.
                 $tmpXmlRow = $this->getSlice($extraRowStart, $extraRowEnd);
-                if (!preg_match('#<w:vMerge/>#', $tmpXmlRow) &&
+                if (
+                    !preg_match('#<w:vMerge/>#', $tmpXmlRow) &&
                     !preg_match('#<w:vMerge w:val="continue" />#', $tmpXmlRow)
                 ) {
                     break;
@@ -893,15 +950,29 @@ class TemplateProcessor
      *
      * @return null|string
      */
-    public function cloneBlock($blockname, $clones = 1, $replace = true, $indexVariables = false, $variableReplacements = null)
-    {
+    public function cloneBlock(
+        $blockname,
+        $clones = 1,
+        $replace = true,
+        $indexVariables = false,
+        $variableReplacements = null
+    ) {
         $xmlBlock = null;
         $matches = [];
         $escapedMacroOpeningChars = self::$macroOpeningChars;
         $escapedMacroClosingChars = self::$macroClosingChars;
         preg_match(
             //'/(.*((?s)<w:p\b(?:(?!<w:p\b).)*?\{{' . $blockname . '}<\/w:.*?p>))(.*)((?s)<w:p\b(?:(?!<w:p\b).)[^$]*?\{{\/' . $blockname . '}<\/w:.*?p>)/is',
-            '/(.*((?s)<w:p\b(?:(?!<w:p\b).)*?\\' . $escapedMacroOpeningChars . $blockname . $escapedMacroClosingChars . '<\/w:.*?p>))(.*)((?s)<w:p\b(?:(?!<w:p\b).)[^$]*?\\' . $escapedMacroOpeningChars . '\/' . $blockname . $escapedMacroClosingChars . '<\/w:.*?p>)/is',
+            '/(.*((?s)<w:p\b(?:(?!<w:p\b).)*?\\' .
+                $escapedMacroOpeningChars .
+                $blockname .
+                $escapedMacroClosingChars .
+                '<\/w:.*?p>))(.*)((?s)<w:p\b(?:(?!<w:p\b).)[^$]*?\\' .
+                $escapedMacroOpeningChars .
+                '\/' .
+                $blockname .
+                $escapedMacroClosingChars .
+                '<\/w:.*?p>)/is',
             //'/(.*((?s)<w:p\b(?:(?!<w:p\b).)*?\\'. $escapedMacroOpeningChars . $blockname . '}<\/w:.*?p>))(.*)((?s)<w:p\b(?:(?!<w:p\b).)[^$]*?\\'.$escapedMacroOpeningChars.'\/' . $blockname . '}<\/w:.*?p>)/is',
             $this->tempDocumentMainPart,
             $matches
@@ -944,7 +1015,16 @@ class TemplateProcessor
         $escapedMacroOpeningChars = preg_quote(self::$macroOpeningChars);
         $escapedMacroClosingChars = preg_quote(self::$macroClosingChars);
         preg_match(
-            '/(<\?xml.*)(<w:p.*>' . $escapedMacroOpeningChars . $blockname . $escapedMacroClosingChars . '<\/w:.*?p>)(.*)(<w:p.*' . $escapedMacroOpeningChars . '\/' . $blockname . $escapedMacroClosingChars . '<\/w:.*?p>)/is',
+            '/(<\?xml.*)(<w:p.*>' .
+                $escapedMacroOpeningChars .
+                $blockname .
+                $escapedMacroClosingChars .
+                '<\/w:.*?p>)(.*)(<w:p.*' .
+                $escapedMacroOpeningChars .
+                '\/' .
+                $blockname .
+                $escapedMacroClosingChars .
+                '<\/w:.*?p>)/is',
             $this->tempDocumentMainPart,
             $matches
         );
@@ -977,10 +1057,24 @@ class TemplateProcessor
     {
         $string = $update ? 'true' : 'false';
         $matches = [];
-        if (preg_match('/<w:updateFields w:val=\"(true|false|1|0|on|off)\"\/>/', $this->tempDocumentSettingsPart, $matches)) {
-            $this->tempDocumentSettingsPart = str_replace($matches[0], '<w:updateFields w:val="' . $string . '"/>', $this->tempDocumentSettingsPart);
+        if (
+            preg_match(
+                '/<w:updateFields w:val=\"(true|false|1|0|on|off)\"\/>/',
+                $this->tempDocumentSettingsPart,
+                $matches
+            )
+        ) {
+            $this->tempDocumentSettingsPart = str_replace(
+                $matches[0],
+                '<w:updateFields w:val="' . $string . '"/>',
+                $this->tempDocumentSettingsPart
+            );
         } else {
-            $this->tempDocumentSettingsPart = str_replace('</w:settings>', '<w:updateFields w:val="' . $string . '"/></w:settings>', $this->tempDocumentSettingsPart);
+            $this->tempDocumentSettingsPart = str_replace(
+                '</w:settings>',
+                '<w:updateFields w:val="' . $string . '"/></w:settings>',
+                $this->tempDocumentSettingsPart
+            );
         }
     }
 
@@ -1065,7 +1159,13 @@ class TemplateProcessor
         $macroClosingChars = self::$macroClosingChars;
 
         return preg_replace_callback(
-            '/\\' . $brokenMacroOpeningChars . '(?:\\' . $endMacroOpeningChars . '|[^{$]*\>\{)[^' . $macroClosingChars . '$]*\}/U',
+            '/\\' .
+                $brokenMacroOpeningChars .
+                '(?:\\' .
+                $endMacroOpeningChars .
+                '|[^{$]*\>\{)[^' .
+                $macroClosingChars .
+                '$]*\}/U',
             function ($match) {
                 return strip_tags($match[0]);
             },
@@ -1133,7 +1233,8 @@ class TemplateProcessor
     {
         $contentTypes = $this->zipClass->getFromName('[Content_Types].xml');
 
-        $pattern = '~PartName="\/(word\/document.*?\.xml)" ContentType="application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document\.main\+xml"~';
+        $pattern =
+            '~PartName="\/(word\/document.*?\.xml)" ContentType="application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document\.main\+xml"~';
 
         $matches = [];
         preg_match($pattern, $contentTypes, $matches);
@@ -1205,14 +1306,14 @@ class TemplateProcessor
         $rowStart = strrpos(
             $this->tempDocumentMainPart,
             '<w:tbl ',
-            ((strlen($this->tempDocumentMainPart) - $offset) * -1)
+            (strlen($this->tempDocumentMainPart) - $offset) * -1
         );
 
         if (!$rowStart) {
             $rowStart = strrpos(
                 $this->tempDocumentMainPart,
                 '<w:tbl>',
-                ((strlen($this->tempDocumentMainPart) - $offset) * -1)
+                (strlen($this->tempDocumentMainPart) - $offset) * -1
             );
         }
         if (!$rowStart) {
@@ -1239,10 +1340,18 @@ class TemplateProcessor
      */
     protected function findRowStart($offset)
     {
-        $rowStart = strrpos($this->tempDocumentMainPart, '<w:tr ', ((strlen($this->tempDocumentMainPart) - $offset) * -1));
+        $rowStart = strrpos(
+            $this->tempDocumentMainPart,
+            '<w:tr ',
+            (strlen($this->tempDocumentMainPart) - $offset) * -1
+        );
 
         if (!$rowStart) {
-            $rowStart = strrpos($this->tempDocumentMainPart, '<w:tr>', ((strlen($this->tempDocumentMainPart) - $offset) * -1));
+            $rowStart = strrpos(
+                $this->tempDocumentMainPart,
+                '<w:tr>',
+                (strlen($this->tempDocumentMainPart) - $offset) * -1
+            );
         }
         if (!$rowStart) {
             throw new Exception('Can not find the start position of the row to clone.');
@@ -1277,7 +1386,7 @@ class TemplateProcessor
             $endPosition = strlen($this->tempDocumentMainPart);
         }
 
-        return substr($this->tempDocumentMainPart, $startPosition, ($endPosition - $startPosition));
+        return substr($this->tempDocumentMainPart, $startPosition, $endPosition - $startPosition);
     }
 
     /**
@@ -1296,7 +1405,11 @@ class TemplateProcessor
         $escapedMacroClosingChars = preg_quote(self::$macroClosingChars);
 
         for ($i = 1; $i <= $count; ++$i) {
-            $results[] = preg_replace("/$escapedMacroOpeningChars([^:]*?)(:.*?)?$escapedMacroClosingChars/", self::$macroOpeningChars . '\1#' . $i . '\2' . self::$macroClosingChars, $xmlBlock);
+            $results[] = preg_replace(
+                "/$escapedMacroOpeningChars([^:]*?)(:.*?)?$escapedMacroClosingChars/",
+                self::$macroOpeningChars . '\1#' . $i . '\2' . self::$macroClosingChars,
+                $xmlBlock
+            );
         }
 
         return $results;
@@ -1324,7 +1437,12 @@ class TemplateProcessor
         foreach ($variableReplacements as $replacementArray) {
             $localXmlBlock = $xmlBlock;
             foreach ($replacementArray as $search => $replacement) {
-                $localXmlBlock = $this->setValueForPart(self::ensureMacroCompleted($search), $replacement, $localXmlBlock, self::MAXIMUM_REPLACEMENTS_DEFAULT);
+                $localXmlBlock = $this->setValueForPart(
+                    self::ensureMacroCompleted($search),
+                    $replacement,
+                    $localXmlBlock,
+                    self::MAXIMUM_REPLACEMENTS_DEFAULT
+                );
             }
             $results[] = $localXmlBlock;
         }
@@ -1398,7 +1516,7 @@ class TemplateProcessor
         $search = static::ensureMacroCompleted($search);
         $pos = strpos($this->tempDocumentMainPart, $search, $offset);
 
-        return ($pos === false) ? -1 : $pos;
+        return $pos === false ? -1 : $pos;
     }
 
     /**
@@ -1420,7 +1538,7 @@ class TemplateProcessor
             $blockStart = strrpos($this->tempDocumentMainPart, '<' . $blockType . '>', $reverseOffset);
         }
 
-        return ($blockStart === false) ? -1 : $blockStart;
+        return $blockStart === false ? -1 : $blockStart;
     }
 
     /**
@@ -1436,7 +1554,7 @@ class TemplateProcessor
         $blockEndStart = strpos($this->tempDocumentMainPart, '</' . $blockType . '>', $offset);
         // return position of end of tag if found, otherwise -1
 
-        return ($blockEndStart === false) ? -1 : $blockEndStart + 3 + strlen($blockType);
+        return $blockEndStart === false ? -1 : $blockEndStart + 3 + strlen($blockType);
     }
 
     /**
@@ -1459,9 +1577,24 @@ class TemplateProcessor
         }
 
         $unformattedText = preg_replace('/>\s+</', '><', $text);
-        $result = str_replace([self::$macroOpeningChars, self::$macroClosingChars], ['</w:t></w:r><w:r>' . $extractedStyle . '<w:t xml:space="preserve">' . self::$macroOpeningChars, self::$macroClosingChars . '</w:t></w:r><w:r>' . $extractedStyle . '<w:t xml:space="preserve">'], $unformattedText);
+        $result = str_replace(
+            [self::$macroOpeningChars, self::$macroClosingChars],
+            [
+                '</w:t></w:r><w:r>' . $extractedStyle . '<w:t xml:space="preserve">' . self::$macroOpeningChars,
+                self::$macroClosingChars . '</w:t></w:r><w:r>' . $extractedStyle . '<w:t xml:space="preserve">',
+            ],
+            $unformattedText
+        );
 
-        return str_replace(['<w:r>' . $extractedStyle . '<w:t xml:space="preserve"></w:t></w:r>', '<w:r><w:t xml:space="preserve"></w:t></w:r>', '<w:t>'], ['', '', '<w:t xml:space="preserve">'], $result);
+        return str_replace(
+            [
+                '<w:r>' . $extractedStyle . '<w:t xml:space="preserve"></w:t></w:r>',
+                '<w:r><w:t xml:space="preserve"></w:t></w:r>',
+                '<w:t>',
+            ],
+            ['', '', '<w:t xml:space="preserve">'],
+            $result
+        );
     }
 
     /**
@@ -1476,7 +1609,8 @@ class TemplateProcessor
         $escapedMacroOpeningChars = preg_quote(self::$macroOpeningChars);
         $escapedMacroClosingChars = preg_quote(self::$macroClosingChars);
 
-        return 1 === preg_match('/[^>]' . $escapedMacroOpeningChars . '|' . $escapedMacroClosingChars . '[^<]/i', $text);
+        return 1 ===
+            preg_match('/[^>]' . $escapedMacroOpeningChars . '|' . $escapedMacroClosingChars . '[^<]/i', $text);
     }
 
     public function setMacroOpeningChars(string $macroOpeningChars): void
