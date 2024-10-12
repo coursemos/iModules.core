@@ -61,7 +61,7 @@
             "indexes": {
                 "host": "primary_key"
             },
-            "comment": "아이모듈 도메인 관리"
+            "comment": "아이모듈 도메인"
         },
         "sites": {
             "columns": {
@@ -138,7 +138,7 @@
             "indexes": {
                 "host,language": "primary_key"
             },
-            "comment": "아이모듈 사이트 관리"
+            "comment": "아이모듈 사이트"
         },
         "contexts": {
             "columns": {
@@ -250,7 +250,7 @@
             "indexes": {
                 "host,language,path": "primary_key"
             },
-            "comment": "아이모듈 컨텍스트 관리"
+            "comment": "아이모듈 컨텍스트"
         },
         "modules": {
             "columns": {
@@ -324,6 +324,10 @@
                     "is_null": true,
                     "comment": "모듈데이터"
                 },
+                "updated_at": {
+                    "type": "int",
+                    "comment": "업데이트일시"
+                },
                 "sort": {
                     "type": "int",
                     "comment": "정렬"
@@ -332,7 +336,68 @@
             "indexes": {
                 "name": "primary_key"
             },
-            "comment": "아이모듈 모듈 관리"
+            "comment": "아이모듈 모듈"
+        },
+        "plugins": {
+            "columns": {
+                "name": {
+                    "type": "varchar",
+                    "length": 50,
+                    "comment": "플러그인명"
+                },
+                "version": {
+                    "type": "varchar",
+                    "length": 20,
+                    "comment": "현재버전"
+                },
+                "hash": {
+                    "type": "char",
+                    "length": 40,
+                    "comment": "패키지고유값"
+                },
+                "databases": {
+                    "type": "bigint",
+                    "default": 0,
+                    "comment": "데이터베이스용량"
+                },
+                "attachments": {
+                    "type": "bigint",
+                    "default": 0,
+                    "comment": "첨부파일용량"
+                },
+                "is_admin": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "관리자여부"
+                },
+                "configs": {
+                    "type": "json",
+                    "is_null": true,
+                    "comment": "플러그인설정"
+                },
+                "listeners": {
+                    "type": "json",
+                    "is_null": true,
+                    "comment": "이벤트리스너설정"
+                },
+                "dataset": {
+                    "type": "json",
+                    "is_null": true,
+                    "comment": "플러그인데이터"
+                },
+                "updated_at": {
+                    "type": "int",
+                    "comment": "업데이트일시"
+                },
+                "sort": {
+                    "type": "int",
+                    "comment": "정렬"
+                }
+            },
+            "indexes": {
+                "name": "primary_key"
+            },
+            "comment": "아이모듈 플러그인"
         },
         "crons": {
             "columns": {

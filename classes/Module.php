@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 10.
+ * @modified 2024. 10. 12.
  */
 abstract class Module extends Component
 {
@@ -143,6 +143,17 @@ abstract class Module extends Component
     final public function isInstalled(): bool
     {
         return $this->getInstalled() !== null;
+    }
+
+    /**
+     * 모듈을 업데이트해야하는 상태인지 확인한다.
+     *
+     * @return bool $is_updatable 업데이트여부
+     */
+    final public function isUpdatable(): bool
+    {
+        return $this->getPackage()->getHash() != $this->getInstalled()->hash ||
+            Format::isEqual($this->getListeners(), $this->getInstalled()->listeners) == false;
     }
 
     /**
@@ -382,17 +393,20 @@ abstract class Module extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/processes/' . $process . '.' . $method . '.php') == true) {
-            $values = File::include(
-                $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
-                [
-                    'me' => &$this,
-                    'results' => &$results,
-                    'path' => $path,
-                ],
-                true
-            );
+            $stopped = Event::fireEvent($this, 'beforeDoProcess', [$this, $method, $process, $path, &$results], false);
+            if ($stopped !== false) {
+                $values = File::include(
+                    $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
+                    [
+                        'me' => &$this,
+                        'results' => &$results,
+                        'path' => $path,
+                    ],
+                    true
+                );
 
-            Event::fireEvent('afterDoProcess', $this, $process . '.' . $method, $values, $results);
+                Event::fireEvent($this, 'afterDoProcess', [$this, $method, $process, $path, &$values, &$results]);
+            }
         } else {
             ErrorHandler::print(
                 $this->error(
@@ -418,17 +432,20 @@ abstract class Module extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/apis/' . $api . '.' . $method . '.php') == true) {
-            $values = File::include(
-                $this->getPath() . '/apis/' . $api . '.' . $method . '.php',
-                [
-                    'me' => &$this,
-                    'results' => &$results,
-                    'path' => $path,
-                ],
-                true
-            );
+            $stopped = Event::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], false);
+            if ($stopped !== false) {
+                $values = File::include(
+                    $this->getPath() . '/apis/' . $api . '.' . $method . '.php',
+                    [
+                        'me' => &$this,
+                        'results' => &$results,
+                        'path' => $path,
+                    ],
+                    true
+                );
 
-            Event::fireEvent('afterDoApi', $this, $api . '.' . $method, $values, $results);
+                Event::fireEvent($this, 'afterDoApi', [$this, $method, $api, $path, &$values, &$results]);
+            }
         } else {
             ErrorHandler::print(
                 $this->error('NOT_FOUND_API_FILE', $this->getPath() . '/apis/' . $api . '.' . $method . '.php')

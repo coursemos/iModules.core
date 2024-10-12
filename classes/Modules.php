@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 26.
+ * @modified 2024. 10. 12.
  */
 class Modules
 {
@@ -465,7 +465,8 @@ class Modules
                         'is_theme' => $module->hasPackageProperty('THEME') == true ? 'TRUE' : 'FALSE',
                         'is_cron' => $module->hasPackageProperty('CRON') == true ? 'TRUE' : 'FALSE',
                         'configs' => Format::toJson($configs),
-                        'listeners' => Format::toJson($package->get('listeners')),
+                        'listeners' => Format::toJson($module->getListeners(), true),
+                        'updated_at' => time(),
                         'sort' => $sort,
                     ],
                     [
@@ -481,6 +482,7 @@ class Modules
                         'is_cron',
                         'configs',
                         'listeners',
+                        'updated_at',
                     ]
                 )
                 ->execute();

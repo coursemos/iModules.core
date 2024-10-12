@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 8.
+ * @modified 2024. 10. 12.
  */
 abstract class Component
 {
@@ -40,60 +40,6 @@ abstract class Component
         }
 
         return null;
-    }
-
-    /**
-     * 컴포넌트간 데이터 교한을 위한 규약 클래스를 가져온다.
-     *
-     * @param Component $target 호출대상
-     * @return ?Protocol $protocol
-     */
-    public function getProtocol(Component $target): ?Protocol
-    {
-        if (isset(self::$_protocols[$this->getType() . '@' . $this->getName()]) == false) {
-            self::$_protocols[$this->getType() . '@' . $this->getName()] = [];
-        }
-
-        if (
-            isset(
-                self::$_protocols[$this->getType() . '@' . $this->getName()][
-                    $target->getType() . '@' . $target->getName()
-                ]
-            ) == false
-        ) {
-            if (
-                is_file(
-                    $target->getPath() . '/protocols/' . $this->getType() . 's/' . $this->getName() . '/Protocol.php'
-                ) == true
-            ) {
-                require_once $target->getPath() .
-                    '/protocols/' .
-                    $this->getType() .
-                    's/' .
-                    $this->getName() .
-                    '/Protocol.php';
-
-                $classPaths = explode('/', $target->getName());
-                $className = ucfirst(end($classPaths));
-                $className = '\\' . $target->getType() . 's\\' . implode('\\', $classPaths) . '\\Protocol';
-
-                self::$_protocols[$this->getType() . '@' . $this->getName()][
-                    $target->getType() . '@' . $target->getName()
-                ] = new $className($this, $target);
-            } else {
-                self::$_protocols[$this->getType() . '@' . $this->getName()][
-                    $target->getType() . '@' . $target->getName()
-                ] = false;
-            }
-        }
-
-        return self::$_protocols[$this->getType() . '@' . $this->getName()][
-            $target->getType() . '@' . $target->getName()
-        ] !== false
-            ? self::$_protocols[$this->getType() . '@' . $this->getName()][
-                $target->getType() . '@' . $target->getName()
-            ]
-            : null;
     }
 
     /**
@@ -212,6 +158,128 @@ abstract class Component
     public static function getPackage(): Package
     {
         return new Package(self::getBase() . '/package.json');
+    }
+
+    /**
+     * 컴포넌트간 데이터 교한을 위한 규약 클래스를 가져온다.
+     *
+     * @param Component $target 호출대상
+     * @return ?Protocol $protocol
+     */
+    public function getProtocol(Component $target): ?Protocol
+    {
+        if (isset(self::$_protocols[$this->getType() . '@' . $this->getName()]) == false) {
+            self::$_protocols[$this->getType() . '@' . $this->getName()] = [];
+        }
+
+        if (
+            isset(
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ]
+            ) == false
+        ) {
+            if (
+                is_file(
+                    $target->getPath() . '/protocols/' . $this->getType() . 's/' . $this->getName() . '/Protocol.php'
+                ) == true
+            ) {
+                require_once $target->getPath() .
+                    '/protocols/' .
+                    $this->getType() .
+                    's/' .
+                    $this->getName() .
+                    '/Protocol.php';
+
+                $targetPaths = explode('/', $target->getName());
+                $originPaths = explode('/', $this->getName());
+                $className = '\\' . $target->getType() . 's\\' . implode('\\', $targetPaths) . '\\protocols';
+                $className .= '\\' . $this->getType() . 's\\' . implode('\\', $originPaths) . '\\Protocol';
+
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ] = new $className($this, $target);
+            } else {
+                self::$_protocols[$this->getType() . '@' . $this->getName()][
+                    $target->getType() . '@' . $target->getName()
+                ] = false;
+            }
+        }
+
+        return self::$_protocols[$this->getType() . '@' . $this->getName()][
+            $target->getType() . '@' . $target->getName()
+        ] !== false
+            ? self::$_protocols[$this->getType() . '@' . $this->getName()][
+                $target->getType() . '@' . $target->getName()
+            ]
+            : null;
+    }
+
+    /**
+     * 컴포넌트명의 이벤트리스너를 가져온다.
+     *
+     * @return ?object $listeners
+     */
+    public static function getListeners(): ?object
+    {
+        if (self::getPackage()->get('listeners') !== true) {
+            return null;
+        }
+
+        $files = File::getDirectoryItems(self::getPath() . '/listeners', 'file', true);
+        if (count($files) == 0) {
+            return null;
+        }
+
+        $listeners = null;
+        foreach ($files as $file) {
+            $path = explode('/', preg_replace('/^' . Format::reg(self::getPath() . '/listeners/') . '/', '', $file));
+            $filename = array_pop($path);
+            if ($filename !== 'Listeners.php') {
+                continue;
+            }
+
+            $type = array_shift($path);
+            if (in_array($type, ['modules', 'plugins']) == false) {
+                continue;
+            }
+
+            $name = implode('/', $path);
+
+            require_once $file;
+
+            $listenerPaths = explode('/', self::getType() . 's/' . self::getName());
+            $callerPaths = explode('/', $type . '/' . $name);
+            $className = '\\' . implode('\\', $listenerPaths) . '\\listeners';
+            $className .= '\\' . implode('\\', $callerPaths) . '\\Listeners';
+
+            if (class_exists($className) == true) {
+                $class = new ReflectionClass($className);
+                if ($class->getParentClass() === false) {
+                    continue;
+                }
+
+                $events = [];
+                foreach ($class->getMethods() as $method) {
+                    if (
+                        '\\' . $method->class == $className &&
+                        $class->getParentClass()->hasMethod($method->name) == true
+                    ) {
+                        $events[] = $method->name;
+                    }
+                }
+
+                if (count($events) == 0) {
+                    continue;
+                }
+
+                $listeners ??= new stdClass();
+                $listeners->{$type} ??= new stdClass();
+                $listeners->{$type}->{$name} ??= $events;
+            }
+        }
+
+        return $listeners;
     }
 
     /**
@@ -397,9 +465,9 @@ abstract class Component
             return $this->_adminClass;
         }
 
-        $classPaths = explode('/', $this->getName());
-        $className = $a = ucfirst(end($classPaths));
-        $className = '\\' . $this->getType() . 's\\' . implode('\\', $classPaths) . '\\admin\\' . $className;
+        $classPaths = explode('/', $this->getType() . 's/' . $this->getName());
+        $className = ucfirst(end($classPaths));
+        $className = '\\' . implode('\\', $classPaths) . '\\admin\\' . $className;
         if (class_exists($className) == false) {
             return null;
         }
