@@ -7,7 +7,7 @@
  * @file /classes/Format.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 23.
+ * @modified 2024. 10. 12.
  */
 class Format
 {
@@ -463,10 +463,15 @@ class Format
      * JSON 으로 변경한다.
      *
      * @param mixed $data 변경할 데이터
-     * @return string $json
+     * @param bool $is_nullable 변경할 데이터가 NULL 인 경우 NULL 반환여부
+     * @return ?string $json
      */
-    public static function toJson(mixed $data): string
+    public static function toJson(mixed $data, bool $is_nullable = false): ?string
     {
+        if ($data === null && $is_nullable == true) {
+            return null;
+        }
+
         return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
