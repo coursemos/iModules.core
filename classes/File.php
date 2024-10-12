@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 13.
+ * @modified 2024. 10. 12.
  */
 class File
 {
@@ -201,7 +201,6 @@ class File
         string $type = 'all',
         bool $is_included_children = false
     ): array {
-        $path = realpath($path);
         if (is_dir($path) == false) {
             return [];
         }
