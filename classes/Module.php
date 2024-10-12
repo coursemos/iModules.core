@@ -393,7 +393,12 @@ abstract class Module extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/processes/' . $process . '.' . $method . '.php') == true) {
-            $stopped = Event::fireEvent($this, 'beforeDoProcess', [$this, $method, $process, $path, &$results], false);
+            $stopped = Event::fireEvent(
+                $this,
+                'beforeDoProcess',
+                [$this, $method, $process, $path, &$results],
+                'FALSE'
+            );
             if ($stopped !== false) {
                 $values = File::include(
                     $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
@@ -432,7 +437,7 @@ abstract class Module extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/apis/' . $api . '.' . $method . '.php') == true) {
-            $stopped = Event::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], false);
+            $stopped = Event::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], 'FALSE');
             if ($stopped !== false) {
                 $values = File::include(
                     $this->getPath() . '/apis/' . $api . '.' . $method . '.php',

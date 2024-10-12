@@ -12,6 +12,11 @@
 class Listeners
 {
     /**
+     * @var int $_priority 우선순위 (숫자가 작을수록 먼저 실행한다.)
+     */
+    public static int $_priority = 10;
+
+    /**
      * 각 컴포넌트의 프로세스가 처리되기전 발생한다.
      *
      * @param \Component $caller 이벤트를 호출한 컴포넌트
