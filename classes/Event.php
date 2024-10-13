@@ -7,7 +7,7 @@
  * @file /classes/Event.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 14.
  */
 class Event
 {
@@ -43,6 +43,24 @@ class Event
                         foreach ($events as $event) {
                             self::$_listeners->{$type}->{$name}->{$event} ??= [];
                             self::$_listeners->{$type}->{$name}->{$event}[] = $module;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * 설치된 모든 플러그인의 이벤트 리스너를 가져온다.
+             */
+            foreach (Plugins::all() as $plugin) {
+                foreach ($plugin->getInstalled()->listeners ?? [] as $type => $components) {
+                    self::$_listeners->{$type} ??= new stdClass();
+                    self::$_classes->{$type} ??= new stdClass();
+                    foreach ($components as $name => $events) {
+                        self::$_listeners->{$type}->{$name} ??= new stdClass();
+                        self::$_classes->{$type}->{$name} ??= new stdClass();
+                        foreach ($events as $event) {
+                            self::$_listeners->{$type}->{$name}->{$event} ??= [];
+                            self::$_listeners->{$type}->{$name}->{$event}[] = $plugin;
                         }
                     }
                 }

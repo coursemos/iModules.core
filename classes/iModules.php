@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 10.
+ * @modified 2024. 10. 14.
  */
 class iModules
 {
@@ -61,6 +61,11 @@ class iModules
          * 모듈을 초기화한다.
          */
         Modules::init();
+
+        /**
+         * 플러그인을 초기화한다.
+         */
+        Plugins::init();
 
         /**
          * 전체 도메인을 초기화한다.
