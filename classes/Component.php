@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 13.
  */
 abstract class Component
 {
@@ -37,6 +37,8 @@ abstract class Component
     {
         if ($type == 'module') {
             return Modules::get($name);
+        } elseif ($type == 'plugin') {
+            return Plugins::get($name);
         }
 
         return null;
