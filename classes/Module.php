@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 13.
  */
 abstract class Module extends Component
 {
@@ -43,8 +43,7 @@ abstract class Module extends Component
      */
     public function __construct(?Route $route = null)
     {
-        if (Modules::isInits($this->getName(), true) == false) {
-        }
+        Modules::isInits($this->getName(), true);
         $this->_route = $route;
     }
 
@@ -83,6 +82,9 @@ abstract class Module extends Component
         }
         if ($this->getPackage()->get('cron') === true) {
             $properties[] = 'CRON';
+        }
+        if ($this->getPackage()->get('listeners') !== null) {
+            $properties[] = 'LISTENERS';
         }
         if ($this->getPackage()->get('configs') !== null) {
             $properties[] = 'CONFIGS';

@@ -370,6 +370,11 @@
                     "length": "'TRUE','FALSE'",
                     "comment": "관리자여부"
                 },
+                "is_global": {
+                    "type": "enum",
+                    "length": "'TRUE','FALSE'",
+                    "comment": "전역플러그인여부"
+                },
                 "configs": {
                     "type": "json",
                     "is_null": true,
