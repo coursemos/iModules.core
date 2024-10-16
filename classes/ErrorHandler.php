@@ -7,7 +7,7 @@
  * @file /classes/ErrorHandler.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 27.
+ * @modified 2024. 10. 16.
  */
 class ErrorHandler
 {
@@ -86,11 +86,7 @@ class ErrorHandler
         Html::style('/styles/error.css');
         Html::font('Pretendard');
 
-        ob_start();
-        include Configs::path() . '/includes/error.html';
-        $html = ob_get_clean();
-
-        return $html;
+        return File::include(Configs::path() . '/includes/error.html', ['error' => $error], true);
     }
 
     /**
