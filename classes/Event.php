@@ -2,14 +2,14 @@
 /**
  * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
  *
- * 공통 이벤트를 정의한다.
+ * 아이모듈코어 및 각 컴포넌트의 공통 이벤트를 정의한다.
  *
- * @file /classes/Listeners.php
+ * @file /classes/Event.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 16.
  */
-class Listeners
+class Event
 {
     /**
      * @var int $_priority 우선순위 (숫자가 작을수록 먼저 실행한다.)
