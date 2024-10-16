@@ -2,14 +2,14 @@
 /**
  * 이 파일은 아이모듈의 일부입니다. (https://www.imodules.io)
  *
- * 이벤트를 처리한다.
+ * 아이모듈코어 및 각 컴포넌트 등에서 정의된 모든 이벤트를 관리하고, 이벤트 및 이벤트리스너를 처리한다.
  *
- * @file /classes/Event.php
+ * @file /classes/Events.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 14.
+ * @modified 2024. 10. 16.
  */
-class Event
+class Events
 {
     /**
      * @var object $_listeners 이벤트리스너 목록

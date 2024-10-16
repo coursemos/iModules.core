@@ -7,7 +7,7 @@
  * @file /classes/Plugin.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 13.
+ * @modified 2024. 10. 16.
  */
 abstract class Plugin extends Component
 {
@@ -186,14 +186,14 @@ abstract class Plugin extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/processes/' . $process . '.' . $method . '.php') == true) {
-            $stopped = Event::fireEvent(
+            $stopped = Events::fireEvent(
                 $this,
                 'beforeDoProcess',
                 [$this, $method, $process, $path, &$results],
                 'FALSE'
             );
             if ($stopped !== false) {
-                $values = File::include(
+                $values = File::execute(
                     $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
                     [
                         'me' => &$this,
@@ -203,7 +203,7 @@ abstract class Plugin extends Component
                     true
                 );
 
-                Event::fireEvent($this, 'afterDoProcess', [$this, $method, $process, $path, &$values, &$results]);
+                Events::fireEvent($this, 'afterDoProcess', [$this, $method, $process, $path, &$values, &$results]);
             }
         } else {
             ErrorHandler::print(
@@ -230,9 +230,9 @@ abstract class Plugin extends Component
 
         $results = new stdClass();
         if (is_file($this->getPath() . '/apis/' . $api . '.' . $method . '.php') == true) {
-            $stopped = Event::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], 'FALSE');
+            $stopped = Events::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], 'FALSE');
             if ($stopped !== false) {
-                $values = File::include(
+                $values = File::execute(
                     $this->getPath() . '/apis/' . $api . '.' . $method . '.php',
                     [
                         'me' => &$this,
@@ -242,7 +242,7 @@ abstract class Plugin extends Component
                     true
                 );
 
-                Event::fireEvent($this, 'afterDoApi', [$this, $method, $api, $path, &$values, &$results]);
+                Events::fireEvent($this, 'afterDoApi', [$this, $method, $api, $path, &$values, &$results]);
             }
         } else {
             ErrorHandler::print(
