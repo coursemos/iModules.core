@@ -7,7 +7,7 @@
  * @file /classes/File.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 16.
  */
 class File
 {
@@ -265,13 +265,13 @@ class File
     }
 
     /**
-     * 파일을 특정 변수와 함께 인클루드한다.
+     * PHP 파일을 특정 변수와 함께 실행한다.
      *
      * @param string $__path 파일경로
-     * @param array $values 인클루드하는 파일에서 사용할 변수
-     * @param bool $isReturnValues 인클루드한 파일에서 사용된 변수를 반환할지 여부
+     * @param array $values 실행하는 파일에서 사용할 변수
+     * @param bool $isReturnValues 실행한 파일에서 사용된 변수를 반환할지 여부
      */
-    public static function include(string $__path, array $values = [], bool $isReturnValues = false): mixed
+    public static function execute(string $__path, array $values = [], bool $isReturnValues = false): mixed
     {
         if (is_file($__path) == true) {
             /**
@@ -284,5 +284,34 @@ class File
                 return (object) get_defined_vars();
             }
         }
+    }
+
+    /**
+     * 파일을 특정 변수와 함께 인클루드한다.
+     *
+     * @param string $__path 파일경로
+     * @param array $values 인클루드하는 파일에서 사용할 변수
+     * @param bool $isReturn 인클루드한 파일의 내용을 반환할지 여부
+     * @return ?string $content 인클루드한 파일의 콘텐츠
+     */
+    public static function include(string $__path, array $values = [], bool $isReturn = false): ?string
+    {
+        if (is_file($__path) == true) {
+            /**
+             * 삽입할 파일에서 사용할 변수선언
+             */
+            extract($values, EXTR_REFS);
+
+            if ($isReturn == true) {
+                ob_start();
+            }
+            include $__path;
+
+            if ($isReturn == true) {
+                return ob_get_clean();
+            }
+        }
+
+        return null;
     }
 }
