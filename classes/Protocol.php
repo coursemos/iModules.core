@@ -7,44 +7,44 @@
  * @file /classes/Protocol.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 8.
+ * @modified 2024. 10. 14.
  */
 class Protocol
 {
     /**
-     * @var Component $_origin 호출한 컴포넌트 객체
+     * @var Component $_owner 프로토콜 소유 컴포넌트
      */
-    private Component $_origin;
+    private Component $_owner;
 
     /**
-     * @var Component $_target 호출대상 컴포넌트 객체
+     * @var Component $_target 프로토콜 재정의 컴포넌트
      */
     private Component $_target;
 
     /**
      * 컴포넌트간 데이터교환을 위한 규약 클래스를 정의한다.
      *
-     * @param Component $origin
-     * @param Component $target
+     * @param Component $owner 프로토콜 소유 컴포넌트
+     * @param Component $target 프로토콜 재정의 컴포넌트
      */
-    public function __construct(Component $origin, Component $target)
+    public function __construct(Component $owner, Component $target)
     {
-        $this->_origin = $origin;
+        $this->_owner = $owner;
         $this->_target = $target;
     }
 
     /**
-     * 호출한 클래스를 가져온다.
+     * 프로토콜 소유자 클래스를 가져온다.
      *
-     * @return Component $origin
+     * @return \modules\push\Push $target
      */
-    public function getOrigin(): Component
+    public function getOwner(): Component
     {
-        return $this->_origin;
+        return $this->_owner;
     }
 
     /**
-     * 호출대상 클래스를 가져온다.
+     * 프로토콜 재정의 클래스를 가져온다.
      *
      * @return Component $target
      */
