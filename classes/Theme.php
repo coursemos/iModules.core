@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 15.
+ * @modified 2024. 10. 17.
  */
 class Theme
 {
@@ -396,18 +396,7 @@ class Theme
             ErrorHandler::print($this->error('NOT_FOUND_FILE', $path));
         }
 
-        /**
-         * 삽입할 파일에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
-        if (is_file(Configs::path() . $path) == true) {
-            ob_start();
-            include Configs::path() . $path;
-            $context = ob_get_clean();
-        }
-
-        echo $context;
+        File::include(Configs::path() . $path, $this->getValues());
     }
 
     /**
@@ -430,28 +419,15 @@ class Theme
             );
         }
 
-        if (is_file($this->getPath() . '/index.html') == false) {
-            return ErrorHandler::get($this->error('NOT_FOUND_THEME_INDEX', $this->getPath() . '/index.html'));
-        }
-
-        $this->init();
-
-        /**
-         * @todo 이벤트를 발생시킨다.
-         */
-
-        /**
-         * 레이아웃에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
-        $content = Html::element('div', ['data-role' => 'content'], $content);
+        $content = Html::element('div', ['data-role' => 'content'], Html::tag($header, $content, $footer));
         if ($name == 'NONE') {
             $main = Html::element('main', ['data-role' => 'layout', 'data-layout' => 'NONE'], $content);
         } else {
-            ob_start();
-            include $this->getPath() . '/layouts/' . $name . '.html';
-            $main = trim(ob_get_clean());
+            $main = File::include(
+                $this->getPath() . '/layouts/' . $name . '.html',
+                [...$this->getValues(), 'content' => $content],
+                true
+            );
         }
 
         if (preg_match('/^<main.*?data-role=\"layout\".*?>.*<\/main>$/', str_replace("\n", '', $main)) == false) {
@@ -460,18 +436,38 @@ class Theme
             );
         }
 
-        ob_start();
-        include $this->getPath() . '/index.html';
-        $layout = ob_get_clean();
+        return $main;
+    }
 
-        $html = Html::tag($header, $layout, $footer);
+    /**
+     * 테마 인덱스를 가져온다.
+     *
+     * @param string $main 인덱스에 포함될 메인콘텐츠
+     * @param string $type 인덱스타입 (NULL 인 경우 사이트인덱스)
+     * @return string $html 테마 최종콘텐츠
+     */
+    public function getIndex(string $main, string $type = null): string
+    {
+        $index = Events::fireEvent(null, 'beforeLayout', [$this, &$main, &$type], 'NOTNULL');
+        if ($index !== null) {
+            $this->resetValues();
+            return $index;
+        }
 
-        /**
-         * @todo 이벤트를 발생시킨다.
-         */
+        $file = $this->getPath() . '/' . ($type === null ? 'index' : 'index.' . $type) . '.html';
+        if (is_file($file) == false) {
+            return ErrorHandler::get($this->error('NOT_FOUND_THEME_INDEX', $file));
+        }
+
+        $this->init();
+
+        $index = File::include($file, [...$this->getValues(), 'main' => $main], true);
+
+        Events::fireEvent(null, 'afterLayout', [$this, &$index, $type]);
 
         $this->resetValues();
-        return $html;
+
+        return $index;
     }
 
     /**
@@ -491,22 +487,7 @@ class Theme
             );
         }
 
-        $this->init();
-
-        // @todo 이벤트 발생
-
-        /**
-         * 테마파일에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
-        ob_start();
-        include $this->getPath() . '/pages/' . $file . '.html';
-        $html = ob_get_clean();
-
-        // @todo 이벤트 발생
-
-        $this->resetValues();
+        $html = File::include($this->getPath() . '/pages/' . $file . '.html', $this->getValues(), true);
 
         return $html;
     }

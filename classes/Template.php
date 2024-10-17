@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 5.
+ * @modified 2024. 10. 17.
  */
 class Template
 {
@@ -366,30 +366,29 @@ class Template
             ErrorHandler::print($this->error('NOT_FOUND_FILE', $path));
         }
 
-        /**
-         * 삽입할 파일에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
-        if (is_file(Configs::path() . $path) == true) {
-            ob_start();
-            include Configs::path() . $path;
-            $context = ob_get_clean();
-        }
-
-        echo $context;
+        File::include(Configs::path() . $path, $this->getValues());
     }
 
     /**
      * 컨텍스트 콘텐츠 페이지를 가져온다.
      *
      * @param string $file HTML 확장자를 포함하지 않는 콘텐츠 파일명
-     * @param string $header(옵션) 컨텍스트 HTML 상단에 포함할 헤더 HTML
-     * @param string $footer(옵션) 컨텍스트 HTML 하단에 포함할 푸터 HTML
+     * @param string $header 컨텍스트 HTML 상단에 포함할 HTML
+     * @param string $footer 컨텍스트 HTML 하단에 포함할 HTML
      * @return string $html 컨텍스트 HTML
      */
     function getContext(string $file, string $header = '', string $footer = ''): string
     {
+        $content = Events::fireEvent(
+            $this->_parent,
+            'beforeGetContext',
+            [$this->_parent, $this, &$file, &$header, &$footer],
+            'NOTNULL'
+        );
+        if ($content !== null) {
+            return $content;
+        }
+
         /**
          * 템플릿폴더에 파일이 없다면 에러메세지를 출력한다.
          */
@@ -399,30 +398,13 @@ class Template
             );
         }
 
-        $this->init();
-
-        /**
-         * @todo 이벤트를 발생시킨다.
-         */
-
-        /**
-         * 템플릿파일에서 사용할 변수선언
-         */
-        extract($this->getValues());
-
         if (is_file($this->getPath() . '/contexts/' . $file . '.html') == true) {
-            ob_start();
-            include $this->getPath() . '/contexts/' . $file . '.html';
-            $context = ob_get_clean();
+            $context = File::include($this->getPath() . '/contexts/' . $file . '.html', $this->getValues(), true);
         }
 
         $content = Html::tag($header, $context, $footer);
+        Events::fireEvent($this->_parent, 'beforeGetContext', [$this->_parent, $this, $file, &$content]);
 
-        /**
-         * @todo 이벤트를 발생시킨다.
-         */
-
-        $this->resetValues();
         return $content;
     }
 
@@ -430,30 +412,26 @@ class Template
      * 템플릿 공용 레이아웃을 가져온다.
      *
      * @param string $main 메인콘텐츠
-     * @return string $html
+     * @return string $html 템플릿 최종콘텐츠
      */
     function getLayout(string $main = ''): string
     {
+        $this->init();
+
         /**
          * @todo 이벤트를 발생시킨다.
          */
         if (is_file($this->getPath() . '/index.html') == true) {
-            $this->init();
-
-            extract($this->getValues());
-
-            ob_start();
-            include $this->getPath() . '/index.html';
-            $layout = ob_get_clean();
+            $layout = File::include($this->getPath() . '/index.html', [...$this->getValues(), 'main' => $main], true);
         } else {
             $layout = $main;
         }
 
+        $this->resetValues();
+
         /**
          * @todo 이벤트를 발생시킨다.
          */
-
-        $this->resetValues();
         return $layout;
     }
 
