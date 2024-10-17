@@ -35,15 +35,20 @@ class Events
              */
             foreach (Modules::all() as $module) {
                 foreach ($module->getInstalled()->listeners ?? [] as $type => $components) {
-                    self::$_listeners->{$type} ??= new stdClass();
-                    self::$_classes->{$type} ??= new stdClass();
-                    foreach ($components as $name => $events) {
-                        self::$_listeners->{$type}->{$name} ??= new stdClass();
-                        self::$_classes->{$type}->{$name} ??= new stdClass();
-                        foreach ($events as $event) {
-                            self::$_listeners->{$type}->{$name}->{$event} ??= [];
-                            self::$_listeners->{$type}->{$name}->{$event}[] = $module;
+                    if (in_array($type, ['modules', 'plugins', 'widgets']) == true) {
+                        self::$_listeners->{$type} ??= new stdClass();
+                        self::$_classes->{$type} ??= new stdClass();
+                        foreach ($components as $name => $events) {
+                            self::$_listeners->{$type}->{$name} ??= new stdClass();
+                            self::$_classes->{$type}->{$name} ??= new stdClass();
+                            foreach ($events as $event) {
+                                self::$_listeners->{$type}->{$name}->{$event} ??= [];
+                                self::$_listeners->{$type}->{$name}->{$event}[] = $module;
+                            }
                         }
+                    } else {
+                        self::$_listeners->{$type} ??= [];
+                        self::$_listeners->{$type}[] = $module;
                     }
                 }
             }
@@ -53,15 +58,20 @@ class Events
              */
             foreach (Plugins::all() as $plugin) {
                 foreach ($plugin->getInstalled()->listeners ?? [] as $type => $components) {
-                    self::$_listeners->{$type} ??= new stdClass();
-                    self::$_classes->{$type} ??= new stdClass();
-                    foreach ($components as $name => $events) {
-                        self::$_listeners->{$type}->{$name} ??= new stdClass();
-                        self::$_classes->{$type}->{$name} ??= new stdClass();
-                        foreach ($events as $event) {
-                            self::$_listeners->{$type}->{$name}->{$event} ??= [];
-                            self::$_listeners->{$type}->{$name}->{$event}[] = $plugin;
+                    if (in_array($type, ['modules', 'plugins', 'widgets']) == true) {
+                        self::$_listeners->{$type} ??= new stdClass();
+                        self::$_classes->{$type} ??= new stdClass();
+                        foreach ($components as $name => $events) {
+                            self::$_listeners->{$type}->{$name} ??= new stdClass();
+                            self::$_classes->{$type}->{$name} ??= new stdClass();
+                            foreach ($events as $event) {
+                                self::$_listeners->{$type}->{$name}->{$event} ??= [];
+                                self::$_listeners->{$type}->{$name}->{$event}[] = $plugin;
+                            }
                         }
+                    } else {
+                        self::$_listeners->{$type} ??= [];
+                        self::$_listeners->{$type}[] = $plugin;
                     }
                 }
             }
@@ -71,48 +81,73 @@ class Events
     /**
      * 이벤트리스너 클래스를 초기화한다.
      *
-     * @param Component $caller 이벤트를 발생시킨 컴포넌트 객체
+     * @param ?\Component 이벤트를 발생시킨 컴포넌트 객체 (NULL 인 경우 아이모듈코어)
      * @param string $event 이벤트명
      * @return string[] $classes 클래스명
      */
-    public static function getClasses(Component $caller, string $event): array
+    public static function getClasses(?Component $caller, string $event): array
     {
-        if (isset(self::$_classes?->{$caller->getType() . 's'}?->{$caller->getName()}) == false) {
+        if (isset(self::$_classes) == false) {
             return [];
         }
 
-        if (isset(self::$_classes->{$caller->getType() . 's'}->{$caller->getName()}->{$event}) == false) {
-            /**
-             * @var Component[] $listeners
-             */
-            $classes = [];
-            $listeners = self::$_listeners?->{$caller->getType() . 's'}?->{$caller->getName()}->{$event} ?? [];
-            foreach ($listeners as $listener) {
-                $listenerPaths = explode('/', $listener->getType() . 's/' . $listener->getName());
-                $callerPaths = explode('/', $caller->getType() . 's/' . $caller->getName());
-                $className = '\\' . implode('\\', $listenerPaths) . '\\listeners';
-                $className .= '\\' . implode('\\', $callerPaths) . '\\Listeners';
+        if ($caller === null) {
+            if (isset(self::$_classes->{$event}) == false) {
+                /**
+                 * @var Component[] $listeners
+                 */
+                $classes = [];
+                $listeners = self::$_listeners?->{$event} ?? [];
+                foreach ($listeners as $listener) {
+                    $listenerPaths = explode('/', $listener->getType() . 's/' . $listener->getName());
+                    $className = '\\' . implode('\\', $listenerPaths) . '\\listeners\\Listeners';
 
-                $classes[$className] = $className::$_priority;
+                    $classes[$className] = $className::$_priority;
+                }
+
+                ksort($classes);
+                self::$_classes->{$event} = array_keys($classes);
             }
 
-            ksort($classes);
-            self::$_classes->{$caller->getType() . 's'}->{$caller->getName()}->{$event} = array_keys($classes);
-        }
+            return self::$_classes->{$event};
+        } else {
+            if (isset(self::$_classes->{$caller->getType() . 's'}?->{$caller->getName()}) == false) {
+                return [];
+            }
 
-        return self::$_classes?->{$caller->getType() . 's'}?->{$caller->getName()}->{$event};
+            if (isset(self::$_classes->{$caller->getType() . 's'}->{$caller->getName()}->{$event}) == false) {
+                /**
+                 * @var Component[] $listeners
+                 */
+                $classes = [];
+                $listeners = self::$_listeners?->{$caller->getType() . 's'}?->{$caller->getName()}->{$event} ?? [];
+                foreach ($listeners as $listener) {
+                    $listenerPaths = explode('/', $listener->getType() . 's/' . $listener->getName());
+                    $callerPaths = explode('/', $caller->getType() . 's/' . $caller->getName());
+                    $className = '\\' . implode('\\', $listenerPaths) . '\\listeners';
+                    $className .= '\\' . implode('\\', $callerPaths) . '\\Listeners';
+
+                    $classes[$className] = $className::$_priority;
+                }
+
+                ksort($classes);
+                self::$_classes->{$caller->getType() . 's'}->{$caller->getName()}->{$event} = array_keys($classes);
+            }
+
+            return self::$_classes?->{$caller->getType() . 's'}?->{$caller->getName()}->{$event};
+        }
     }
 
     /**
      * 이벤트를 발생시킨다.
      *
-     * @param Component $caller 이벤트를 발생시킨 컴포넌트 객체
+     * @param ?\Component 이벤트를 발생시킨 컴포넌트 객체 (NULL 인 경우 아이모듈코어)
      * @param string $event 이벤트명
      * @param array $params 이벤트리스너에 전달할 매개변수
      * @param ?string $stopped 이벤트실행을 중단할 조건 (TRUE, FALSE, NOTNULL)
      * @return mixed 이벤트리스너가 중단되었을 때의 값
      */
-    public static function fireEvent(Component $caller, string $event, array $params, ?string $stopped = null): mixed
+    public static function fireEvent(?\Component $caller, string $event, array $params, ?string $stopped = null): mixed
     {
         self::init();
 

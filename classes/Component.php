@@ -7,7 +7,7 @@
  * @file /classes/Component.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 13.
+ * @modified 2024. 10. 17.
  */
 abstract class Component
 {
@@ -235,49 +235,76 @@ abstract class Component
 
         $listeners = null;
         foreach ($files as $file) {
-            $path = explode('/', preg_replace('/^' . Format::reg(self::getPath() . '/listeners/') . '/', '', $file));
-            $filename = array_pop($path);
-            if ($filename !== 'Listeners.php') {
-                continue;
-            }
+            if ($file == self::getPath() . '/listeners/Listeners.php') {
+                require_once $file;
 
-            $type = array_shift($path);
-            if (in_array($type, ['modules', 'plugins']) == false) {
-                continue;
-            }
+                $listenerPaths = explode('/', self::getType() . 's/' . self::getName());
+                $className = '\\' . implode('\\', $listenerPaths) . '\\listeners\\Listeners';
 
-            $name = implode('/', $path);
+                if (class_exists($className) == true) {
+                    $class = new ReflectionClass($className);
+                    if ($class->getParentClass() === false) {
+                        continue;
+                    }
 
-            require_once $file;
-
-            $listenerPaths = explode('/', self::getType() . 's/' . self::getName());
-            $callerPaths = explode('/', $type . '/' . $name);
-            $className = '\\' . implode('\\', $listenerPaths) . '\\listeners';
-            $className .= '\\' . implode('\\', $callerPaths) . '\\Listeners';
-
-            if (class_exists($className) == true) {
-                $class = new ReflectionClass($className);
-                if ($class->getParentClass() === false) {
-                    continue;
-                }
-
-                $events = [];
-                foreach ($class->getMethods() as $method) {
-                    if (
-                        '\\' . $method->class == $className &&
-                        $class->getParentClass()->hasMethod($method->name) == true
-                    ) {
-                        $events[] = $method->name;
+                    foreach ($class->getMethods() as $method) {
+                        if (
+                            '\\' . $method->class == $className &&
+                            $class->getParentClass()->hasMethod($method->name) == true
+                        ) {
+                            $listeners ??= new stdClass();
+                            $listeners->{$method->name} = true;
+                        }
                     }
                 }
-
-                if (count($events) == 0) {
+            } else {
+                $path = explode(
+                    '/',
+                    preg_replace('/^' . Format::reg(self::getPath() . '/listeners/') . '/', '', $file)
+                );
+                $filename = array_pop($path);
+                if ($filename !== 'Listeners.php') {
                     continue;
                 }
 
-                $listeners ??= new stdClass();
-                $listeners->{$type} ??= new stdClass();
-                $listeners->{$type}->{$name} ??= $events;
+                $type = array_shift($path);
+                if (in_array($type, ['modules', 'plugins', 'widgets']) == false) {
+                    continue;
+                }
+
+                $name = implode('/', $path);
+
+                require_once $file;
+
+                $listenerPaths = explode('/', self::getType() . 's/' . self::getName());
+                $callerPaths = explode('/', $type . '/' . $name);
+                $className = '\\' . implode('\\', $listenerPaths) . '\\listeners';
+                $className .= '\\' . implode('\\', $callerPaths) . '\\Listeners';
+
+                if (class_exists($className) == true) {
+                    $class = new ReflectionClass($className);
+                    if ($class->getParentClass() === false) {
+                        continue;
+                    }
+
+                    $events = [];
+                    foreach ($class->getMethods() as $method) {
+                        if (
+                            '\\' . $method->class == $className &&
+                            $class->getParentClass()->hasMethod($method->name) == true
+                        ) {
+                            $events[] = $method->name;
+                        }
+                    }
+
+                    if (count($events) == 0) {
+                        continue;
+                    }
+
+                    $listeners ??= new stdClass();
+                    $listeners->{$type} ??= new stdClass();
+                    $listeners->{$type}->{$name} ??= $events;
+                }
             }
         }
 
