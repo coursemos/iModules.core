@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2024. 10. 16.
  */
 class Modules
 {
@@ -573,7 +573,17 @@ class Modules
     public static function doContext(Route $route, string $name, string $context): string
     {
         $content = Modules::get($name, $route)->getContent($context, null);
-        return $content;
+
+        /**
+         * 사이트의 컨텍스트 레이아웃에 콘텐츠를 포함하여 가져온다.
+         */
+        $theme = $route->getSite()->getTheme();
+        $theme->assign('site', $route->getSite());
+        $layout = $theme->getIndex($content, 'context');
+
+        iModules::loadingTime('doContext');
+
+        return $layout;
     }
 
     /**

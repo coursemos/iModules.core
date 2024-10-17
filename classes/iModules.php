@@ -498,7 +498,8 @@ class iModules
         $theme = $route->getSite()->getTheme();
         $theme->assign('site', $context->getSite());
         $theme->assign('context', $context);
-        $layout = $theme->getLayout($context->getLayout(), $content);
+        $main = $theme->getLayout($context->getLayout(), $content);
+        $index = $theme->getIndex($main);
 
         self::loadingTime('doContext');
 
@@ -508,36 +509,9 @@ class iModules
          */
         Html::body('data-context-url', $context->getUrl());
         Html::body('data-color-scheme', Request::cookie('IM_COLOR_SCHEME') ?? 'auto', false);
-        Html::print(Html::header(), $layout, Html::footer());
+        Html::print(Html::header(), $index, Html::footer());
 
-        Html::print(
-            Html::tag(
-                '<!--',
-                'Powered By : ',
-                '  _ __  __           _       _           ',
-                ' (_)  \\/  | ___   __| |_   _| | ___  ___ ',
-                ' | | |\\/| |/ _ \\ / _` | | | | |/ _ \\/ __|',
-                ' | | |  | | (_) | (_| | |_| | |  __/\\__ \\',
-                ' |_|_|  |_|\\___/ \\__,_|\\__,_|_|\\___||___/  v' . __IM_VERSION__,
-                '-->'
-            )
-        );
-        if (Configs::debug() == true) {
-            if (count(self::$_loadingTime) > 0) {
-                foreach (self::loadingTimes() as $time) {
-                    $loadingTimes[] =
-                        '<!-- ' .
-                        $time['name'] .
-                        ':' .
-                        str_repeat(' ', 20 - strlen($time['name'])) .
-                        $time['total'] .
-                        '(+' .
-                        $time['current'] .
-                        ') -->';
-                }
-                Html::print(...$loadingTimes);
-            }
-        }
+        self::doFooter();
     }
 
     /**
@@ -581,6 +555,14 @@ class iModules
          */
         Html::print(Html::header(), $content, Html::footer());
 
+        self::doFooter();
+    }
+
+    /**
+     * HTML의 푸터를 출력한다.
+     */
+    public static function doFooter(): void
+    {
         Html::print(
             Html::tag(
                 '<!--',
@@ -593,6 +575,7 @@ class iModules
                 '-->'
             )
         );
+
         if (Configs::debug() == true) {
             if (count(self::$_loadingTime) > 0) {
                 foreach (self::loadingTimes() as $time) {
