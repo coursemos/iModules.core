@@ -58,6 +58,7 @@ class mysql extends DatabaseInterface
     private array $_tableData = [];
     private array $_duplidated = [];
     private string $_tableLockMethod = 'READ';
+    private bool $_is_transaction = false;
     private ?int $_insert_id = null;
     private int $_count = 0;
     private bool $_displayError = true;
@@ -1395,7 +1396,7 @@ class mysql extends DatabaseInterface
      */
     public function transaction(): void
     {
-        // @todo 트랜잭션이 이미 시작중인지 체크
+        $this->_is_transaction = true;
         $this->_mysqli->autocommit(false);
     }
 
@@ -1406,6 +1407,7 @@ class mysql extends DatabaseInterface
     {
         $this->_mysqli->commit();
         $this->_mysqli->autocommit(true);
+        $this->_is_transaction = false;
     }
 
     /**
@@ -1511,6 +1513,7 @@ class mysql extends DatabaseInterface
         $this->_buildHaving();
         $this->_buildOrderBy();
         $this->_buildLimit();
+        $this->_buildForUpdate();
         $this->_lastQuery = $this->_replacePlaceHolders();
     }
 
@@ -1896,6 +1899,16 @@ class mysql extends DatabaseInterface
         }
 
         $this->_query .= ' LIMIT ' . $this->_limit[0] . ',' . $this->_limit[1];
+    }
+
+    /**
+     * FOR UPDATE 절을 생성한다.
+     */
+    private function _buildForUpdate(): void
+    {
+        if ($this->_startQuery == 'SELECT' && $this->_is_transaction == true) {
+            $this->_query .= ' FOR UPDATE';
+        }
     }
 
     /**
