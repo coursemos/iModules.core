@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 12.
+ * @modified 2024. 10. 21.
  */
 abstract class DatabaseInterface
 {
@@ -387,9 +387,10 @@ abstract class DatabaseInterface
      * SELECT 쿼리문에 의해 선택된 데이터중 한개만 가져온다.
      *
      * @param ?string $field 필드명 (필드명을 지정할 경우, 컬럼명->컬럼값이 아닌 해당 필드명의 값만 반환한다.)
+     * @param bool $forUpdate FOR UPDATE 문 사용여부
      * @return mixed $item
      */
-    abstract public function getOne(?string $field = null): mixed;
+    abstract public function getOne(?string $field = null, bool $forUpdate = false): mixed;
 
     /**
      * 현재까지 쿼리빌더에 의해 생성된 쿼리를 복제한다.
