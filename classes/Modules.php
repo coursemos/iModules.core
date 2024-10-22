@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 16.
+ * @modified 2024. 10. 22.
  */
 class Modules
 {
@@ -572,16 +572,33 @@ class Modules
      */
     public static function doContext(Route $route, string $name, string $context): string
     {
-        $content = Modules::get($name, $route)->getContent($context, null);
+        if (strpos($context, '@') === 0) {
+            $popup = true;
+            $context = preg_replace('/^@/', '', $context);
+        } else {
+            $popup = false;
+        }
+
+        $module = Modules::get($name, $route);
+        $title = $module->getContextTitle($context);
+        $content = $module->getContent($context, null);
 
         /**
          * 사이트의 컨텍스트 레이아웃에 콘텐츠를 포함하여 가져온다.
          */
         $theme = $route->getSite()->getTheme();
         $theme->assign('site', $route->getSite());
+        $theme->assign('module', $module);
+        $theme->assign('title', $title);
+        $theme->assign('context', $context);
+        $theme->assign('popup', $popup);
         $layout = $theme->getIndex($content, 'context');
 
         iModules::loadingTime('doContext');
+
+        Html::type('context');
+        Html::title($title);
+        Html::body('data-color-scheme', Request::cookie('IM_COLOR_SCHEME') ?? 'auto', false);
 
         return $layout;
     }
