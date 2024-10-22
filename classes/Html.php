@@ -7,7 +7,7 @@
  * @file /classes/Html.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 4. 18.
+ * @modified 2024. 10. 22.
  */
 class Html
 {
@@ -35,6 +35,11 @@ class Html
      * @var string $_language HTML 문서 언어코드
      */
     private static string $_language = 'ko';
+
+    /**
+     * @var string $_type HTML 문서타입 (website, context, admin)
+     */
+    private static string $_type = 'website';
 
     /**
      * @var ?string $_title HTML 문서 제목
@@ -146,6 +151,16 @@ class Html
     public static function language(string $language): void
     {
         self::$_language = $language;
+    }
+
+    /**
+     * HTML 문서종류를 정의한다.
+     *
+     * @param string $type (website, context, admin)
+     */
+    public static function type(string $type): void
+    {
+        self::$_type = $type;
     }
 
     /**
@@ -504,6 +519,8 @@ class Html
         });
         $header .= self::tag(...array_keys(self::$_heads));
 
+        self::$_attributes['data-type'] = self::$_type;
+
         if (isset(self::$_attributes['data-dir']) == false) {
             self::$_attributes['data-dir'] = Configs::dir();
         }
@@ -511,10 +528,6 @@ class Html
         if (isset(self::$_attributes['data-rewrite']) == false) {
             self::$_attributes['data-rewrite'] =
                 Configs::isInstalled() == true && Domains::has()?->isRewrite() == true ? 'true' : 'false';
-        }
-
-        if (isset(self::$_attributes['data-type']) == false) {
-            self::$_attributes['data-type'] = 'website';
         }
 
         if (isset(self::$_attributes['data-scrollbar']) == false) {

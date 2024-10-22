@@ -507,6 +507,7 @@ class iModules
          * HTML 헤더 및 푸터를 포함하여 출력한다.
          * @todo 이벤트
          */
+        Html::type('website');
         Html::body('data-context-url', $context->getUrl());
         Html::body('data-color-scheme', Request::cookie('IM_COLOR_SCHEME') ?? 'auto', false);
         Html::print(Html::header(), $index, Html::footer());
