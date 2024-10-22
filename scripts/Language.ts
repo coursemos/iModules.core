@@ -6,7 +6,7 @@
  * @file /scripts/Language.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 6.
+ * @modified 2024. 10. 22.
  */
 class Language {
     static observer: MutationObserver;
@@ -141,14 +141,14 @@ class Language {
      * @param {Object} placeHolder - 치환자
      * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
      * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @return {string|Object} message - 치환된 메시지
+     * @return {Promise<string>} message - 치환된 메시지
      */
     static async getText(
         text: string,
         placeHolder: { [key: string]: string } = null,
         paths: string[] = null,
         codes: string[] = null
-    ): Promise<string | object> {
+    ): Promise<string> {
         paths ??= ['/languages'];
         codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
         const keys: string[] = text.split('.');
@@ -168,7 +168,9 @@ class Language {
                 });
 
                 if (string !== null) {
-                    return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : string;
+                    return typeof string == 'string'
+                        ? Language.replacePlaceHolder(string, placeHolder)
+                        : JSON.stringify(string);
                 }
             }
         }
@@ -177,7 +179,51 @@ class Language {
             return text;
         }
 
-        return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : string;
+        return typeof string == 'string' ? Language.replacePlaceHolder(string, placeHolder) : JSON.stringify(string);
+    }
+
+    /**
+     * 언어팩 객체를 불러온다.
+     *
+     * @param {string} key - 언어팩키
+     * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
+     * @return {Promise<object>} texts - 언어팩객체
+     */
+    static async getTexts(
+        key: string,
+        paths: string[] = null,
+        codes: string[] = null
+    ): Promise<{ [key: string]: any }> {
+        paths ??= ['/languages'];
+        codes ??= [Html.get('html').getAttr('lang').split('-').shift()];
+        const keys: string[] = key.split('.');
+
+        let string = null;
+        for (const path of paths) {
+            for (const code of codes) {
+                let string: string | { [key: string]: string | object } = await Language.load(path, code);
+
+                keys.forEach((key) => {
+                    if (string === null || string[key] === undefined) {
+                        string = null;
+                        return false;
+                    }
+
+                    string = string[key];
+                });
+
+                if (string !== null) {
+                    return typeof string == 'string' ? { key: string } : string;
+                }
+            }
+        }
+
+        if (string === null) {
+            return { key: null };
+        }
+
+        return typeof string == 'string' ? { key: string } : string;
     }
 
     /**
@@ -187,7 +233,7 @@ class Language {
      * @param {Object} placeHolder - 치환자
      * @param {string[]} paths - 언어팩을 탐색할 경로 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
      * @param {string[]} codes - 언어팩을 탐색할 언어코드 (우선순위가 가장높은 경로를 배열의 처음에 정의한다.)
-     * @return {string} message - 치환된 메시지
+     * @return {Promise<string>} message - 치환된 메시지
      */
     static async getErrorText(
         error: string,
@@ -274,10 +320,7 @@ class Language {
         paths: string[] = null,
         codes: string[] = null
     ): string {
-        const uuid = iModules.uuid();
-        Language.prints.set(uuid, { text: 'errors.' + error, placeHolder: placeHolder, paths: paths, codes: codes });
-        Language.observe();
-        return '<span data-language="' + uuid + '">...</span>';
+        return Language.printText('errors.' + error, placeHolder, paths, codes);
     }
 
     /**
