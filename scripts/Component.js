@@ -6,7 +6,7 @@
  * @file /scripts/Component.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2024. 10. 22.
  */
 class Component {
     name;
@@ -40,11 +40,21 @@ class Component {
      *
      * @param {string} text - 언어팩코드
      * @param {Object} placeHolder - 치환자
-     * @return {string|Object} message 치환된 메시지
+     * @return {Promise<string>} message 치환된 메시지
      */
     async getText(text, placeHolder = null) {
         const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
         return Language.getText(text, placeHolder, paths);
+    }
+    /**
+     * 언어팩 객체를 불러온다.
+     *
+     * @param {string} key - 언어팩키
+     * @return {Promise<object>} message 치환된 메시지
+     */
+    async getTexts(key) {
+        const paths = ['/' + this.type + '/' + this.name + '/language', '/languages'];
+        return Language.getTexts(key, paths);
     }
     /**
      * 에러메시지를 불러온다.
