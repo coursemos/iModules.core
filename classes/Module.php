@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 16.
+ * @modified 2024. 10. 23.
  */
 abstract class Module extends Component
 {
@@ -402,7 +402,7 @@ abstract class Module extends Component
                 'FALSE'
             );
             if ($stopped !== false) {
-                $values = File::include(
+                $values = File::execute(
                     $this->getPath() . '/processes/' . $process . '.' . $method . '.php',
                     [
                         'me' => &$this,
@@ -441,7 +441,7 @@ abstract class Module extends Component
         if (is_file($this->getPath() . '/apis/' . $api . '.' . $method . '.php') == true) {
             $stopped = Events::fireEvent($this, 'beforeDoApi', [$this, $method, $api, $path, &$results], 'FALSE');
             if ($stopped !== false) {
-                $values = File::include(
+                $values = File::execute(
                     $this->getPath() . '/apis/' . $api . '.' . $method . '.php',
                     [
                         'me' => &$this,
