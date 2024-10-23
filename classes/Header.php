@@ -7,7 +7,7 @@
  * @file /classes/Header.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 29.
+ * @modified 2024. 10. 23.
  */
 class Header
 {
@@ -164,6 +164,11 @@ class Header
 
                 $charset = null;
                 switch ($type) {
+                    case 'text':
+                        $mime = 'text/plain';
+                        $charset = 'utf-8';
+                        break;
+
                     case 'html':
                         $mime = 'text/html';
                         $charset = 'utf-8';
