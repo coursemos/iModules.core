@@ -53,7 +53,7 @@ class Plugins
         /**
          * 설치된 플러그인을 초기화한다.
          */
-        if (false && Cache::has('plugins') === true) {
+        if (Cache::has('plugins') === true) {
             self::$_plugins = Cache::get('plugins');
         } else {
             foreach (

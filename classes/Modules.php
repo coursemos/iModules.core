@@ -53,7 +53,7 @@ class Modules
         /**
          * 설치된 모듈을 초기화한다.
          */
-        if (false && Cache::has('modules') === true) {
+        if (Cache::has('modules') === true) {
             self::$_modules = Cache::get('modules');
         } else {
             foreach (
