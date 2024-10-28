@@ -7,15 +7,10 @@
  * @file /classes/Plugin.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 16.
+ * @modified 2024. 10. 28.
  */
 abstract class Plugin extends Component
 {
-    /**
-     * @var bool $_init 플러그인 클래스가 초기화되었는지 여부
-     */
-    private bool $_init = false;
-
     /**
      * @var object $_configs 플러그인 환경설정
      */
@@ -26,7 +21,6 @@ abstract class Plugin extends Component
      */
     public function __construct()
     {
-        Plugins::isInits($this->getName(), true);
     }
 
     /**
@@ -34,9 +28,6 @@ abstract class Plugin extends Component
      */
     public function init(): void
     {
-        if ($this->_init == false) {
-            $this->_init = true;
-        }
     }
 
     /**

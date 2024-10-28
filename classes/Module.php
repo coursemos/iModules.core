@@ -7,15 +7,10 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 23.
+ * @modified 2024. 10. 25.
  */
 abstract class Module extends Component
 {
-    /**
-     * @var bool $_init 모듈 클래스가 초기화되었는지 여부
-     */
-    private bool $_init = false;
-
     /**
      * @var object $_configs 모듈 환경설정
      */
@@ -43,7 +38,6 @@ abstract class Module extends Component
      */
     public function __construct(?Route $route = null)
     {
-        Modules::isInits($this->getName(), true);
         $this->_route = $route;
     }
 
@@ -52,9 +46,6 @@ abstract class Module extends Component
      */
     public function init(): void
     {
-        if ($this->_init == false) {
-            $this->_init = true;
-        }
     }
 
     /**

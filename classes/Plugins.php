@@ -7,7 +7,7 @@
  * @file /classes/Plugins.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 13.
+ * @modified 2024. 10. 28.
  */
 class Plugins
 {
@@ -27,14 +27,19 @@ class Plugins
     private static array $_packages = [];
 
     /**
+     * @var object[] $_plugins 설치된 플러그인클래스
+     */
+    private static array $_plugins = [];
+
+    /**
      * @var object[] $_installeds 플러그인 설치 정보
      */
     private static array $_installeds = [];
 
     /**
-     * @var Plugin[] $_plugins 설치된 플러그인클래스
+     * @var Plugin[] $_classes 플러그인 클래스
      */
-    private static array $_plugins = [];
+    private static array $_classes = [];
 
     /**
      * 플러그인 클래스를 초기화한다.
@@ -48,17 +53,17 @@ class Plugins
         /**
          * 설치된 플러그인을 초기화한다.
          */
-        if (Cache::has('plugins') === true) {
+        if (false && Cache::has('plugins') === true) {
             self::$_plugins = Cache::get('plugins');
         } else {
             foreach (
                 self::db()
                     ->select()
                     ->from(self::table('plugins'))
-                    ->get('name')
-                as $name
+                    ->get()
+                as $plugin
             ) {
-                self::$_plugins[$name] = self::get($name);
+                self::$_plugins[$plugin->name] = $plugin;
             }
 
             Cache::store('plugins', self::$_plugins);
@@ -68,8 +73,8 @@ class Plugins
          * 전역플러그인을 초기화한다.
          */
         foreach (self::$_plugins as $plugin) {
-            if ($plugin->hasPackageProperty('GLOBAL') === true) {
-                $plugin->init();
+            if ($plugin->is_global == 'TRUE') {
+                self::get($plugin->name);
             }
         }
 
@@ -112,13 +117,9 @@ class Plugins
      * @param bool $init 초기화여부를 가져온뒤 초기화여부
      * @return bool $is_init
      */
-    public static function isInits(string $name, bool $init = false): bool
+    public static function isInits(string $name): bool
     {
-        $is_init = isset(self::$_inits[$name]) == true && self::$_inits[$name] == true;
-        if ($init == true) {
-            self::$_inits[$name] = true;
-        }
-        return $is_init;
+        return isset(self::$_inits[$name]) == true && self::$_inits[$name] == true;
     }
 
     /**
@@ -130,7 +131,11 @@ class Plugins
     public static function all(bool $is_installed = true): array
     {
         if ($is_installed === true) {
-            return array_values(self::$_plugins);
+            $classes = [];
+            foreach (self::$_plugins as $plugin) {
+                $classes[] = self::get($plugin->name, false);
+            }
+            return $classes;
         } else {
             return self::explorer();
         }
@@ -148,7 +153,7 @@ class Plugins
         $names = File::getDirectoryItems($path, 'directory', false);
         foreach ($names as $name) {
             if (is_file($name . '/package.json') == true) {
-                array_push($plugins, self::get(str_replace(Configs::path() . '/plugins/', '', $name)));
+                array_push($plugins, self::get(str_replace(Configs::path() . '/plugins/', '', $name), false));
             } else {
                 array_push($plugins, ...self::explorer($name));
             }
@@ -161,22 +166,29 @@ class Plugins
      * 플러그인 클래스를 불러온다.
      *
      * @param string $name 플러그인명
-     * @param ?Route $route 플러그인 컨텍스트가 시작된 경로
+     * @param bool $is_init 플러그인 클래스를 정의하고 초기화할지 여부
      * @return Plugin $class 플러그인클래스
      */
-    public static function get(string $name, ?Route $route = null): Plugin
+    public static function get(string $name, bool $is_init = true): Plugin
     {
-        if ($route === null && isset(self::$_plugins[$name]) == true) {
-            return self::$_plugins[$name];
+        if (isset(self::$_classes[$name]) == true) {
+            $class = self::$_classes[$name];
+        } else {
+            $classPaths = explode('/', $name);
+            $className = ucfirst(end($classPaths));
+            $className = '\\plugins\\' . implode('\\', $classPaths) . '\\' . $className;
+            if (class_exists($className) == false) {
+                ErrorHandler::print(self::error('NOT_FOUND_PLUGIN', $name));
+            }
+            $class = new $className();
         }
 
-        $classPaths = explode('/', $name);
-        $className = ucfirst(end($classPaths));
-        $className = '\\plugins\\' . implode('\\', $classPaths) . '\\' . $className;
-        if (class_exists($className) == false) {
-            ErrorHandler::print(self::error('NOT_FOUND_PLUGIN', $name));
+        self::$_classes[$name] = $class;
+
+        if ($is_init == true && self::isInstalled($name) == true && self::isInits($name) == false) {
+            $class->init();
+            self::$_inits[$name] = true;
         }
-        $class = new $className();
 
         return $class;
     }
@@ -219,6 +231,13 @@ class Plugins
         }
 
         /**
+         * 설치정보가 존재하는지 확인한다.
+         */
+        if (isset(self::$_plugins[$name]) == false) {
+            return null;
+        }
+
+        /**
          * 플러그인 클래스 파일이 존재하는지 확인한다.
          */
         $classPaths = explode('/', $name);
@@ -228,11 +247,7 @@ class Plugins
             return null;
         }
 
-        $installed = self::db()
-            ->select()
-            ->from(self::table('plugins'))
-            ->where('name', $name)
-            ->getOne();
+        $installed = json_decode(json_encode(self::$_plugins[$name]));
 
         if ($installed !== null) {
             $installed->is_admin = $installed->is_admin == 'TRUE';

@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 22.
+ * @modified 2024. 10. 28.
  */
 class Modules
 {
@@ -27,14 +27,19 @@ class Modules
     private static array $_packages = [];
 
     /**
+     * @var object[] $_modules 모듈 정보
+     */
+    private static array $_modules = [];
+
+    /**
      * @var object[] $_installeds 모듈 설치 정보
      */
     private static array $_installeds = [];
 
     /**
-     * @var Module[] $_modules 설치된 모듈클래스
+     * @var Module[] $_classes 모듈 클래스
      */
-    private static array $_modules = [];
+    private static array $_classes = [];
 
     /**
      * 모듈 클래스를 초기화한다.
@@ -48,17 +53,17 @@ class Modules
         /**
          * 설치된 모듈을 초기화한다.
          */
-        if (Cache::has('modules') === true) {
+        if (false && Cache::has('modules') === true) {
             self::$_modules = Cache::get('modules');
         } else {
             foreach (
                 self::db()
                     ->select()
                     ->from(self::table('modules'))
-                    ->get('name')
-                as $name
+                    ->get()
+                as $module
             ) {
-                self::$_modules[$name] = self::get($name);
+                self::$_modules[$module->name] = $module;
             }
 
             Cache::store('modules', self::$_modules);
@@ -68,8 +73,8 @@ class Modules
          * 전역모듈을 초기화한다.
          */
         foreach (self::$_modules as $module) {
-            if ($module->hasPackageProperty('GLOBAL') === true) {
-                $module->init();
+            if ($module->is_global == 'TRUE') {
+                self::get($module->name);
             }
         }
 
@@ -115,16 +120,11 @@ class Modules
      * 모듈클래스가 초기화되었는지 여부를 가져온다.
      *
      * @param string $name 모듈명
-     * @param bool $init 초기화여부를 가져온뒤 초기화여부
      * @return bool $is_init
      */
-    public static function isInits(string $name, bool $init = false): bool
+    public static function isInits(string $name): bool
     {
-        $is_init = isset(self::$_inits[$name]) == true && self::$_inits[$name] == true;
-        if ($init == true) {
-            self::$_inits[$name] = true;
-        }
-        return $is_init;
+        return isset(self::$_inits[$name]) == true && self::$_inits[$name] == true;
     }
 
     /**
@@ -136,7 +136,11 @@ class Modules
     public static function all(bool $is_installed = true): array
     {
         if ($is_installed === true) {
-            return array_values(self::$_modules);
+            $classes = [];
+            foreach (self::$_modules as $module) {
+                $classes[] = self::get($module->name, null, false);
+            }
+            return $classes;
         } else {
             return self::explorer();
         }
@@ -154,7 +158,7 @@ class Modules
         $names = File::getDirectoryItems($path, 'directory', false);
         foreach ($names as $name) {
             if (is_file($name . '/package.json') == true) {
-                array_push($modules, self::get(str_replace(Configs::path() . '/modules/', '', $name)));
+                array_push($modules, self::get(str_replace(Configs::path() . '/modules/', '', $name), null, false));
             } else {
                 array_push($modules, ...self::explorer($name));
             }
@@ -168,21 +172,31 @@ class Modules
      *
      * @param string $name 모듈명
      * @param ?Route $route 모듈 컨텍스트가 시작된 경로
+     * @param bool $is_init 모듈 클래스를 정의하고 초기화할지 여부
      * @return Module $class 모듈클래스
      */
-    public static function get(string $name, ?Route $route = null): Module
+    public static function get(string $name, ?Route $route = null, bool $is_init = true): Module
     {
-        if ($route === null && isset(self::$_modules[$name]) == true) {
-            return self::$_modules[$name];
+        if ($route === null && isset(self::$_classes[$name]) == true) {
+            $class = self::$_classes[$name];
+        } else {
+            $classPaths = explode('/', $name);
+            $className = ucfirst(end($classPaths));
+            $className = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
+            if (class_exists($className) == false) {
+                ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
+            }
+            $class = new $className($route);
         }
 
-        $classPaths = explode('/', $name);
-        $className = ucfirst(end($classPaths));
-        $className = '\\modules\\' . implode('\\', $classPaths) . '\\' . $className;
-        if (class_exists($className) == false) {
-            ErrorHandler::print(self::error('NOT_FOUND_MODULE', $name));
+        if ($route === null) {
+            self::$_classes[$name] = $class;
         }
-        $class = new $className($route);
+
+        if ($is_init == true && self::isInstalled($name) == true && self::isInits($name) == false) {
+            $class->init();
+            self::$_inits[$name] = true;
+        }
 
         return $class;
     }
@@ -225,6 +239,13 @@ class Modules
         }
 
         /**
+         * 설치정보가 존재하는지 확인한다.
+         */
+        if (isset(self::$_modules[$name]) == false) {
+            return null;
+        }
+
+        /**
          * 모듈 클래스 파일이 존재하는지 확인한다.
          */
         $classPaths = explode('/', $name);
@@ -234,11 +255,7 @@ class Modules
             return null;
         }
 
-        $installed = self::db()
-            ->select()
-            ->from(self::table('modules'))
-            ->where('name', $name)
-            ->getOne();
+        $installed = json_decode(json_encode(self::$_modules[$name]));
 
         if ($installed !== null) {
             $installed->is_admin = $installed->is_admin == 'TRUE';
