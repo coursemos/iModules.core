@@ -170,7 +170,8 @@ class ErrorHandler
             $error = self::get($error);
 
             Html::title(self::getText('TITLE'));
-            Html::body('data-type', 'error');
+            Html::style('/styles/common.css?error=true', 1);
+            Html::type('error');
 
             exit(Html::tag(Html::header(), $error, Html::footer()));
         }
