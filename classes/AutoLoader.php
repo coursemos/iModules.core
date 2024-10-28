@@ -110,17 +110,19 @@ class AutoLoader
         } else {
             foreach (self::$_loader as $loader) {
                 if ($loader->type == 'psr-4') {
+                    $namespaces = explode('\\', preg_replace('/^\\\/', '', $class));
+                    $className = array_pop($namespaces);
                     $path = self::getPath() . ($loader->basePath == '/' ? '' : $loader->basePath);
 
                     while ($namespace = array_shift($namespaces)) {
                         $path .= '/' . $namespace;
-
                         if (is_dir($path) == false) {
                             break;
                         }
 
                         if (is_dir($path . $loader->sourcePath) == true) {
                             $path .= $loader->sourcePath;
+
                             if (count($namespaces) == 0) {
                                 $path .= '/' . $className . '.php';
                             } else {
