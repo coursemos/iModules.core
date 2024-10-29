@@ -6,12 +6,13 @@
  * @file /scripts/Dom.ts
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 8. 2.
+ * @modified 2024. 10. 29.
  */
 class Dom {
     element: HTMLElement | null;
     dataset: { [key: string]: any } = {};
     eventListeners: { [name: string]: EventListener[] } = {};
+    computedStyle: CSSStyleDeclaration = null;
 
     /**
      * Dom 객체를 생성한다.
@@ -226,6 +227,23 @@ class Dom {
     }
 
     /**
+     * 현재 정의된 모든 스타일을 가져온다.
+     *
+     * @return {CSSStyleDeclaration} styles
+     */
+    getStyles(): CSSStyleDeclaration {
+        if (this.element === null) {
+            return null;
+        }
+
+        if (this.computedStyle === null) {
+            this.computedStyle = window.getComputedStyle(this.element);
+        }
+
+        return this.computedStyle;
+    }
+
+    /**
      * 스타일시트 등을 통해 현재 HTML 엘리먼트에 적용된 스타일을 가져온다.
      *
      * @param {string} key - 가져올 스타일명
@@ -234,7 +252,12 @@ class Dom {
      */
     getStyle(key: string, pseudo: string | null = null): string {
         if (this.element === null) return '';
-        return window.getComputedStyle(this.element, pseudo).getPropertyValue(key);
+
+        if (pseudo === null) {
+            return this.getStyles().getPropertyValue(key);
+        } else {
+            return window.getComputedStyle(this.element, pseudo).getPropertyValue(key);
+        }
     }
 
     /**
@@ -251,6 +274,8 @@ class Dom {
         } else {
             this.element.style[key] = value;
         }
+        this.computedStyle = null;
+
         return this;
     }
 
@@ -273,7 +298,7 @@ class Dom {
      */
     getWidth(): number {
         if (this.element == null) return 0;
-        const style = window.getComputedStyle(this.element);
+        const style = this.getStyles();
         const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
         const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
         const scrollBar = this.element.offsetWidth - this.element.clientWidth - border;
@@ -292,7 +317,7 @@ class Dom {
      */
     getHeight(): number {
         if (this.element == null) return 0;
-        const style = window.getComputedStyle(this.element);
+        const style = this.getStyles();
         const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
         const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
         const scrollBar = this.element.offsetHeight - this.element.clientHeight - border;
@@ -311,7 +336,7 @@ class Dom {
      */
     getInnerWidth(): number {
         if (this.element == null) return 0;
-        const style = window.getComputedStyle(this.element);
+        const style = this.getStyles();
         const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
 
         return this.element.offsetWidth - border;
@@ -324,7 +349,7 @@ class Dom {
      */
     getInnerHeight(): number {
         if (this.element == null) return 0;
-        const style = window.getComputedStyle(this.element);
+        const style = this.getStyles();
         const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
 
         return this.element.offsetHeight - border;
@@ -341,7 +366,7 @@ class Dom {
         const rect = this.element.getBoundingClientRect();
 
         if (includeMargin == true) {
-            const style = window.getComputedStyle(this.element);
+            const style = this.getStyles();
             const margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
             const border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
             const scrollBar = this.element.offsetWidth - rect.width - border;
@@ -363,7 +388,7 @@ class Dom {
      */
     getOuterHeight(includeMargin: boolean = false): number {
         if (this.element == null) return 0;
-        const style = window.getComputedStyle(this.element);
+        const style = this.getStyles();
         const margin = parseFloat(style.marginTop) + parseFloat(style.marginBottom);
         const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
         const scrollBar = this.element.offsetHeight - this.element.clientHeight - border;
@@ -388,7 +413,7 @@ class Dom {
 
         let border = 0;
         if (is_border == true) {
-            const style = window.getComputedStyle(this.element);
+            const style = this.getStyles();
             border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
         }
 
@@ -406,7 +431,7 @@ class Dom {
 
         let border = 0;
         if (is_border == true) {
-            const style = window.getComputedStyle(this.element);
+            const style = this.getStyles();
             border = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
         }
 
