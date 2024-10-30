@@ -7,7 +7,7 @@
  * @file /classes/DatabaseInterface/mysql.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 21.
+ * @modified 2024. 10. 30.
  */
 namespace databases\mysql;
 
@@ -405,6 +405,9 @@ class mysql extends DatabaseInterface
                 }
             }
 
+            /**
+             * 컬럼이 텍스트컬럼이고 문자셋이 다른 경우
+             */
             if ($this->_isText($column->type) == true && $exists[$name]->collation != $this->_collation) {
                 if ($is_update == true) {
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
@@ -414,6 +417,9 @@ class mysql extends DatabaseInterface
                 }
             }
 
+            /**
+             * NULL 허용여부가 다른 경우
+             */
             if (($column->is_null ?? false) !== $exists[$name]->is_null) {
                 if ($is_update == true) {
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
@@ -423,6 +429,9 @@ class mysql extends DatabaseInterface
                 }
             }
 
+            /**
+             * 컬럼 기본값이 다른 경우
+             */
             if (($column->default ?? null) != $exists[$name]->default) {
                 if ($is_update == true) {
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
@@ -432,6 +441,9 @@ class mysql extends DatabaseInterface
                 }
             }
 
+            /**
+             * 컬럼설명이 다른 경우
+             */
             if (($column->comment ?? '') != $exists[$name]->comment) {
                 if ($is_update == true) {
                     $alters[] = 'CHANGE `' . $name . '` ' . $this->_columnQuery($name, $column);
