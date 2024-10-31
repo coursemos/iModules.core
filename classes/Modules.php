@@ -598,7 +598,11 @@ class Modules
 
         $module = Modules::get($name, $route);
         $title = $module->getContextTitle($context);
-        $content = $module->getContent($context, null, $popup);
+        $content = \Html::element(
+            'main',
+            ['data-role' => 'context', 'data-popup' => $popup == true ? 'true' : 'false'],
+            $module->getContent($context, null, $popup)
+        );
 
         /**
          * 사이트의 컨텍스트 레이아웃에 콘텐츠를 포함하여 가져온다.
