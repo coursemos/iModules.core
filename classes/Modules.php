@@ -7,7 +7,7 @@
  * @file /classes/Modules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 28.
+ * @modified 2024. 10. 31.
  */
 class Modules
 {
@@ -598,7 +598,7 @@ class Modules
 
         $module = Modules::get($name, $route);
         $title = $module->getContextTitle($context);
-        $content = $module->getContent($context, null);
+        $content = $module->getContent($context, null, $popup);
 
         /**
          * 사이트의 컨텍스트 레이아웃에 콘텐츠를 포함하여 가져온다.

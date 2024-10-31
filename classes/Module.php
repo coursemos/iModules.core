@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 25.
+ * @modified 2024. 10. 31.
  */
 abstract class Module extends Component
 {
@@ -346,9 +346,10 @@ abstract class Module extends Component
      *
      * @param string $context 컨텍스트
      * @param ?object $configs 컨텍스트 설정
+     * @param bool $is_popup 팝업여부
      * @return string $html
      */
-    final public function getContent(string $context, ?object $configs = null): string
+    final public function getContent(string $context, ?object $configs = null, bool $is_popup = false): string
     {
         $content = $this->getContext($context, $configs);
 
@@ -357,6 +358,9 @@ abstract class Module extends Component
         $attributes['data-module'] ??= $this->getName();
         $attributes['data-context'] ??= $context;
         $attributes['data-template'] ??= $this->checkTemplate()?->getName();
+        if ($is_popup == true) {
+            $attributes['data-popup'] = 'true';
+        }
 
         return Html::element('div', $attributes, $content);
     }
