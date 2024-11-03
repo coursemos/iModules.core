@@ -7,7 +7,7 @@
  * @file /classes/Request.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 9. 26.
+ * @modified 2024. 11. 1.
  */
 class Request
 {
@@ -126,14 +126,19 @@ class Request
      * URL 과 QUERY_STRING 를 결합한다.
      *
      * @param string $url
-     * @param string $queryString
+     * @param string|array $queryString
      * @return string $url
      */
-    public static function combine(string $url, string $queryString = ''): string
+    public static function combine(string $url, string|array $queryString = ''): string
     {
+        if (is_array($queryString) == true) {
+            $queryString = http_build_query($queryString, '&');
+        }
+
         if (strlen($queryString) == 0) {
             return $url;
         }
+
         return strpos($url, '?') !== false ? $url . '&' . $queryString : $url . '?' . $queryString;
     }
 
