@@ -7,7 +7,7 @@
  * @file /classes/Theme.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 17.
+ * @modified 2024. 11. 7.
  */
 class Theme
 {
@@ -540,5 +540,43 @@ class Theme
             default:
                 return ErrorHandler::error($code, $message, $details);
         }
+    }
+
+    /**
+     * 테마 설정을 생성한다.
+     *
+     * @param string $name 테마명
+     * @param object|array|null $configs 템플릿설정
+     * @param ?Component $component 테마를 소유한 컴포넌트
+     * @return object $theme
+     */
+    public static function set(string $name, object|array|null $configs = null, ?Component $component = null): object
+    {
+        if (is_array($configs) == true) {
+            $configs = (object) $configs;
+        }
+
+        if ($component !== null) {
+            $name = $component->getBase() . '/' . $name;
+        }
+
+        $theme = new stdClass();
+        $theme->name = $name;
+        $theme->configs = $configs;
+
+        return $theme;
+    }
+
+    /**
+     * 테마 클래스를 가져온다.
+     *
+     * @param string $name 테마명
+     * @param object|array|null $configs 템플릿설정
+     * @param ?Component $component 테마를 소유한 컴포넌트
+     * @return Theme $theme
+     */
+    public static function get(string $name, object|array|null $configs = null, ?Component $component = null): object
+    {
+        return new Theme(self::set($name, $configs, $component));
     }
 }

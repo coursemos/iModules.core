@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 17.
+ * @modified 2024. 11. 7.
  */
 class Template
 {
@@ -556,5 +556,47 @@ class Template
             default:
                 return ErrorHandler::error($code, $message, $details);
         }
+    }
+
+    /**
+     * 템플릿 설정을 생성한다.
+     *
+     * @param string $name 템플릿명
+     * @param object|array|null $configs 템플릿설정
+     * @param ?Theme $theme 템플릿을 소유한 테마
+     * @return object $templete
+     */
+    public static function set(string $name, object|array|null $configs = null, ?Theme $theme = null): object
+    {
+        if (is_array($configs) == true) {
+            $configs = (object) $configs;
+        }
+
+        if ($theme !== null) {
+            $name = $theme->getPathName() . '/' . $name;
+        }
+        $template = new stdClass();
+        $template->name = $name;
+        $template->configs = $configs;
+
+        return $template;
+    }
+
+    /**
+     * 템플릿 클래스를 가져온다.
+     *
+     * @param Component $component 템플릿을 가진 컴포넌트
+     * @param string $name 템플릿명
+     * @param object|array|null $configs 템플릿설정
+     * @param ?Theme $theme 템플릿을 소유한 테마
+     * @return Template $templete
+     */
+    public static function get(
+        Component $component,
+        string $name,
+        object|array|null $configs = null,
+        ?Theme $theme = null
+    ): object {
+        return new Template($component, self::set($name, $configs, $theme));
     }
 }
