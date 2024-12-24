@@ -106,7 +106,8 @@ class OAuthClient
             'redirect_uri' => Domains::get()->getUrl() . Request::url(false),
         ];
         if ($this->_scope !== null && strlen($this->_scope) > 0) {
-            $params['scope'] = $this->_scope;
+            //$params['scope'] = $this->_scope;
+            $params['user_scope'] = $this->_scope;
         }
 
         $url = $auth_url . '?' . http_build_query($params, '', '&');
@@ -147,6 +148,7 @@ class OAuthClient
         }
 
         $results = json_decode($results ?? 'null');
+        $results->access_token = $results->access_token ?? $results->authed_user->access_token;
         if ($results?->access_token ?? null !== null) {
             if ($results?->expires_in ?? null !== null) {
                 $expired_at = time() + $results->expires_in;
