@@ -17,6 +17,7 @@ class OAuthClient
     private string $_access_type = 'offline';
     private string $_approval_prompt = 'auto';
     private ?string $_scope = null;
+    private string $_scope_type = 'basic';
 
     private ?string $_token_url = null;
 
@@ -85,9 +86,10 @@ class OAuthClient
      * @param ?string $scope 요청범위
      * @return OAuthClient $this
      */
-    public function setScope(?string $scope = null): OAuthClient
+    public function setScope(?string $scope = null, string $type = 'basic'): OAuthClient
     {
         $this->_scope = $scope;
+        $this->_scope_type = $type;
         return $this;
     }
 
@@ -106,7 +108,11 @@ class OAuthClient
             'redirect_uri' => Domains::get()->getUrl() . Request::url(false),
         ];
         if ($this->_scope !== null && strlen($this->_scope) > 0) {
-            $params['scope'] = $this->_scope;
+            if ($this->_scope_type == 'BASIC') {
+                $params['scope'] = $this->_scope;
+            } elseif ($this->_scope_type == 'USER') {
+                $params['user_scope'] = $this->_scope;
+            }
         }
 
         $url = $auth_url . '?' . http_build_query($params, '', '&');
@@ -121,7 +127,7 @@ class OAuthClient
      * @param string $code 인증코드
      * @return ?string $access_token
      */
-    public function getAccessTokenByCode(string $token_url, string $code): ?string
+    public function getAccessTokenByCode(string $token_url, string $token_path, string $code): ?string
     {
         $this->_token_url = $token_url;
 
@@ -147,6 +153,8 @@ class OAuthClient
         }
 
         $results = json_decode($results ?? 'null');
+        $results->access_token = $this->getJson($results, $token_path);
+
         if ($results?->access_token ?? null !== null) {
             if ($results?->expires_in ?? null !== null) {
                 $expired_at = time() + $results->expires_in;
@@ -434,7 +442,7 @@ class OAuthClient
     }
 
     /**
-     * API 를 요청한다.
+     * get API 를 요청한다.
      *
      * @param string $url API 요청주소
      * @param array $params API 요청변수
@@ -447,6 +455,22 @@ class OAuthClient
     }
 
     /**
+     * post API 를 요청한다.
+     *
+     * @param string $url API 요청주소
+     * @param array $params API 요청변수
+     * @param array $headers API 요청시 사용할 추가 헤더
+     * @return mixed $results
+     */
+    public function post(
+        string $url,
+        array $params = [],
+        array $headers = ['Content-Type' => 'application/json']
+    ): mixed {
+        return $this->request('POST', $url, $params, $headers);
+    }
+
+    /**
      * API 를 요청한다.
      *
      * @param string $method API 요청방법
@@ -455,7 +479,7 @@ class OAuthClient
      * @param array $headers API 요청시 사용할 추가 헤더 (Authorization 는 자동으로 추가됨)
      * @return mixed $results
      */
-    private function request(string $method, string $url, array $params = [], array $headers = []): mixed
+    protected function request(string $method, string $url, array $params = [], array $headers = []): mixed
     {
         $method = strtoupper($method);
         $access_token = $this->getAccessToken();
@@ -478,7 +502,11 @@ class OAuthClient
         if ($method == 'POST') {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+            if (isset($headers['Content-Type']) && $headers['Content-Type'] === 'application/json') {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            } else {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+            }
         } else {
             if (empty($params) == true) {
                 curl_setopt($ch, CURLOPT_URL, $url);
@@ -495,8 +523,6 @@ class OAuthClient
         $content_type = array_shift($content_type);
 
         curl_close($ch);
-        echo $http_code;
-        var_dump($this->isRefreshable());
 
         if ($http_code == 401 && $this->isRefreshable() == true) {
             $this->getAccessTokenByRefreshToken();
