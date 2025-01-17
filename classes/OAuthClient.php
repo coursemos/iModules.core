@@ -5,9 +5,9 @@
  * OAuth 클라이언트 인증을 위한 클래스를 정의한다.
  *
  * @file /classes/OAuthClient.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 1. 26.
+ * @modified 2025. 1. 17.
  */
 class OAuthClient
 {
@@ -243,8 +243,6 @@ class OAuthClient
      */
     public function getAccessTokenByJWT(string $token_url, string $jwt): ?string
     {
-        echo $token_url . PHP_EOL;
-
         $params = [
             'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
             'assertion' => $jwt,
@@ -471,6 +469,22 @@ class OAuthClient
     }
 
     /**
+     * delete API 를 요청한다.
+     *
+     * @param string $url API 요청주소
+     * @param array $params API 요청변수
+     * @param array $headers API 요청시 사용할 추가 헤더
+     * @return mixed $results
+     */
+    public function delete(
+        string $url,
+        array $params = [],
+        array $headers = ['Content-Type' => 'application/json']
+    ): mixed {
+        return $this->request('DELETE', $url, $params, $headers);
+    }
+
+    /**
      * API 를 요청한다.
      *
      * @param string $method API 요청방법
@@ -513,6 +527,10 @@ class OAuthClient
             } else {
                 $url .= '?' . http_build_query($params);
                 curl_setopt($ch, CURLOPT_URL, $url);
+            }
+
+            if ($method != 'POST') {
+                curl_setopt($ch,CURLOPT_CUSTOMREQUEST,$method);
             }
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

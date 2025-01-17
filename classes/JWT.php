@@ -5,9 +5,9 @@
  * JWT 토큰을 생성하거나 검증한다.
  *
  * @file /classes/JWT.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 1. 7.
+ * @modified 2025. 1. 17.
  */
 class JWT
 {
@@ -25,7 +25,7 @@ class JWT
      * @param array $data JWT 토큰 생성시 사용할 데이터
      * @return string|bool $jwt
      */
-    public static function create(array $payload = [], string $private_key, string $alg): string|bool
+    public static function create(string $private_key, string $alg, array $payload = []): string|bool
     {
         $header = [
             'alg' => $alg,
