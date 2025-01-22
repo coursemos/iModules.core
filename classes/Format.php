@@ -5,9 +5,9 @@
  * 데이터의 형식을 관리하는 클래스를 정의한다.
  *
  * @file /classes/Format.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 10. 12.
+ * @modified 2025. 1. 22.
  */
 class Format
 {
@@ -310,6 +310,23 @@ class Format
         }
         return $size . 'B';
     }
+
+    /**
+	 * 자동검색어를 위해 각 언어별 키워드위치에 해당하는 영문코드를 반환한다.
+	 *
+	 * @param string $str 변환할 텍스트
+	 * @return string $englishStr
+	 */
+	public static function engcode(?string $str = null) {
+		$arr_kor = array('ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ','ㄳ','ㄵ','ㄶ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅄ','ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ');
+
+		$arr_eng = array('r','R','s','e','E','f','a','q','Q','t','T','d','w','W','c','z','x','v','g','rt','sw','sg','fr','fa','fq','ft','fx','fv','fg','qt','k','o','i','O','j','p','u','P','h','hk','ho','hl','y','n','nj','np','nl','u','m','ml','l');
+
+		$engcode = str_replace($arr_kor,$arr_eng,$str);
+
+		return $engcode;
+	}
+	
 
     /**
      * 키코드값을 가져온다.
