@@ -4,9 +4,9 @@
  * 데이터의 형식을 관리하는 클래스를 정의한다.
  *
  * @file /scripts/Format.ts
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 9. 29.
+ * @modified 2025. 1. 22.
  */
 class Format {
     /**
@@ -476,6 +476,13 @@ class Format {
                     if (Array.isArray(filter.value) == false ||
                         Array.isArray(value) == true ||
                         filter.value.includes(value) == false) {
+                        passed = false;
+                    }
+                    break;
+                case 'not_in':
+                    if (Array.isArray(filter.value) == false ||
+                        Array.isArray(value) == true ||
+                        filter.value.includes(value) == true) {
                         passed = false;
                     }
                     break;
