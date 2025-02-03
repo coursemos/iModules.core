@@ -8,7 +8,7 @@
  * @file /classes/iModules.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 22.
+ * @modified 2025. 2. 3.
  */
 class iModules
 {
@@ -181,6 +181,10 @@ class iModules
      */
     public static function session_stop(): void
     {
+        if (defined('IM_SESSION_STOPPED') == true) {
+            return;
+        }
+
         if (defined('IM_SESSION_STARTED') == true) {
             session_write_close();
         }
