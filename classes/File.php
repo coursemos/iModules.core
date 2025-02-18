@@ -36,7 +36,6 @@ class File
     public static function write(string $path, mixed $data = '', bool $is_append = false): bool
     {
         if (self::writable($path) == false) {
-            echo 3;
             return false;
         }
 
@@ -50,9 +49,6 @@ class File
             @chmod($path, 0707);
         }
 
-        echo 'ggg';
-        print_r($result);
-        exit();
         return $result !== false;
     }
 
@@ -67,7 +63,6 @@ class File
     {
         $pURL = parse_url($url);
         if ($pURL === false) {
-            echo 1;
             return false;
         }
 
@@ -91,7 +86,6 @@ class File
         curl_close($ch);
 
         if ($cinfo['http_code'] !== 200) {
-            echo 2;
             return false;
         }
 
