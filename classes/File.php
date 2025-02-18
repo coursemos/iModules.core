@@ -50,6 +50,7 @@ class File
             @chmod($path, 0707);
         }
 
+        echo 'ggg';
         print_r($result);
         exit();
         return $result !== false;
