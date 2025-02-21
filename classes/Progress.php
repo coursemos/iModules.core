@@ -7,7 +7,7 @@
  * @file /classes/Progress.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 5. 2.
+ * @modified 2025. 2. 21.
  */
 class Progress
 {
@@ -73,7 +73,7 @@ class Progress
         if ($this->_total == 0) {
             $progress = 200;
         } else {
-            $progress = min(200, round(($current / $this->_total) * 200));
+            $progress = min(200, floor(($current / $this->_total) * 200));
         }
         if ($progress != $this->_progress) {
             $output = new stdClass();
