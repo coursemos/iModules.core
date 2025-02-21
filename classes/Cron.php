@@ -7,7 +7,7 @@
  * @file /classes/Cron.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 3. 4.
+ * @modified 2025. 2. 21.
  */
 class Cron
 {
@@ -35,7 +35,7 @@ class Cron
         ini_set('display_errors', true);
         Modules::init();
 
-        self::$is_ssh = isset($_SERVER['SSH_CLIENT']) == true;
+        self::$is_ssh = isset($_SERVER['SHELL']) == true;
     }
 
     /**
