@@ -7,7 +7,7 @@
  * @file /classes/Domains.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2023. 5. 24.
+ * @modified 2025. 2. 21.
  */
 class Domains
 {
@@ -83,7 +83,10 @@ class Domains
             self::init();
         }
 
-        $host ??= $_SERVER['HTTP_HOST'];
+        $host ??= isset($_SERVER['HTTP_HOST']) == true ? $_SERVER['HTTP_HOST'] : null;
+        if ($host === null) {
+            return null;
+        }
         if (isset(self::$_domains[$host]) == true) {
             return self::$_domains[$host];
         }
