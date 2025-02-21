@@ -7,7 +7,7 @@
  * @file /classes/Module.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 10. 31.
+ * @modified 2025. 2. 21.
  */
 abstract class Module extends Component
 {
@@ -370,11 +370,17 @@ abstract class Module extends Component
      * 각 모듈 클래스에서 콘텐츠영역에 추가할 속성이 있는 경우 사용한다.
      *
      * @param string $name 속성명
-     * @param string $value 속성값
+     * @param string $value 속성값 (NULL 인 경우 속성제거)
      */
-    final protected function setContextAttribute(string $name, string $value): void
+    final protected function setContextAttribute(string $name, ?string $value = null): void
     {
-        $this->_contextAttributes[$name] = $value;
+        if ($value === null) {
+            if (isset($this->_contextAttributes[$name]) == true) {
+                unset($this->_contextAttributes[$name]);
+            }
+        } else {
+            $this->_contextAttributes[$name] = $value;
+        }
     }
 
     /**
