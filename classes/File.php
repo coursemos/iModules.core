@@ -26,7 +26,7 @@ class File
     }
 
     /**
-     * 파일에 데이터를 기록한다.
+     * 파일에 데이터를 기록한다!
      *
      * @param string $path 파일경로
      * @param mixed $data 파일에 기록할 내용
