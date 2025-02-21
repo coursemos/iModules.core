@@ -7,7 +7,7 @@
  * @file /classes/Template.php
  * @author Arzz <arzz@arzz.com>
  * @license MIT License
- * @modified 2024. 11. 7.
+ * @modified 2025. 2. 21.
  */
 class Template
 {
