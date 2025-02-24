@@ -379,6 +379,8 @@ class Template
      */
     function getContext(string $file, string $header = '', string $footer = ''): string
     {
+        $this->init();
+
         $content = Events::fireEvent(
             $this->_parent,
             'beforeGetContext',
