@@ -5,9 +5,9 @@
  * 사이트테마를 화면에 출력하기 위한 테마 엔진 클래스를 정의한다.
  *
  * @file /classes/Theme.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 11. 7.
+ * @modified 2025. 3. 20.
  */
 class Theme
 {
@@ -273,9 +273,9 @@ class Theme
     /**
      * 테마의 패키지정보를 가져온다.
      *
-     * @return Package $package 패키지정보
+     * @return ?Package $package 패키지정보
      */
-    public function getPackage(): Package
+    public function getPackage(): ?Package
     {
         if ($this->_isLoaded() === false) {
             return null;

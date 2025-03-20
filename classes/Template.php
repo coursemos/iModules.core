@@ -5,9 +5,9 @@
  * 테마 및 템플릿을 화면에 출력하기 위한 템플릿 엔진 클래스를 정의한다.
  *
  * @file /classes/Template.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2025. 2. 21.
+ * @modified 2025. 3. 20.
  */
 class Template
 {
@@ -244,9 +244,9 @@ class Template
     /**
      * 템플릿의 패키지정보를 가져온다.
      *
-     * @return Package $package 패키지정보
+     * @return ?Package $package 패키지정보
      */
-    public function getPackage(): Package
+    public function getPackage(): ?Package
     {
         if ($this->_isLoaded() === false) {
             return null;
@@ -456,8 +456,7 @@ class Template
         ?string $link = null,
         ?string $file = null
     ): string {
-        $page = is_numeric($page) == true && $p > 0 ? $page : 1;
-        $link = $link;
+        $page = is_numeric($page) == true && $page > 0 ? $page : 1;
         if (strpos($link, '#') !== 0) {
             //$link .= $this->IM->getQueryString();
         }

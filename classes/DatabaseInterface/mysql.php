@@ -5,9 +5,9 @@
  * MySQL 인터페이스를 정의한다.
  *
  * @file /classes/DatabaseInterface/mysql.php
- * @author Arzz <arzz@arzz.com>
+ * @author sungjin <esung246@naddle.net>
  * @license MIT License
- * @modified 2024. 10. 30.
+ * @modified 2025. 3. 20.
  */
 namespace databases\mysql;
 
@@ -43,7 +43,7 @@ class mysql extends DatabaseInterface
     private bool $_is_builder_stated = false;
     private ?string $_startQuery = null;
     private ?string $_from_table = null;
-    private ?\DatabaseInterface $_from_query = null;
+    private ?DatabaseInterface $_from_query = null;
     private ?string $_from_alias = null;
 
     private array $_columns = [];
@@ -1937,7 +1937,7 @@ class mysql extends DatabaseInterface
             return null;
         }
 
-        $filter = new \stdClass();
+        $filter = new stdClass();
         $filter->where = '';
         $filter->values = [];
 
