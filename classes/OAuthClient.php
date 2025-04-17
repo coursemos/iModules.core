@@ -530,7 +530,7 @@ class OAuthClient
             }
 
             if ($method != 'POST') {
-                curl_setopt($ch,CURLOPT_CUSTOMREQUEST,$method);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
             }
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -541,6 +541,10 @@ class OAuthClient
         $content_type = array_shift($content_type);
 
         curl_close($ch);
+        if ($url == 'https://slack.com/api/users.identity') {
+            print_r($response);
+            exit();
+        }
 
         if ($http_code == 401 && $this->isRefreshable() == true) {
             $this->getAccessTokenByRefreshToken();
