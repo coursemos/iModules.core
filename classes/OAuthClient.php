@@ -18,6 +18,7 @@ class OAuthClient
     private string $_approval_prompt = 'auto';
     private ?string $_scope = null;
     private string $_scope_type = 'BASIC';
+
     private ?string $_token_url = null;
 
     private int $_refreshed_at = 0;
@@ -160,12 +161,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken(
-                $results->access_token,
-                $expired_at,
-                $this->_scope,
-                $results?->authed_user?->id ?? null
-            );
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -228,12 +224,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken(
-                $results->access_token,
-                $expired_at,
-                $this->_scope,
-                $results?->authed_user?->id ?? null
-            );
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -278,12 +269,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken(
-                $results->access_token,
-                $expired_at,
-                $this->_scope,
-                $results?->authed_user?->id ?? null
-            );
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -365,17 +351,6 @@ class OAuthClient
     }
 
     /**
-     * 아이디를 가져온다.
-     *
-     * @return string $id
-     */
-    public function getId(): ?string
-    {
-        $session = $this->getOAuthSession();
-        return $session?->id ?? null;
-    }
-
-    /**
      * 액세스토큰을 지정한다.
      *
      * @param ?string $access_token
@@ -383,12 +358,8 @@ class OAuthClient
      * @param ?string $scope 토큰의 요청범위
      * @return OAuthClient $this
      */
-    public function setAccessToken(
-        ?string $access_token,
-        int $expired_at = 0,
-        ?string $scope = null,
-        ?string $id = null
-    ): OAuthClient {
+    public function setAccessToken(?string $access_token, int $expired_at = 0, ?string $scope = null): OAuthClient
+    {
         $session = $this->getOAuthSession();
         if ($session === null) {
             return $this;
@@ -397,8 +368,6 @@ class OAuthClient
         $session->access_token = $access_token;
         $session->expired_at = $expired_at;
         $session->scope = $scope;
-        $session->id = $id;
-
         $this->setOAuthSession($session);
 
         return $this;
@@ -572,10 +541,6 @@ class OAuthClient
         $content_type = array_shift($content_type);
 
         curl_close($ch);
-        if ($url == 'https://slack.com/api/users.identity') {
-            print_r($response);
-            exit();
-        }
 
         if ($http_code == 401 && $this->isRefreshable() == true) {
             $this->getAccessTokenByRefreshToken();
