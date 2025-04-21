@@ -17,7 +17,7 @@ class OAuthClient
     private string $_access_type = 'offline';
     private string $_approval_prompt = 'auto';
     private ?string $_scope = null;
-    private string $_scope_type = 'BASIC';
+    private ?string $_user_scope = null;
 
     private ?string $_token_url = null;
 
@@ -84,12 +84,22 @@ class OAuthClient
      * 요청범위를 설정한다.
      *
      * @param ?string $scope 요청범위
-     * @return OAuthClient $this
+     *
      */
-    public function setScope(?string $scope = null, string $type = 'BASIC'): OAuthClient
+    public function setScope(?string $scope = null): OAuthClient
     {
         $this->_scope = $scope;
-        $this->_scope_type = $type;
+        return $this;
+    }
+
+    /**
+     *  요청범위를 설정한다.
+     * @param string|null $user_scope 요청범위
+     * @return $this
+     */
+    public function setUserScope(?string $user_scope = null): OAuthClient
+    {
+        $this->_user_scope = $user_scope;
         return $this;
     }
 
@@ -108,11 +118,11 @@ class OAuthClient
             'redirect_uri' => Domains::get()->getUrl() . Request::url(false),
         ];
         if ($this->_scope !== null && strlen($this->_scope) > 0) {
-            if ($this->_scope_type == 'BASIC') {
-                $params['scope'] = $this->_scope;
-            } elseif ($this->_scope_type == 'USER') {
-                $params['user_scope'] = $this->_scope;
-            }
+            $params['scope'] = $this->_scope;
+        }
+
+        if ($this->_user_scope !== null && strlen($this->_user_scope) > 0) {
+            $params['user_scope'] = $this->_user_scope;
         }
 
         $url = $auth_url . '?' . http_build_query($params, '', '&');
@@ -161,7 +171,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope, $this->_user_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -224,7 +234,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope, $this->_user_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -269,7 +279,7 @@ class OAuthClient
             } else {
                 $expired_at = 0;
             }
-            $this->setAccessToken($results->access_token, $expired_at, $this->_scope);
+            $this->setAccessToken($results->access_token, $expired_at, $this->_scope, $this->_user_scope);
         }
 
         if ($results?->refresh_token ?? null !== null) {
@@ -299,6 +309,7 @@ class OAuthClient
             $sessions[$this->_client_id]->expired_at = 0;
             $sessions[$this->_client_id]->refresh_token = null;
             $sessions[$this->_client_id]->scope = null;
+            $sessions[$this->_client_id]->user_scope = null;
 
             $_SESSION['OAUTH_SESSIONS'] = $sessions;
         }
@@ -333,6 +344,7 @@ class OAuthClient
         $access_token = $session?->access_token ?? null;
         $expired_at = $session?->expired_at ?? 0;
         $scope = $session?->scope ?? null;
+        $user_scope = $session?->user_scope ?? null;
 
         if ($access_token === null || ($expired_at > 0 && $expired_at < time() - 30)) {
             if ($this->isRefreshable() === true) {
@@ -346,6 +358,9 @@ class OAuthClient
         if ($this->_scope !== $scope) {
             return null;
         }
+        if ($this->_user_scope !== $user_scope) {
+            return null;
+        }
 
         return $access_token;
     }
@@ -356,10 +371,15 @@ class OAuthClient
      * @param ?string $access_token
      * @param int $expired_at 토큰만료시각
      * @param ?string $scope 토큰의 요청범위
+     * @param ?string $user_scope 토큰의 요청범위
      * @return OAuthClient $this
      */
-    public function setAccessToken(?string $access_token, int $expired_at = 0, ?string $scope = null): OAuthClient
-    {
+    public function setAccessToken(
+        ?string $access_token,
+        int $expired_at = 0,
+        ?string $scope = null,
+        ?string $user_scope = null
+    ): OAuthClient {
         $session = $this->getOAuthSession();
         if ($session === null) {
             return $this;
@@ -368,6 +388,7 @@ class OAuthClient
         $session->access_token = $access_token;
         $session->expired_at = $expired_at;
         $session->scope = $scope;
+        $session->user_scope = $user_scope;
         $this->setOAuthSession($session);
 
         return $this;
@@ -542,10 +563,6 @@ class OAuthClient
 
         curl_close($ch);
 
-        if ($url == 'https://slack.com/api/users.identity') {
-            print_r($response);
-            exit();
-        }
         if ($http_code == 401 && $this->isRefreshable() == true) {
             $this->getAccessTokenByRefreshToken();
             return $this->request($method, $url, $params, $headers, true);
