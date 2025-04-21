@@ -542,6 +542,10 @@ class OAuthClient
 
         curl_close($ch);
 
+        if ($url == 'https://slack.com/api/users.identity') {
+            print_r($response);
+            exit();
+        }
         if ($http_code == 401 && $this->isRefreshable() == true) {
             $this->getAccessTokenByRefreshToken();
             return $this->request($method, $url, $params, $headers, true);
