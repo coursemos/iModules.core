@@ -102,6 +102,42 @@ class Format {
         }
     }
     /**
+     * 날짜 기간의 포맷을 변경한다.
+     * @param {string} format - 포맷 (PHP 의 포맷형태를 따른다.)
+     * @param {number|moment} start - 타임스탬프
+     * @param {number|moment} end - 타임스탬프
+     * @param {string} locale - 지역코드 (NULL 인 경우 현재 언어코드)
+     * @param {boolean} is_html - time 태그 여부
+     * @return {string} formatted
+     */
+    static dates(format, start = null, end = null, locale = null, is_html = true) {
+        let m = null;
+        if (start instanceof moment) {
+            m = start;
+        }
+        else {
+            m = moment(start * 1000);
+        }
+        let n = null;
+        if (end instanceof moment) {
+            n = end;
+        }
+        else {
+            n = moment(end * 1000);
+        }
+        locale ??= iModules.getLanguage();
+        const startTime = m.format();
+        const startFormatted = m.locale(locale).format(Format.moment(format));
+        const endTime = n.format();
+        const endFormatted = n.locale(locale).format(Format.moment(format));
+        if (is_html === true) {
+            return `<time datetime="${startTime}~${endTime}">${startFormatted} ~ ${endFormatted}</time>`;
+        }
+        else {
+            return `${startFormatted} ~ ${endFormatted}`;
+        }
+    }
+    /**
      * byte 단위의 파일크기를 적절한 단위로 변환한다.
      *
      * @param {(number|string)} size - 파일크기
