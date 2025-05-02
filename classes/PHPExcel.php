@@ -413,6 +413,26 @@ class PHPExcel
     }
 
     /**
+     * 시트를 추가한다.
+     * @param string $title
+     * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+     */
+    public function createSheet(string $title): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+    {
+        foreach ($this->_excel->getWorksheetIterator() as $sheet) {
+            if ($sheet->getTitle() === $title) {
+                $this->_excel->setActiveSheetIndexByName($title);
+                return $sheet;
+            }
+        }
+
+        $sheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($this->_excel, $title);
+        $this->_excel->addSheet($sheet);
+        $this->_excel->setActiveSheetIndexByName($title);
+        return $sheet;
+    }
+
+    /**
      * 엑셀파일을 저장한다.
      *
      * @param string $path 파일경로
