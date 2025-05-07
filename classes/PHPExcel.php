@@ -417,7 +417,7 @@ class PHPExcel
      * @param string $title
      * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
      */
-    public function createSheet(string $title): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+    public function addSheet(string $title): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
     {
         foreach ($this->_excel->getWorksheetIterator() as $sheet) {
             if ($sheet->getTitle() === $title) {
@@ -430,6 +430,27 @@ class PHPExcel
         $this->_excel->addSheet($sheet);
         $this->_excel->setActiveSheetIndexByName($title);
         return $sheet;
+    }
+
+    /**
+     * 템플릿으로 시트를 추가한다.
+     * @param string $path
+     * @param string $title
+     * @return void
+     * @throws Exception
+     */
+    public function addSheetFromTemplate(string $path, string $title): void
+    {
+        if (!is_file($path)) {
+            throw new \Exception("Excel template file not found: {$path}");
+        }
+
+        $template = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+        $sheet = $template->getSheet(0);
+        $sheet->setTitle($title);
+
+        $this->_excel->addExternalSheet($sheet);
+        $this->_excel->setActiveSheetIndexByName($title);
     }
 
     /**
