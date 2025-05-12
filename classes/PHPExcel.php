@@ -309,6 +309,18 @@ class PHPExcel
     }
 
     /**
+     * 셀에 값을 단순 지정한다.
+     *
+     * @param string $cellIndex
+     * @param mixed $value
+     * @return void
+     */
+    public function setCellValue(string $cellIndex, mixed $value): void
+    {
+        $this->getActiveSheet()->setCellValue($cellIndex, $value);
+    }
+
+    /**
      * 셀에 날짜형식의 값을 지정한다.
      *
      * @param string $cellIndex 셀 인덱스
