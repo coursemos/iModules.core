@@ -123,6 +123,16 @@ class PHPExcel
     }
 
     /**
+     * 시트를 활성화한다.
+     * @param int $sheetIndex
+     * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+     */
+    public function setActiveSheetIndex(int $sheetIndex): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
+    {
+        return $this->_excel->setActiveSheetIndex($sheetIndex);
+    }
+
+    /**
      * 현재 활성화된 시트를 가져온다.
      *
      * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
